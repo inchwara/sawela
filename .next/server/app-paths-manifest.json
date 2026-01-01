@@ -47,6 +47,7 @@
   "/inventory/stock-counts/new/page": "app/inventory/stock-counts/new/page.js",
   "/inventory/stock-counts/page": "app/inventory/stock-counts/page.js",
   "/landing/page": "app/landing/page.js",
+  "/logistics/[id]/page": "app/logistics/[id]/page.js",
   "/page": "app/page.js",
   "/pricing/page": "app/pricing/page.js",
   "/product-receipt/page": "app/product-receipt/page.js",

@@ -90,6 +90,9 @@
     "[project]/app/landing/page": [
       "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
     ],
+    "[project]/app/logistics/[id]/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
     "[project]/app/page": [
       "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
     ],
