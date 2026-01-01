@@ -1,1 +1,12 @@
 node_modules
+.next/trace
+.next/cache/webpack/client-development/3.pack.gz
+.next/cache/webpack/client-development/16.pack.gz
+.next/cache/webpack/client-development/index.pack.gz
+.next/cache/webpack/client-development/index.pack.gz.old
+.next/static/chunks/webpack.js
+.next/static/chunks/app/layout.js
+.next/static/webpack/90c6c659b1f806d3.webpack.hot-update.json
+.next/static/webpack/webpack.90c6c659b1f806d3.hot-update.js
+.next/static/webpack/app/layout.90c6c659b1f806d3.hot-update.js
+.next
