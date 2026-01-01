@@ -1,5 +1,24 @@
 import apiCall from "./api";
 
+export interface LogisticsCompany {
+  id: string;
+  name: string;
+  description: string | null;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  state: string | null;
+  country: string;
+  postal_code: string | null;
+  website: string | null;
+  logo_url: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  current_subscription_id: string | null;
+}
+
 export interface LogisticsDeliveryPerson {
   id: string;
   company_id: string;
@@ -11,7 +30,7 @@ export interface LogisticsDeliveryPerson {
   total_deliveries: number;
   created_at: string;
   updated_at: string;
-  [key: string]: any; // For other fields in the response
+  [key: string]: any;
 }
 
 export interface LogisticsOrder {
@@ -27,37 +46,61 @@ export interface LogisticsOrder {
   discount: string;
   final_amount: string;
   payment_status: string | null;
-  [key: string]: any; // For other fields in the response
+  [key: string]: any;
 }
 
 export interface Logistics {
   id: string;
-  order_id: string;
+  order_id: string | null;
+  company_id: string;
+  dispatcher_id: string;
   delivery_person_id: string | null;
+  logistics_provider: string;
   delivery_method: string;
+  vehicle_type: string;
+  vehicle_id: string | null;
   tracking_number: string;
   delivery_status: string;
   recipient_name: string;
   recipient_phone: string;
   delivery_address: string;
-  city: string | null;
-  state: string | null;
-  country: string | null;
+  city: string;
+  state: string;
+  country: string;
   dispatch_time: string | null;
   estimated_delivery_time: string | null;
   actual_delivery_time: string | null;
+  signature: string | null;
+  notes: string | null;
+  status: string;
   created_at: string;
   updated_at: string;
-  company_id: string;
-  order: LogisticsOrder;
+  order: LogisticsOrder | null;
   delivery_person: LogisticsDeliveryPerson | null;
-  [key: string]: any; // For other fields in the response
+  company: LogisticsCompany;
+  [key: string]: any;
+}
+
+export interface PaginatedLogistics {
+  current_page: number;
+  data: Logistics[];
+  first_page_url: string;
+  from: number;
+  last_page: number;
+  last_page_url: string;
+  links: Array<{ url: string | null; label: string; active: boolean }>;
+  next_page_url: string | null;
+  path: string;
+  per_page: number;
+  prev_page_url: string | null;
+  to: number;
+  total: number;
 }
 
 export interface LogisticsResponse {
   status: string;
   message: string;
-  logistics: Logistics[];
+  logistics: PaginatedLogistics | Logistics[];
 }
 
 export interface LogisticsSummary {
@@ -67,6 +110,7 @@ export interface LogisticsSummary {
   cancelled: number;
   pending: number;
   in_transit: number;
+  failed: number;
 }
 
 /**
@@ -107,7 +151,15 @@ export async function getLogistics(
       );
       
       if (response.status === "success" && response.logistics) {
-        return response.logistics;
+        // Handle paginated response
+        if ('data' in response.logistics && Array.isArray(response.logistics.data)) {
+          return response.logistics.data;
+        }
+        // Handle direct array response (backwards compatibility)
+        if (Array.isArray(response.logistics)) {
+          return response.logistics;
+        }
+        return [];
       } else {
         // Convert potential object error message to string
         const errorMessage = typeof response.message === "string" 
@@ -148,6 +200,7 @@ export function calculateLogisticsSummary(logistics: Logistics[]): LogisticsSumm
     cancelled: logistics.filter(item => item.delivery_status === 'cancelled').length,
     pending: logistics.filter(item => item.delivery_status === 'pending').length,
     in_transit: logistics.filter(item => item.delivery_status === 'in_transit').length,
+    failed: logistics.filter(item => item.delivery_status === 'failed').length,
   };
 }
 

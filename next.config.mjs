@@ -8,28 +8,15 @@ const nextConfig = {
       bodySizeLimit: '10mb',
     },
   },
-  webpack: (config, { isServer }) => {
-    if (!isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-        net: false,
-        tls: false,
-      }
-    }
-    return config
-  },
+  // Enable Turbopack (default in Next.js 16)
+  turbopack: {},
   images: {
-    domains: ['placeholder.svg'],
     remotePatterns: [
       {
         protocol: 'https',
         hostname: '**',
       },
     ],
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
   },
   typescript: {
     ignoreBuildErrors: true, // Set to true to bypass TypeScript errors during build

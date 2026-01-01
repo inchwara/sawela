@@ -1,204 +1,408 @@
 {
   "node": {
-    "00328943429930168fd198916b4801f49566a6d4da": {
+    "001c62e70f564d2439de6c7e2aa8cc8ab087ec7cc0": {
+      "workers": {
+        "app/admin/payments/page": {
+          "moduleId": 72013,
+          "async": false,
+          "exportedName": "fetchAllPayments",
+          "filename": "app/admin/payments/actions.ts"
+        }
+      },
+      "layer": {
+        "app/admin/payments/page": "action-browser"
+      },
+      "filename": "app/admin/payments/actions.ts",
+      "exportedName": "fetchAllPayments"
+    },
+    "400f31f5aee38663bba0733fc0f98a46cd2b9fbb31": {
+      "workers": {
+        "app/admin/pricing/page": {
+          "moduleId": 10283,
+          "async": false,
+          "exportedName": "deletePricingPlan",
+          "filename": "app/admin/pricing/actions.ts"
+        }
+      },
+      "layer": {
+        "app/admin/pricing/page": "action-browser"
+      },
+      "filename": "app/admin/pricing/actions.ts",
+      "exportedName": "deletePricingPlan"
+    },
+    "609c1878cd08daa9a94658ded10478222cd6093c84": {
+      "workers": {
+        "app/admin/pricing/page": {
+          "moduleId": 10283,
+          "async": false,
+          "exportedName": "updatePricingPlan",
+          "filename": "app/admin/pricing/actions.ts"
+        }
+      },
+      "layer": {
+        "app/admin/pricing/page": "action-browser"
+      },
+      "filename": "app/admin/pricing/actions.ts",
+      "exportedName": "updatePricingPlan"
+    },
+    "40ca655f3a9f952a9520b17305785c10fee03263bb": {
+      "workers": {
+        "app/admin/pricing/page": {
+          "moduleId": 10283,
+          "async": false,
+          "exportedName": "createPricingPlan",
+          "filename": "app/admin/pricing/actions.ts"
+        }
+      },
+      "layer": {
+        "app/admin/pricing/page": "action-browser"
+      },
+      "filename": "app/admin/pricing/actions.ts",
+      "exportedName": "createPricingPlan"
+    },
+    "40f63d5d23abbe6c8b2ae737c9b70f459a7b1b0b00": {
+      "workers": {
+        "app/admin/subscriptions/page": {
+          "moduleId": 7144,
+          "async": false,
+          "exportedName": "createSubscription",
+          "filename": "app/admin/subscriptions/actions.ts"
+        }
+      },
+      "layer": {
+        "app/admin/subscriptions/page": "action-browser"
+      },
+      "filename": "app/admin/subscriptions/actions.ts",
+      "exportedName": "createSubscription"
+    },
+    "604c91d3dbad6e78bf4d61a166e5ef9786428a5f48": {
+      "workers": {
+        "app/admin/subscriptions/page": {
+          "moduleId": 7144,
+          "async": false,
+          "exportedName": "updateSubscription",
+          "filename": "app/admin/subscriptions/actions.ts"
+        }
+      },
+      "layer": {
+        "app/admin/subscriptions/page": "action-browser"
+      },
+      "filename": "app/admin/subscriptions/actions.ts",
+      "exportedName": "updateSubscription"
+    },
+    "00b066da68b3f01000d7c3996b1f56b0907f8cac74": {
+      "workers": {
+        "app/admin/subscriptions/page": {
+          "moduleId": 7144,
+          "async": false,
+          "exportedName": "fetchAllCompaniesForUserCreation",
+          "filename": "app/admin/users/actions.ts"
+        }
+      },
+      "layer": {
+        "app/admin/subscriptions/page": "action-browser"
+      },
+      "filename": "app/admin/users/actions.ts",
+      "exportedName": "fetchAllCompaniesForUserCreation"
+    },
+    "40e6e54ff98018b2dfbb1680514a6abe8b8685770e": {
+      "workers": {
+        "app/inventory/stock-adjustments/page": {
+          "moduleId": 74097,
+          "async": false,
+          "exportedName": "createStockAdjustmentAction",
+          "filename": "app/inventory/stock-adjustments/actions.ts"
+        }
+      },
+      "layer": {
+        "app/inventory/stock-adjustments/page": "action-browser"
+      },
+      "filename": "app/inventory/stock-adjustments/actions.ts",
+      "exportedName": "createStockAdjustmentAction"
+    },
+    "604c73495c56799c10ea98dd09824af3f3fb9ba62c": {
+      "workers": {
+        "app/inventory/stock-adjustments/[id]/page": {
+          "moduleId": 83391,
+          "async": false,
+          "exportedName": "updateStockAdjustmentAction",
+          "filename": "app/inventory/stock-adjustments/actions.ts"
+        },
+        "app/inventory/stock-adjustments/page": {
+          "moduleId": 74097,
+          "async": false,
+          "exportedName": "updateStockAdjustmentAction",
+          "filename": "app/inventory/stock-adjustments/actions.ts"
+        }
+      },
+      "layer": {
+        "app/inventory/stock-adjustments/[id]/page": "action-browser",
+        "app/inventory/stock-adjustments/page": "action-browser"
+      },
+      "filename": "app/inventory/stock-adjustments/actions.ts",
+      "exportedName": "updateStockAdjustmentAction"
+    },
+    "40a407102a6b9c29f1a2610c10a4b6351bf76bbe43": {
+      "workers": {
+        "app/inventory/stock-adjustments/[id]/page": {
+          "moduleId": 83391,
+          "async": false,
+          "exportedName": "approveStockAdjustmentAction",
+          "filename": "app/inventory/stock-adjustments/actions.ts"
+        },
+        "app/inventory/stock-adjustments/page": {
+          "moduleId": 74097,
+          "async": false,
+          "exportedName": "approveStockAdjustmentAction",
+          "filename": "app/inventory/stock-adjustments/actions.ts"
+        }
+      },
+      "layer": {
+        "app/inventory/stock-adjustments/[id]/page": "action-browser",
+        "app/inventory/stock-adjustments/page": "action-browser"
+      },
+      "filename": "app/inventory/stock-adjustments/actions.ts",
+      "exportedName": "approveStockAdjustmentAction"
+    },
+    "40cbb7e9cfa556fcc089d8dca3bcb64878b4a404e0": {
+      "workers": {
+        "app/inventory/stock-adjustments/[id]/page": {
+          "moduleId": 83391,
+          "async": false,
+          "exportedName": "applyStockAdjustmentAction",
+          "filename": "app/inventory/stock-adjustments/actions.ts"
+        },
+        "app/inventory/stock-adjustments/page": {
+          "moduleId": 74097,
+          "async": false,
+          "exportedName": "applyStockAdjustmentAction",
+          "filename": "app/inventory/stock-adjustments/actions.ts"
+        }
+      },
+      "layer": {
+        "app/inventory/stock-adjustments/[id]/page": "action-browser",
+        "app/inventory/stock-adjustments/page": "action-browser"
+      },
+      "filename": "app/inventory/stock-adjustments/actions.ts",
+      "exportedName": "applyStockAdjustmentAction"
+    },
+    "60f5fc683f50af4644f38cb52435134c3ec2b0feb5": {
+      "workers": {
+        "app/inventory/stock-adjustments/[id]/page": {
+          "moduleId": 83391,
+          "async": false,
+          "exportedName": "rejectStockAdjustmentAction",
+          "filename": "app/inventory/stock-adjustments/actions.ts"
+        },
+        "app/inventory/stock-adjustments/page": {
+          "moduleId": 74097,
+          "async": false,
+          "exportedName": "rejectStockAdjustmentAction",
+          "filename": "app/inventory/stock-adjustments/actions.ts"
+        }
+      },
+      "layer": {
+        "app/inventory/stock-adjustments/[id]/page": "action-browser",
+        "app/inventory/stock-adjustments/page": "action-browser"
+      },
+      "filename": "app/inventory/stock-adjustments/actions.ts",
+      "exportedName": "rejectStockAdjustmentAction"
+    },
+    "402ce839a11ae37f2b8f6d972d5b89d3f19c97c3db": {
+      "workers": {
+        "app/inventory/stock-adjustments/[id]/page": {
+          "moduleId": 83391,
+          "async": false,
+          "exportedName": "deleteStockAdjustmentAction",
+          "filename": "app/inventory/stock-adjustments/actions.ts"
+        },
+        "app/inventory/stock-adjustments/page": {
+          "moduleId": 74097,
+          "async": false,
+          "exportedName": "deleteStockAdjustmentAction",
+          "filename": "app/inventory/stock-adjustments/actions.ts"
+        }
+      },
+      "layer": {
+        "app/inventory/stock-adjustments/[id]/page": "action-browser",
+        "app/inventory/stock-adjustments/page": "action-browser"
+      },
+      "filename": "app/inventory/stock-adjustments/actions.ts",
+      "exportedName": "deleteStockAdjustmentAction"
+    },
+    "4055eb979feb8e27a8cf9a6e06418fecaad12eb9a6": {
+      "workers": {
+        "app/inventory/stock-adjustments/[id]/page": {
+          "moduleId": 83391,
+          "async": false,
+          "exportedName": "submitStockAdjustmentAction",
+          "filename": "app/inventory/stock-adjustments/actions.ts"
+        },
+        "app/inventory/stock-adjustments/page": {
+          "moduleId": 74097,
+          "async": false,
+          "exportedName": "submitStockAdjustmentAction",
+          "filename": "app/inventory/stock-adjustments/actions.ts"
+        }
+      },
+      "layer": {
+        "app/inventory/stock-adjustments/[id]/page": "action-browser",
+        "app/inventory/stock-adjustments/page": "action-browser"
+      },
+      "filename": "app/inventory/stock-adjustments/actions.ts",
+      "exportedName": "submitStockAdjustmentAction"
+    },
+    "407bbcf5f7d7b6c0921971ff846ad934b0306c8142": {
       "workers": {
         "app/product-receipt/page": {
-          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Finchwara%2Fsawela%2Fapp%2Finventory%2Factions.ts%22%2C%5B%7B%22id%22%3A%2200328943429930168fd198916b4801f49566a6d4da%22%2C%22exportedName%22%3A%22debugToken%22%7D%2C%7B%22id%22%3A%2240a84e690f50b55429bbf3f3297f243cdde3f83c19%22%2C%22exportedName%22%3A%22createProduct%22%7D%5D%5D%5D&__client_imported__=true!",
-          "async": false
+          "moduleId": 62724,
+          "async": false,
+          "exportedName": "createProduct",
+          "filename": "app/inventory/actions.ts"
         }
       },
       "layer": {
         "app/product-receipt/page": "action-browser"
-      }
+      },
+      "filename": "app/inventory/actions.ts",
+      "exportedName": "createProduct"
     },
-    "40a84e690f50b55429bbf3f3297f243cdde3f83c19": {
+    "0094e7b7e807fa05264b5466c2d21d67060e08d6a4": {
       "workers": {
-        "app/product-receipt/page": {
-          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Finchwara%2Fsawela%2Fapp%2Finventory%2Factions.ts%22%2C%5B%7B%22id%22%3A%2200328943429930168fd198916b4801f49566a6d4da%22%2C%22exportedName%22%3A%22debugToken%22%7D%2C%7B%22id%22%3A%2240a84e690f50b55429bbf3f3297f243cdde3f83c19%22%2C%22exportedName%22%3A%22createProduct%22%7D%5D%5D%5D&__client_imported__=true!",
-          "async": false
+        "app/settings/user-management/page": {
+          "moduleId": 24428,
+          "async": false,
+          "exportedName": "fetchUsers",
+          "filename": "app/settings/user-management/actions.ts"
         }
       },
       "layer": {
-        "app/product-receipt/page": "action-browser"
-      }
+        "app/settings/user-management/page": "action-browser"
+      },
+      "filename": "app/settings/user-management/actions.ts",
+      "exportedName": "fetchUsers"
     },
-    "009b4fd96db149ff6a3b480d90a0ba46c95338b9e9": {
+    "40919fd8523a7628cf303140b7add81773db2a9064": {
       "workers": {
-        "app/settings/page": {
-          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Finchwara%2Fsawela%2Fapp%2Fsettings%2Fuser-management%2Factions.ts%22%2C%5B%7B%22id%22%3A%22009b4fd96db149ff6a3b480d90a0ba46c95338b9e9%22%2C%22exportedName%22%3A%22fetchRoles%22%7D%2C%7B%22id%22%3A%2200af5bfd92387225df1133bfca9b26826af396f828%22%2C%22exportedName%22%3A%22fetchUsers%22%7D%2C%7B%22id%22%3A%224037ebe22ed5157fda0712f5c69300d6fcb455d2fe%22%2C%22exportedName%22%3A%22createUser%22%7D%2C%7B%22id%22%3A%224064de78e59618562a6cd760155fed9b0d261ca8be%22%2C%22exportedName%22%3A%22deleteRole%22%7D%2C%7B%22id%22%3A%2240d61a98d3c5fd509c1e66501eaa89b93b472fc7ed%22%2C%22exportedName%22%3A%22createRole%22%7D%2C%7B%22id%22%3A%2240fe943c0517ab8e71e0cb4ae9833d873628875f57%22%2C%22exportedName%22%3A%22deleteUser%22%7D%2C%7B%22id%22%3A%22607a6ca7de73139e731141fdb2cd1bb28fff8b8d13%22%2C%22exportedName%22%3A%22updateRole%22%7D%2C%7B%22id%22%3A%2260b1d20324966cc4d64d5742f0b678deddb2a8ba6c%22%2C%22exportedName%22%3A%22updateUser%22%7D%2C%7B%22id%22%3A%2260d44074eeeb130248f0c71fd03298859ccd0fcfab%22%2C%22exportedName%22%3A%22assignUserPermissions%22%7D%5D%5D%5D&__client_imported__=true!",
-          "async": false
+        "app/settings/user-management/page": {
+          "moduleId": 24428,
+          "async": false,
+          "exportedName": "createUser",
+          "filename": "app/settings/user-management/actions.ts"
         }
       },
       "layer": {
-        "app/settings/page": "action-browser"
-      }
+        "app/settings/user-management/page": "action-browser"
+      },
+      "filename": "app/settings/user-management/actions.ts",
+      "exportedName": "createUser"
     },
-    "00af5bfd92387225df1133bfca9b26826af396f828": {
+    "602c7d356543002bc4e8456c14291cbf47f4cfa231": {
       "workers": {
-        "app/settings/page": {
-          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Finchwara%2Fsawela%2Fapp%2Fsettings%2Fuser-management%2Factions.ts%22%2C%5B%7B%22id%22%3A%22009b4fd96db149ff6a3b480d90a0ba46c95338b9e9%22%2C%22exportedName%22%3A%22fetchRoles%22%7D%2C%7B%22id%22%3A%2200af5bfd92387225df1133bfca9b26826af396f828%22%2C%22exportedName%22%3A%22fetchUsers%22%7D%2C%7B%22id%22%3A%224037ebe22ed5157fda0712f5c69300d6fcb455d2fe%22%2C%22exportedName%22%3A%22createUser%22%7D%2C%7B%22id%22%3A%224064de78e59618562a6cd760155fed9b0d261ca8be%22%2C%22exportedName%22%3A%22deleteRole%22%7D%2C%7B%22id%22%3A%2240d61a98d3c5fd509c1e66501eaa89b93b472fc7ed%22%2C%22exportedName%22%3A%22createRole%22%7D%2C%7B%22id%22%3A%2240fe943c0517ab8e71e0cb4ae9833d873628875f57%22%2C%22exportedName%22%3A%22deleteUser%22%7D%2C%7B%22id%22%3A%22607a6ca7de73139e731141fdb2cd1bb28fff8b8d13%22%2C%22exportedName%22%3A%22updateRole%22%7D%2C%7B%22id%22%3A%2260b1d20324966cc4d64d5742f0b678deddb2a8ba6c%22%2C%22exportedName%22%3A%22updateUser%22%7D%2C%7B%22id%22%3A%2260d44074eeeb130248f0c71fd03298859ccd0fcfab%22%2C%22exportedName%22%3A%22assignUserPermissions%22%7D%5D%5D%5D&__client_imported__=true!",
-          "async": false
+        "app/settings/user-management/page": {
+          "moduleId": 24428,
+          "async": false,
+          "exportedName": "updateUser",
+          "filename": "app/settings/user-management/actions.ts"
         }
       },
       "layer": {
-        "app/settings/page": "action-browser"
-      }
+        "app/settings/user-management/page": "action-browser"
+      },
+      "filename": "app/settings/user-management/actions.ts",
+      "exportedName": "updateUser"
     },
-    "4037ebe22ed5157fda0712f5c69300d6fcb455d2fe": {
+    "40e98a78e4ef0f7b901c58d9f0ef275bc32251e881": {
       "workers": {
-        "app/settings/page": {
-          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Finchwara%2Fsawela%2Fapp%2Fsettings%2Fuser-management%2Factions.ts%22%2C%5B%7B%22id%22%3A%22009b4fd96db149ff6a3b480d90a0ba46c95338b9e9%22%2C%22exportedName%22%3A%22fetchRoles%22%7D%2C%7B%22id%22%3A%2200af5bfd92387225df1133bfca9b26826af396f828%22%2C%22exportedName%22%3A%22fetchUsers%22%7D%2C%7B%22id%22%3A%224037ebe22ed5157fda0712f5c69300d6fcb455d2fe%22%2C%22exportedName%22%3A%22createUser%22%7D%2C%7B%22id%22%3A%224064de78e59618562a6cd760155fed9b0d261ca8be%22%2C%22exportedName%22%3A%22deleteRole%22%7D%2C%7B%22id%22%3A%2240d61a98d3c5fd509c1e66501eaa89b93b472fc7ed%22%2C%22exportedName%22%3A%22createRole%22%7D%2C%7B%22id%22%3A%2240fe943c0517ab8e71e0cb4ae9833d873628875f57%22%2C%22exportedName%22%3A%22deleteUser%22%7D%2C%7B%22id%22%3A%22607a6ca7de73139e731141fdb2cd1bb28fff8b8d13%22%2C%22exportedName%22%3A%22updateRole%22%7D%2C%7B%22id%22%3A%2260b1d20324966cc4d64d5742f0b678deddb2a8ba6c%22%2C%22exportedName%22%3A%22updateUser%22%7D%2C%7B%22id%22%3A%2260d44074eeeb130248f0c71fd03298859ccd0fcfab%22%2C%22exportedName%22%3A%22assignUserPermissions%22%7D%5D%5D%5D&__client_imported__=true!",
-          "async": false
+        "app/settings/user-management/page": {
+          "moduleId": 24428,
+          "async": false,
+          "exportedName": "deleteUser",
+          "filename": "app/settings/user-management/actions.ts"
         }
       },
       "layer": {
-        "app/settings/page": "action-browser"
-      }
+        "app/settings/user-management/page": "action-browser"
+      },
+      "filename": "app/settings/user-management/actions.ts",
+      "exportedName": "deleteUser"
     },
-    "4064de78e59618562a6cd760155fed9b0d261ca8be": {
+    "00b41066ae6c8ca5b0206f0abdd3c2fb2bd3fd1d7d": {
       "workers": {
-        "app/settings/page": {
-          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Finchwara%2Fsawela%2Fapp%2Fsettings%2Fuser-management%2Factions.ts%22%2C%5B%7B%22id%22%3A%22009b4fd96db149ff6a3b480d90a0ba46c95338b9e9%22%2C%22exportedName%22%3A%22fetchRoles%22%7D%2C%7B%22id%22%3A%2200af5bfd92387225df1133bfca9b26826af396f828%22%2C%22exportedName%22%3A%22fetchUsers%22%7D%2C%7B%22id%22%3A%224037ebe22ed5157fda0712f5c69300d6fcb455d2fe%22%2C%22exportedName%22%3A%22createUser%22%7D%2C%7B%22id%22%3A%224064de78e59618562a6cd760155fed9b0d261ca8be%22%2C%22exportedName%22%3A%22deleteRole%22%7D%2C%7B%22id%22%3A%2240d61a98d3c5fd509c1e66501eaa89b93b472fc7ed%22%2C%22exportedName%22%3A%22createRole%22%7D%2C%7B%22id%22%3A%2240fe943c0517ab8e71e0cb4ae9833d873628875f57%22%2C%22exportedName%22%3A%22deleteUser%22%7D%2C%7B%22id%22%3A%22607a6ca7de73139e731141fdb2cd1bb28fff8b8d13%22%2C%22exportedName%22%3A%22updateRole%22%7D%2C%7B%22id%22%3A%2260b1d20324966cc4d64d5742f0b678deddb2a8ba6c%22%2C%22exportedName%22%3A%22updateUser%22%7D%2C%7B%22id%22%3A%2260d44074eeeb130248f0c71fd03298859ccd0fcfab%22%2C%22exportedName%22%3A%22assignUserPermissions%22%7D%5D%5D%5D&__client_imported__=true!",
-          "async": false
+        "app/settings/user-management/page": {
+          "moduleId": 24428,
+          "async": false,
+          "exportedName": "fetchRoles",
+          "filename": "app/settings/user-management/actions.ts"
         }
       },
       "layer": {
-        "app/settings/page": "action-browser"
-      }
+        "app/settings/user-management/page": "action-browser"
+      },
+      "filename": "app/settings/user-management/actions.ts",
+      "exportedName": "fetchRoles"
     },
-    "40d61a98d3c5fd509c1e66501eaa89b93b472fc7ed": {
+    "60ff0d855ca39e447a579bf90d91209db50a51e592": {
       "workers": {
-        "app/settings/page": {
-          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Finchwara%2Fsawela%2Fapp%2Fsettings%2Fuser-management%2Factions.ts%22%2C%5B%7B%22id%22%3A%22009b4fd96db149ff6a3b480d90a0ba46c95338b9e9%22%2C%22exportedName%22%3A%22fetchRoles%22%7D%2C%7B%22id%22%3A%2200af5bfd92387225df1133bfca9b26826af396f828%22%2C%22exportedName%22%3A%22fetchUsers%22%7D%2C%7B%22id%22%3A%224037ebe22ed5157fda0712f5c69300d6fcb455d2fe%22%2C%22exportedName%22%3A%22createUser%22%7D%2C%7B%22id%22%3A%224064de78e59618562a6cd760155fed9b0d261ca8be%22%2C%22exportedName%22%3A%22deleteRole%22%7D%2C%7B%22id%22%3A%2240d61a98d3c5fd509c1e66501eaa89b93b472fc7ed%22%2C%22exportedName%22%3A%22createRole%22%7D%2C%7B%22id%22%3A%2240fe943c0517ab8e71e0cb4ae9833d873628875f57%22%2C%22exportedName%22%3A%22deleteUser%22%7D%2C%7B%22id%22%3A%22607a6ca7de73139e731141fdb2cd1bb28fff8b8d13%22%2C%22exportedName%22%3A%22updateRole%22%7D%2C%7B%22id%22%3A%2260b1d20324966cc4d64d5742f0b678deddb2a8ba6c%22%2C%22exportedName%22%3A%22updateUser%22%7D%2C%7B%22id%22%3A%2260d44074eeeb130248f0c71fd03298859ccd0fcfab%22%2C%22exportedName%22%3A%22assignUserPermissions%22%7D%5D%5D%5D&__client_imported__=true!",
-          "async": false
+        "app/settings/user-management/page": {
+          "moduleId": 24428,
+          "async": false,
+          "exportedName": "assignUserPermissions",
+          "filename": "app/settings/user-management/actions.ts"
         }
       },
       "layer": {
-        "app/settings/page": "action-browser"
-      }
+        "app/settings/user-management/page": "action-browser"
+      },
+      "filename": "app/settings/user-management/actions.ts",
+      "exportedName": "assignUserPermissions"
     },
-    "40fe943c0517ab8e71e0cb4ae9833d873628875f57": {
+    "4034e487548c93ae0d41cab31a6f201c743d32422b": {
       "workers": {
-        "app/settings/page": {
-          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Finchwara%2Fsawela%2Fapp%2Fsettings%2Fuser-management%2Factions.ts%22%2C%5B%7B%22id%22%3A%22009b4fd96db149ff6a3b480d90a0ba46c95338b9e9%22%2C%22exportedName%22%3A%22fetchRoles%22%7D%2C%7B%22id%22%3A%2200af5bfd92387225df1133bfca9b26826af396f828%22%2C%22exportedName%22%3A%22fetchUsers%22%7D%2C%7B%22id%22%3A%224037ebe22ed5157fda0712f5c69300d6fcb455d2fe%22%2C%22exportedName%22%3A%22createUser%22%7D%2C%7B%22id%22%3A%224064de78e59618562a6cd760155fed9b0d261ca8be%22%2C%22exportedName%22%3A%22deleteRole%22%7D%2C%7B%22id%22%3A%2240d61a98d3c5fd509c1e66501eaa89b93b472fc7ed%22%2C%22exportedName%22%3A%22createRole%22%7D%2C%7B%22id%22%3A%2240fe943c0517ab8e71e0cb4ae9833d873628875f57%22%2C%22exportedName%22%3A%22deleteUser%22%7D%2C%7B%22id%22%3A%22607a6ca7de73139e731141fdb2cd1bb28fff8b8d13%22%2C%22exportedName%22%3A%22updateRole%22%7D%2C%7B%22id%22%3A%2260b1d20324966cc4d64d5742f0b678deddb2a8ba6c%22%2C%22exportedName%22%3A%22updateUser%22%7D%2C%7B%22id%22%3A%2260d44074eeeb130248f0c71fd03298859ccd0fcfab%22%2C%22exportedName%22%3A%22assignUserPermissions%22%7D%5D%5D%5D&__client_imported__=true!",
-          "async": false
+        "app/settings/user-management/page": {
+          "moduleId": 24428,
+          "async": false,
+          "exportedName": "createRole",
+          "filename": "app/settings/user-management/actions.ts"
         }
       },
       "layer": {
-        "app/settings/page": "action-browser"
-      }
+        "app/settings/user-management/page": "action-browser"
+      },
+      "filename": "app/settings/user-management/actions.ts",
+      "exportedName": "createRole"
     },
-    "607a6ca7de73139e731141fdb2cd1bb28fff8b8d13": {
+    "609d5fb2f0b7688fe42b3a26a1a09986ad1e08a68e": {
       "workers": {
-        "app/settings/page": {
-          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Finchwara%2Fsawela%2Fapp%2Fsettings%2Fuser-management%2Factions.ts%22%2C%5B%7B%22id%22%3A%22009b4fd96db149ff6a3b480d90a0ba46c95338b9e9%22%2C%22exportedName%22%3A%22fetchRoles%22%7D%2C%7B%22id%22%3A%2200af5bfd92387225df1133bfca9b26826af396f828%22%2C%22exportedName%22%3A%22fetchUsers%22%7D%2C%7B%22id%22%3A%224037ebe22ed5157fda0712f5c69300d6fcb455d2fe%22%2C%22exportedName%22%3A%22createUser%22%7D%2C%7B%22id%22%3A%224064de78e59618562a6cd760155fed9b0d261ca8be%22%2C%22exportedName%22%3A%22deleteRole%22%7D%2C%7B%22id%22%3A%2240d61a98d3c5fd509c1e66501eaa89b93b472fc7ed%22%2C%22exportedName%22%3A%22createRole%22%7D%2C%7B%22id%22%3A%2240fe943c0517ab8e71e0cb4ae9833d873628875f57%22%2C%22exportedName%22%3A%22deleteUser%22%7D%2C%7B%22id%22%3A%22607a6ca7de73139e731141fdb2cd1bb28fff8b8d13%22%2C%22exportedName%22%3A%22updateRole%22%7D%2C%7B%22id%22%3A%2260b1d20324966cc4d64d5742f0b678deddb2a8ba6c%22%2C%22exportedName%22%3A%22updateUser%22%7D%2C%7B%22id%22%3A%2260d44074eeeb130248f0c71fd03298859ccd0fcfab%22%2C%22exportedName%22%3A%22assignUserPermissions%22%7D%5D%5D%5D&__client_imported__=true!",
-          "async": false
+        "app/settings/user-management/page": {
+          "moduleId": 24428,
+          "async": false,
+          "exportedName": "updateRole",
+          "filename": "app/settings/user-management/actions.ts"
         }
       },
       "layer": {
-        "app/settings/page": "action-browser"
-      }
+        "app/settings/user-management/page": "action-browser"
+      },
+      "filename": "app/settings/user-management/actions.ts",
+      "exportedName": "updateRole"
     },
-    "60b1d20324966cc4d64d5742f0b678deddb2a8ba6c": {
+    "401ed2b061c0a3886c47f6a28499faa31ec36eb89b": {
       "workers": {
-        "app/settings/page": {
-          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Finchwara%2Fsawela%2Fapp%2Fsettings%2Fuser-management%2Factions.ts%22%2C%5B%7B%22id%22%3A%22009b4fd96db149ff6a3b480d90a0ba46c95338b9e9%22%2C%22exportedName%22%3A%22fetchRoles%22%7D%2C%7B%22id%22%3A%2200af5bfd92387225df1133bfca9b26826af396f828%22%2C%22exportedName%22%3A%22fetchUsers%22%7D%2C%7B%22id%22%3A%224037ebe22ed5157fda0712f5c69300d6fcb455d2fe%22%2C%22exportedName%22%3A%22createUser%22%7D%2C%7B%22id%22%3A%224064de78e59618562a6cd760155fed9b0d261ca8be%22%2C%22exportedName%22%3A%22deleteRole%22%7D%2C%7B%22id%22%3A%2240d61a98d3c5fd509c1e66501eaa89b93b472fc7ed%22%2C%22exportedName%22%3A%22createRole%22%7D%2C%7B%22id%22%3A%2240fe943c0517ab8e71e0cb4ae9833d873628875f57%22%2C%22exportedName%22%3A%22deleteUser%22%7D%2C%7B%22id%22%3A%22607a6ca7de73139e731141fdb2cd1bb28fff8b8d13%22%2C%22exportedName%22%3A%22updateRole%22%7D%2C%7B%22id%22%3A%2260b1d20324966cc4d64d5742f0b678deddb2a8ba6c%22%2C%22exportedName%22%3A%22updateUser%22%7D%2C%7B%22id%22%3A%2260d44074eeeb130248f0c71fd03298859ccd0fcfab%22%2C%22exportedName%22%3A%22assignUserPermissions%22%7D%5D%5D%5D&__client_imported__=true!",
-          "async": false
+        "app/settings/user-management/page": {
+          "moduleId": 24428,
+          "async": false,
+          "exportedName": "deleteRole",
+          "filename": "app/settings/user-management/actions.ts"
         }
       },
       "layer": {
-        "app/settings/page": "action-browser"
-      }
-    },
-    "60d44074eeeb130248f0c71fd03298859ccd0fcfab": {
-      "workers": {
-        "app/settings/page": {
-          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Finchwara%2Fsawela%2Fapp%2Fsettings%2Fuser-management%2Factions.ts%22%2C%5B%7B%22id%22%3A%22009b4fd96db149ff6a3b480d90a0ba46c95338b9e9%22%2C%22exportedName%22%3A%22fetchRoles%22%7D%2C%7B%22id%22%3A%2200af5bfd92387225df1133bfca9b26826af396f828%22%2C%22exportedName%22%3A%22fetchUsers%22%7D%2C%7B%22id%22%3A%224037ebe22ed5157fda0712f5c69300d6fcb455d2fe%22%2C%22exportedName%22%3A%22createUser%22%7D%2C%7B%22id%22%3A%224064de78e59618562a6cd760155fed9b0d261ca8be%22%2C%22exportedName%22%3A%22deleteRole%22%7D%2C%7B%22id%22%3A%2240d61a98d3c5fd509c1e66501eaa89b93b472fc7ed%22%2C%22exportedName%22%3A%22createRole%22%7D%2C%7B%22id%22%3A%2240fe943c0517ab8e71e0cb4ae9833d873628875f57%22%2C%22exportedName%22%3A%22deleteUser%22%7D%2C%7B%22id%22%3A%22607a6ca7de73139e731141fdb2cd1bb28fff8b8d13%22%2C%22exportedName%22%3A%22updateRole%22%7D%2C%7B%22id%22%3A%2260b1d20324966cc4d64d5742f0b678deddb2a8ba6c%22%2C%22exportedName%22%3A%22updateUser%22%7D%2C%7B%22id%22%3A%2260d44074eeeb130248f0c71fd03298859ccd0fcfab%22%2C%22exportedName%22%3A%22assignUserPermissions%22%7D%5D%5D%5D&__client_imported__=true!",
-          "async": false
-        }
+        "app/settings/user-management/page": "action-browser"
       },
-      "layer": {
-        "app/settings/page": "action-browser"
-      }
-    },
-    "400a5c54ec987ebc8e5b1e63cbd7eb43f98e1270f1": {
-      "workers": {
-        "app/inventory/stock-adjustments/page": {
-          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Finchwara%2Fsawela%2Fapp%2Finventory%2Fstock-adjustments%2Factions.ts%22%2C%5B%7B%22id%22%3A%22400a5c54ec987ebc8e5b1e63cbd7eb43f98e1270f1%22%2C%22exportedName%22%3A%22deleteStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%22402baf9d7d7b91c1107db1a2d7793cca79dbdd6c77%22%2C%22exportedName%22%3A%22createStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%22405493e6fcd39f78dfda0565e19b65bb61d0978a6c%22%2C%22exportedName%22%3A%22submitStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2240a14b76fcadedf608063c27dfbced26cfd78bca99%22%2C%22exportedName%22%3A%22applyStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2240d7b5f8572b96bd92d8ed0b8c62bc188889024015%22%2C%22exportedName%22%3A%22approveStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2260c49b899a7de1b5df2c34302b90ce061634431cfb%22%2C%22exportedName%22%3A%22rejectStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2260f2a8a758cd6bd71399b6148a10c85d71704975be%22%2C%22exportedName%22%3A%22updateStockAdjustmentAction%22%7D%5D%5D%5D&__client_imported__=true!",
-          "async": false
-        }
-      },
-      "layer": {
-        "app/inventory/stock-adjustments/page": "action-browser"
-      }
-    },
-    "402baf9d7d7b91c1107db1a2d7793cca79dbdd6c77": {
-      "workers": {
-        "app/inventory/stock-adjustments/page": {
-          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Finchwara%2Fsawela%2Fapp%2Finventory%2Fstock-adjustments%2Factions.ts%22%2C%5B%7B%22id%22%3A%22400a5c54ec987ebc8e5b1e63cbd7eb43f98e1270f1%22%2C%22exportedName%22%3A%22deleteStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%22402baf9d7d7b91c1107db1a2d7793cca79dbdd6c77%22%2C%22exportedName%22%3A%22createStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%22405493e6fcd39f78dfda0565e19b65bb61d0978a6c%22%2C%22exportedName%22%3A%22submitStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2240a14b76fcadedf608063c27dfbced26cfd78bca99%22%2C%22exportedName%22%3A%22applyStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2240d7b5f8572b96bd92d8ed0b8c62bc188889024015%22%2C%22exportedName%22%3A%22approveStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2260c49b899a7de1b5df2c34302b90ce061634431cfb%22%2C%22exportedName%22%3A%22rejectStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2260f2a8a758cd6bd71399b6148a10c85d71704975be%22%2C%22exportedName%22%3A%22updateStockAdjustmentAction%22%7D%5D%5D%5D&__client_imported__=true!",
-          "async": false
-        }
-      },
-      "layer": {
-        "app/inventory/stock-adjustments/page": "action-browser"
-      }
-    },
-    "405493e6fcd39f78dfda0565e19b65bb61d0978a6c": {
-      "workers": {
-        "app/inventory/stock-adjustments/page": {
-          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Finchwara%2Fsawela%2Fapp%2Finventory%2Fstock-adjustments%2Factions.ts%22%2C%5B%7B%22id%22%3A%22400a5c54ec987ebc8e5b1e63cbd7eb43f98e1270f1%22%2C%22exportedName%22%3A%22deleteStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%22402baf9d7d7b91c1107db1a2d7793cca79dbdd6c77%22%2C%22exportedName%22%3A%22createStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%22405493e6fcd39f78dfda0565e19b65bb61d0978a6c%22%2C%22exportedName%22%3A%22submitStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2240a14b76fcadedf608063c27dfbced26cfd78bca99%22%2C%22exportedName%22%3A%22applyStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2240d7b5f8572b96bd92d8ed0b8c62bc188889024015%22%2C%22exportedName%22%3A%22approveStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2260c49b899a7de1b5df2c34302b90ce061634431cfb%22%2C%22exportedName%22%3A%22rejectStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2260f2a8a758cd6bd71399b6148a10c85d71704975be%22%2C%22exportedName%22%3A%22updateStockAdjustmentAction%22%7D%5D%5D%5D&__client_imported__=true!",
-          "async": false
-        }
-      },
-      "layer": {
-        "app/inventory/stock-adjustments/page": "action-browser"
-      }
-    },
-    "40a14b76fcadedf608063c27dfbced26cfd78bca99": {
-      "workers": {
-        "app/inventory/stock-adjustments/page": {
-          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Finchwara%2Fsawela%2Fapp%2Finventory%2Fstock-adjustments%2Factions.ts%22%2C%5B%7B%22id%22%3A%22400a5c54ec987ebc8e5b1e63cbd7eb43f98e1270f1%22%2C%22exportedName%22%3A%22deleteStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%22402baf9d7d7b91c1107db1a2d7793cca79dbdd6c77%22%2C%22exportedName%22%3A%22createStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%22405493e6fcd39f78dfda0565e19b65bb61d0978a6c%22%2C%22exportedName%22%3A%22submitStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2240a14b76fcadedf608063c27dfbced26cfd78bca99%22%2C%22exportedName%22%3A%22applyStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2240d7b5f8572b96bd92d8ed0b8c62bc188889024015%22%2C%22exportedName%22%3A%22approveStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2260c49b899a7de1b5df2c34302b90ce061634431cfb%22%2C%22exportedName%22%3A%22rejectStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2260f2a8a758cd6bd71399b6148a10c85d71704975be%22%2C%22exportedName%22%3A%22updateStockAdjustmentAction%22%7D%5D%5D%5D&__client_imported__=true!",
-          "async": false
-        }
-      },
-      "layer": {
-        "app/inventory/stock-adjustments/page": "action-browser"
-      }
-    },
-    "40d7b5f8572b96bd92d8ed0b8c62bc188889024015": {
-      "workers": {
-        "app/inventory/stock-adjustments/page": {
-          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Finchwara%2Fsawela%2Fapp%2Finventory%2Fstock-adjustments%2Factions.ts%22%2C%5B%7B%22id%22%3A%22400a5c54ec987ebc8e5b1e63cbd7eb43f98e1270f1%22%2C%22exportedName%22%3A%22deleteStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%22402baf9d7d7b91c1107db1a2d7793cca79dbdd6c77%22%2C%22exportedName%22%3A%22createStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%22405493e6fcd39f78dfda0565e19b65bb61d0978a6c%22%2C%22exportedName%22%3A%22submitStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2240a14b76fcadedf608063c27dfbced26cfd78bca99%22%2C%22exportedName%22%3A%22applyStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2240d7b5f8572b96bd92d8ed0b8c62bc188889024015%22%2C%22exportedName%22%3A%22approveStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2260c49b899a7de1b5df2c34302b90ce061634431cfb%22%2C%22exportedName%22%3A%22rejectStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2260f2a8a758cd6bd71399b6148a10c85d71704975be%22%2C%22exportedName%22%3A%22updateStockAdjustmentAction%22%7D%5D%5D%5D&__client_imported__=true!",
-          "async": false
-        }
-      },
-      "layer": {
-        "app/inventory/stock-adjustments/page": "action-browser"
-      }
-    },
-    "60c49b899a7de1b5df2c34302b90ce061634431cfb": {
-      "workers": {
-        "app/inventory/stock-adjustments/page": {
-          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Finchwara%2Fsawela%2Fapp%2Finventory%2Fstock-adjustments%2Factions.ts%22%2C%5B%7B%22id%22%3A%22400a5c54ec987ebc8e5b1e63cbd7eb43f98e1270f1%22%2C%22exportedName%22%3A%22deleteStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%22402baf9d7d7b91c1107db1a2d7793cca79dbdd6c77%22%2C%22exportedName%22%3A%22createStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%22405493e6fcd39f78dfda0565e19b65bb61d0978a6c%22%2C%22exportedName%22%3A%22submitStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2240a14b76fcadedf608063c27dfbced26cfd78bca99%22%2C%22exportedName%22%3A%22applyStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2240d7b5f8572b96bd92d8ed0b8c62bc188889024015%22%2C%22exportedName%22%3A%22approveStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2260c49b899a7de1b5df2c34302b90ce061634431cfb%22%2C%22exportedName%22%3A%22rejectStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2260f2a8a758cd6bd71399b6148a10c85d71704975be%22%2C%22exportedName%22%3A%22updateStockAdjustmentAction%22%7D%5D%5D%5D&__client_imported__=true!",
-          "async": false
-        }
-      },
-      "layer": {
-        "app/inventory/stock-adjustments/page": "action-browser"
-      }
-    },
-    "60f2a8a758cd6bd71399b6148a10c85d71704975be": {
-      "workers": {
-        "app/inventory/stock-adjustments/page": {
-          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Finchwara%2Fsawela%2Fapp%2Finventory%2Fstock-adjustments%2Factions.ts%22%2C%5B%7B%22id%22%3A%22400a5c54ec987ebc8e5b1e63cbd7eb43f98e1270f1%22%2C%22exportedName%22%3A%22deleteStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%22402baf9d7d7b91c1107db1a2d7793cca79dbdd6c77%22%2C%22exportedName%22%3A%22createStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%22405493e6fcd39f78dfda0565e19b65bb61d0978a6c%22%2C%22exportedName%22%3A%22submitStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2240a14b76fcadedf608063c27dfbced26cfd78bca99%22%2C%22exportedName%22%3A%22applyStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2240d7b5f8572b96bd92d8ed0b8c62bc188889024015%22%2C%22exportedName%22%3A%22approveStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2260c49b899a7de1b5df2c34302b90ce061634431cfb%22%2C%22exportedName%22%3A%22rejectStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2260f2a8a758cd6bd71399b6148a10c85d71704975be%22%2C%22exportedName%22%3A%22updateStockAdjustmentAction%22%7D%5D%5D%5D&__client_imported__=true!",
-          "async": false
-        }
-      },
-      "layer": {
-        "app/inventory/stock-adjustments/page": "action-browser"
-      }
+      "filename": "app/settings/user-management/actions.ts",
+      "exportedName": "deleteRole"
     }
   },
   "edge": {},
-  "encryptionKey": "h39dIegd/IIy+uKHNC9SPWc7/oYler6chZsvquzWAfs="
+  "encryptionKey": "XkvzxrdQPcvdT557mF5YMMubZvvgUv0K+PyvrkjwvCI="
 }

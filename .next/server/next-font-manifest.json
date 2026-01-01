@@ -1,1 +1,145 @@
-{"pages":{},"app":{"/Users/inchwara/sawela/app/layout":["static/media/de42cfb9a3b980ae-s.p.woff2"]},"appUsingSizeAdjust":true,"pagesUsingSizeAdjust":false}
+{
+  "app": {
+    "[project]/app/_not-found/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/admin/activity-logs/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/admin/companies/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/admin/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/admin/payments/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/admin/permissions/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/admin/pricing/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/admin/reports/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/admin/roles/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/admin/subscriptions/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/admin/users/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/analytics/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/breakages/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/contact/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/dashboard/modern/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/dashboard/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/dashboard/widgets/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/dispatch/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/fix-company/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/inventory/batches/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/inventory/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/inventory/products/[id]/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/inventory/products/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/inventory/serial-numbers/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/inventory/stock-adjustments/[id]/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/inventory/stock-adjustments/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/inventory/stock-counts/[id]/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/inventory/stock-counts/new/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/inventory/stock-counts/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/landing/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/pricing/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/product-receipt/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/profile/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/purchase-orders/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/repairs/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/requisitions/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/set-password/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/settings/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/settings/user-management/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/sign-in/[[...sign-in]]/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/sign-up/[[...sign-up]]/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/simple-debug/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/suppliers/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/test-permissions/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ],
+    "[project]/app/users/page": [
+      "static/media/f7aa21714c1c53f8-s.p.e3544bb0.woff2"
+    ]
+  },
+  "appUsingSizeAdjust": true,
+  "pages": {},
+  "pagesUsingSizeAdjust": false
+}
