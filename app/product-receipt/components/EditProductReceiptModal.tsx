@@ -45,20 +45,19 @@ import {
   Search,
   PlusCircle,
   Save,
-  Loader2
+  Loader2,
+  Truck,
+  Container,
+  Phone,
+  IdCard,
+  Car,
+  Calendar
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { 
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { usePermissions } from "@/hooks/use-permissions";
 import { ShieldAlert } from "lucide-react";
 
@@ -126,6 +125,16 @@ export function EditProductReceiptModal({
   const [document, setDocument] = useState<File | null>(null);
   const [items, setItems] = useState<ProductReceiptItem[]>([]);
   
+  // Logistics fields state
+  const [containerNumber, setContainerNumber] = useState("");
+  const [driverName, setDriverName] = useState("");
+  const [driverIdNumber, setDriverIdNumber] = useState("");
+  const [driverPhone, setDriverPhone] = useState("");
+  const [vehicleNumberPlate, setVehicleNumberPlate] = useState("");
+  const [vehicleDescription, setVehicleDescription] = useState("");
+  const [receiptDate, setReceiptDate] = useState("");
+  const [landedDate, setLandedDate] = useState("");
+  
   // Data arrays
   const [stores, setStores] = useState<Store[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
@@ -185,6 +194,15 @@ export function EditProductReceiptModal({
     setShowVariantModal(false);
     setShowCreateProductModal(false);
     setReceipt(null);
+    // Reset logistics fields
+    setContainerNumber("");
+    setDriverName("");
+    setDriverIdNumber("");
+    setDriverPhone("");
+    setVehicleNumberPlate("");
+    setVehicleDescription("");
+    setReceiptDate("");
+    setLandedDate("");
   };
 
   const loadReceipt = async () => {
@@ -200,6 +218,16 @@ export function EditProductReceiptModal({
       setDocumentType(receiptData.document_type || "");
       setSupplierId(receiptData.supplier_id || "");
       setStoreId(receiptData.store_id || "");
+      
+      // Populate logistics fields
+      setContainerNumber(receiptData.container_number || "");
+      setDriverName(receiptData.driver_name || "");
+      setDriverIdNumber(receiptData.driver_id_number || "");
+      setDriverPhone(receiptData.driver_phone || "");
+      setVehicleNumberPlate(receiptData.vehicle_number_plate || "");
+      setVehicleDescription(receiptData.vehicle_description || "");
+      setReceiptDate(receiptData.receipt_date || "");
+      setLandedDate(receiptData.landed_date || "");
       
       // Convert existing items to the correct format
       const convertedItems: ProductReceiptItem[] = receiptData.product_receipt_items?.map((item, index) => ({
@@ -507,6 +535,15 @@ export function EditProductReceiptModal({
           notes: item.notes,
         })),
         document: document,
+        // Logistics fields
+        container_number: containerNumber.trim() || null,
+        driver_name: driverName.trim() || null,
+        driver_id_number: driverIdNumber.trim() || null,
+        driver_phone: driverPhone.trim() || null,
+        vehicle_number_plate: vehicleNumberPlate.trim() || null,
+        vehicle_description: vehicleDescription.trim() || null,
+        receipt_date: receiptDate || null,
+        landed_date: landedDate || null,
       };
 
       await updateProductReceiptFull(productReceipt.id, payload);
@@ -539,19 +576,20 @@ export function EditProductReceiptModal({
   if (!productReceipt) return null;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Edit Product Receipt</DialogTitle>
-          <DialogDescription>
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="right" className="w-full sm:max-w-4xl flex flex-col h-full p-0">
+        <SheetHeader className="px-6 py-4 border-b bg-white sticky top-0 z-10">
+          <SheetTitle>Edit Product Receipt</SheetTitle>
+          <SheetDescription>
             Update the product receipt details
-          </DialogDescription>
-        </DialogHeader>
+          </SheetDescription>
+        </SheetHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 overflow-hidden">
             {/* Check if user has permission to edit before showing form */}
             {hasPermission("can_update_product_receipts") || isAdmin() ? (
               <>
+                <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="referenceNumber">Reference Number *</Label>
@@ -654,6 +692,134 @@ export function EditProductReceiptModal({
                           ))}
                         </SelectContent>
                       </Select>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Logistics & Delivery Details Card */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Truck className="h-5 w-5 text-indigo-600" />
+                      Logistics & Delivery Details
+                      <Badge variant="secondary" className="ml-2 text-xs">Optional</Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* Shipping Information */}
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2 border-b pb-2">
+                        <Container className="h-4 w-4" />
+                        Shipping Information
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="containerNumber">Container Number</Label>
+                          <Input
+                            id="containerNumber"
+                            value={containerNumber}
+                            onChange={(e) => setContainerNumber(e.target.value)}
+                            placeholder="e.g., CONT123456789"
+                            disabled={isSubmitting}
+                            maxLength={100}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="landedDate">Landed Date</Label>
+                          <Input
+                            id="landedDate"
+                            type="date"
+                            value={landedDate}
+                            onChange={(e) => setLandedDate(e.target.value)}
+                            disabled={isSubmitting}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="receiptDate">Receipt Date</Label>
+                          <Input
+                            id="receiptDate"
+                            type="date"
+                            value={receiptDate}
+                            onChange={(e) => setReceiptDate(e.target.value)}
+                            disabled={isSubmitting}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Driver Information */}
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2 border-b pb-2">
+                        <User className="h-4 w-4" />
+                        Driver Information
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="driverName">Driver Name</Label>
+                          <Input
+                            id="driverName"
+                            value={driverName}
+                            onChange={(e) => setDriverName(e.target.value)}
+                            placeholder="e.g., John Doe"
+                            disabled={isSubmitting}
+                            maxLength={100}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="driverIdNumber">ID Number</Label>
+                          <Input
+                            id="driverIdNumber"
+                            value={driverIdNumber}
+                            onChange={(e) => setDriverIdNumber(e.target.value)}
+                            placeholder="e.g., ID12345678"
+                            disabled={isSubmitting}
+                            maxLength={50}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="driverPhone">Phone Number</Label>
+                          <Input
+                            id="driverPhone"
+                            value={driverPhone}
+                            onChange={(e) => setDriverPhone(e.target.value)}
+                            placeholder="e.g., +254712345678"
+                            disabled={isSubmitting}
+                            maxLength={20}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Vehicle Information */}
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2 border-b pb-2">
+                        <Car className="h-4 w-4" />
+                        Vehicle Information
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="vehicleNumberPlate">Number Plate</Label>
+                          <Input
+                            id="vehicleNumberPlate"
+                            value={vehicleNumberPlate}
+                            onChange={(e) => setVehicleNumberPlate(e.target.value)}
+                            placeholder="e.g., KAA 123A"
+                            disabled={isSubmitting}
+                            maxLength={20}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="vehicleDescription">Vehicle Description</Label>
+                          <Input
+                            id="vehicleDescription"
+                            value={vehicleDescription}
+                            onChange={(e) => setVehicleDescription(e.target.value)}
+                            placeholder="e.g., White Toyota Hilux"
+                            disabled={isSubmitting}
+                            maxLength={255}
+                          />
+                        </div>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -1014,9 +1180,34 @@ export function EditProductReceiptModal({
                     )}
                   </CardContent>
                 </Card>
+                </div>
+
+                <SheetFooter className="px-6 py-4 border-t bg-white sticky bottom-0">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => onOpenChange(false)}
+                    disabled={isSubmitting}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Updating...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="mr-2 h-4 w-4" />
+                        Update Receipt
+                      </>
+                    )}
+                  </Button>
+                </SheetFooter>
               </>
             ) : (
-              <div className="flex flex-col items-center justify-center py-8 text-center">
+              <div className="flex flex-col items-center justify-center py-8 text-center px-6">
                 <ShieldAlert className="h-12 w-12 text-red-500 mb-4" />
                 <h3 className="text-lg font-semibold mb-2">Access Denied</h3>
                 <p className="text-muted-foreground">
@@ -1033,7 +1224,7 @@ export function EditProductReceiptModal({
             )}
           </form>
         </Form>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }

@@ -252,9 +252,9 @@ export function ApproveBreakageModal({
                       <div key={index} className="bg-gray-50 rounded-lg p-3">
                         <div className="flex items-start justify-between">
                           <div>
-                            <p className="font-medium">{item.product?.name}</p>
-                            {item.variant && (
-                              <p className="text-sm text-gray-600">Variant: {item.variant.name}</p>
+                            <p className="font-medium">{item.product_name || item.assignableItem?.product_name || item.product?.name || 'Product'}</p>
+                            {(item.variant_name || item.assignableItem?.variant_name || item.variant) && (
+                              <p className="text-sm text-gray-600">Variant: {item.variant_name || item.assignableItem?.variant_name || item.variant?.name}</p>
                             )}
                             <p className="text-xs text-gray-500">SKU: {item.product?.sku}</p>
                           </div>

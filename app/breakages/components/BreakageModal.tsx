@@ -24,9 +24,10 @@ import {
   XCircle,
   Edit,
   Trash2,
-  RefreshCw
+  RefreshCw,
+  Loader2
 } from "lucide-react";
-import { type Breakage } from "@/lib/breakages";
+import { type Breakage, getBreakage } from "@/lib/breakages";
 import { useToast } from "@/hooks/use-toast";
 
 interface BreakageModalProps {
@@ -52,12 +53,37 @@ export function BreakageModal({
   onApproveBreakage,
   onCreateDispatch,
 }: BreakageModalProps) {
-  const [currentBreakage, setCurrentBreakage] = useState<Breakage | null>(initialBreakage);
+  const [currentBreakage, setCurrentBreakage] = useState<Breakage | null>(null);
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
+  // Fetch full breakage details when modal opens
   useEffect(() => {
-    setCurrentBreakage(initialBreakage);
-  }, [initialBreakage]);
+    const fetchBreakageDetails = async () => {
+      if (open && initialBreakage?.id) {
+        setLoading(true);
+        try {
+          const fullBreakage = await getBreakage(initialBreakage.id);
+          setCurrentBreakage(fullBreakage);
+        } catch (error) {
+          console.error('Error fetching breakage details:', error);
+          // Fall back to initial breakage data if fetch fails
+          setCurrentBreakage(initialBreakage);
+          toast({
+            title: "Warning",
+            description: "Could not fetch full breakage details",
+            variant: "destructive",
+          });
+        } finally {
+          setLoading(false);
+        }
+      } else if (!open) {
+        setCurrentBreakage(null);
+      }
+    };
+
+    fetchBreakageDetails();
+  }, [open, initialBreakage?.id]);
 
   const canEdit = currentBreakage?.status === "pending" && currentBreakage?.approval_status === "pending";
   const canDelete = currentBreakage?.status === "pending" && currentBreakage?.approval_status === "pending";
@@ -117,7 +143,11 @@ export function BreakageModal({
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto py-4 space-y-6">
-          {currentBreakage ? (
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+            </div>
+          ) : currentBreakage ? (
             <>
               {/* Breakage Header */}
               <Card>
@@ -227,10 +257,12 @@ export function BreakageModal({
                                 <Package className="h-6 w-6 text-gray-500" />
                               </div>
                               <div className="flex-1">
-                                <h4 className="font-medium">{item.product?.name || 'Product'}</h4>
+                                <h4 className="font-medium">{item.product_name || item.assignableItem?.product_name || item.product?.name || 'Product'}</h4>
                                 <div className="flex items-center space-x-4 text-sm text-gray-500 mt-1">
                                   <span>Cause: {item.cause}</span>
-                                  {item.variant && <span>Variant: {item.variant.name}</span>}
+                                  {(item.variant_name || item.assignableItem?.variant_name || item.variant) && (
+                                    <span>Variant: {item.variant_name || item.assignableItem?.variant_name || item.variant?.name}</span>
+                                  )}
                                   {item.replacement_requested && (
                                     <Badge variant="outline" className="border-orange-500 text-orange-700">
                                       Replacement Requested

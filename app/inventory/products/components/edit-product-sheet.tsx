@@ -758,7 +758,7 @@ export function EditProductSheet({ open, onOpenChange, product, onProductUpdated
         className="w-full sm:max-w-4xl flex flex-col"
         style={{ maxWidth: '800px' }}
       >
-        <SheetHeader>
+        <SheetHeader className="sticky top-0 bg-background z-10 pb-4 border-b">
           <SheetTitle className="flex items-center gap-2">
             <Package className="h-5 w-5" />
             Edit Product
@@ -771,7 +771,7 @@ export function EditProductSheet({ open, onOpenChange, product, onProductUpdated
           </div>
         ) : (
           <>
-          <div className="flex-1 overflow-y-auto p-6">
+          <div className="flex-1 overflow-y-auto py-6">
             <form id="edit-product-form" onSubmit={handleSubmit} className="space-y-6">
             {/* Basic Information */}
             <Card>
@@ -1633,8 +1633,8 @@ export function EditProductSheet({ open, onOpenChange, product, onProductUpdated
           </form>
         </div>
         
-        {/* Fixed Footer */}
-        <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4">
+        {/* Sticky Footer */}
+        <div className="sticky bottom-0 bg-background border-t pt-4">
           <div className="flex justify-end space-x-2">
             <Button
               type="button"

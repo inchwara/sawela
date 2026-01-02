@@ -155,6 +155,15 @@ export interface ProductReceiptDetails {
   supplier?: Supplier | null;
   contractor?: any | null;
   recipient: Recipient;
+  // Logistics fields
+  container_number?: string | null;
+  driver_name?: string | null;
+  driver_id_number?: string | null;
+  driver_phone?: string | null;
+  vehicle_number_plate?: string | null;
+  vehicle_description?: string | null;
+  receipt_date?: string | null;
+  landed_date?: string | null;
 }
 
 // Types for Product Receipt and Variant
@@ -190,6 +199,15 @@ export interface ProductReceipt {
     email?: string;
     [key: string]: any;
   } | null;
+  // Logistics fields
+  container_number?: string | null;
+  driver_name?: string | null;
+  driver_id_number?: string | null;
+  driver_phone?: string | null;
+  vehicle_number_plate?: string | null;
+  vehicle_description?: string | null;
+  receipt_date?: string | null;
+  landed_date?: string | null;
 }
 
 // Create Product Receipt (single or batch)
@@ -215,6 +233,15 @@ export async function createProductReceipt(payload: {
     custom_attributes?: Record<string, any>;
   }>;
   document?: File | null;
+  // Logistics fields
+  container_number?: string;
+  driver_name?: string;
+  driver_id_number?: string;
+  driver_phone?: string;
+  vehicle_number_plate?: string;
+  vehicle_description?: string;
+  receipt_date?: string;
+  landed_date?: string;
 }): Promise<ProductReceiptApiResponse> {
   try {
     // If there's a document, we need to use FormData
@@ -228,6 +255,16 @@ export async function createProductReceipt(payload: {
       formData.append('document_type', payload.document_type);
       formData.append('reference_number', payload.reference_number);
       formData.append('store_id', payload.store_id);
+      
+      // Add logistics fields
+      if (payload.container_number) formData.append('container_number', payload.container_number);
+      if (payload.driver_name) formData.append('driver_name', payload.driver_name);
+      if (payload.driver_id_number) formData.append('driver_id_number', payload.driver_id_number);
+      if (payload.driver_phone) formData.append('driver_phone', payload.driver_phone);
+      if (payload.vehicle_number_plate) formData.append('vehicle_number_plate', payload.vehicle_number_plate);
+      if (payload.vehicle_description) formData.append('vehicle_description', payload.vehicle_description);
+      if (payload.receipt_date) formData.append('receipt_date', payload.receipt_date);
+      if (payload.landed_date) formData.append('landed_date', payload.landed_date);
       
       // Add items array
       formData.append('items', JSON.stringify(payload.items));
@@ -244,7 +281,16 @@ export async function createProductReceipt(payload: {
         document_type: payload.document_type,
         reference_number: payload.reference_number,
         store_id: payload.store_id,
-        items: payload.items
+        items: payload.items,
+        // Logistics fields
+        ...(payload.container_number && { container_number: payload.container_number }),
+        ...(payload.driver_name && { driver_name: payload.driver_name }),
+        ...(payload.driver_id_number && { driver_id_number: payload.driver_id_number }),
+        ...(payload.driver_phone && { driver_phone: payload.driver_phone }),
+        ...(payload.vehicle_number_plate && { vehicle_number_plate: payload.vehicle_number_plate }),
+        ...(payload.vehicle_description && { vehicle_description: payload.vehicle_description }),
+        ...(payload.receipt_date && { receipt_date: payload.receipt_date }),
+        ...(payload.landed_date && { landed_date: payload.landed_date }),
       };
     }
 
@@ -363,6 +409,15 @@ export async function updateProductReceiptFull(id: string, payload: {
     custom_attributes?: Record<string, any>;
   }>;
   document?: File | null;
+  // Logistics fields
+  container_number?: string | null;
+  driver_name?: string | null;
+  driver_id_number?: string | null;
+  driver_phone?: string | null;
+  vehicle_number_plate?: string | null;
+  vehicle_description?: string | null;
+  receipt_date?: string | null;
+  landed_date?: string | null;
 }): Promise<ProductReceiptApiResponse> {
   try {
     // If there's a document, we need to use FormData
@@ -376,6 +431,16 @@ export async function updateProductReceiptFull(id: string, payload: {
       formData.append('document_type', payload.document_type);
       formData.append('reference_number', payload.reference_number);
       formData.append('store_id', payload.store_id);
+      
+      // Add logistics fields
+      if (payload.container_number) formData.append('container_number', payload.container_number);
+      if (payload.driver_name) formData.append('driver_name', payload.driver_name);
+      if (payload.driver_id_number) formData.append('driver_id_number', payload.driver_id_number);
+      if (payload.driver_phone) formData.append('driver_phone', payload.driver_phone);
+      if (payload.vehicle_number_plate) formData.append('vehicle_number_plate', payload.vehicle_number_plate);
+      if (payload.vehicle_description) formData.append('vehicle_description', payload.vehicle_description);
+      if (payload.receipt_date) formData.append('receipt_date', payload.receipt_date);
+      if (payload.landed_date) formData.append('landed_date', payload.landed_date);
       
       // Add items array
       formData.append('items', JSON.stringify(payload.items));
@@ -392,7 +457,16 @@ export async function updateProductReceiptFull(id: string, payload: {
         document_type: payload.document_type,
         reference_number: payload.reference_number,
         store_id: payload.store_id,
-        items: payload.items
+        items: payload.items,
+        // Logistics fields
+        container_number: payload.container_number || null,
+        driver_name: payload.driver_name || null,
+        driver_id_number: payload.driver_id_number || null,
+        driver_phone: payload.driver_phone || null,
+        vehicle_number_plate: payload.vehicle_number_plate || null,
+        vehicle_description: payload.vehicle_description || null,
+        receipt_date: payload.receipt_date || null,
+        landed_date: payload.landed_date || null,
       };
     }
 

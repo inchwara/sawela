@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getProductReceipt, ProductReceiptApiResponse } from "@/lib/productreceipt";
-import { Package, User, Store, FileText, Calendar, Hash, Eye, Edit, Download } from "lucide-react";
+import { Package, User, Store, FileText, Calendar, Hash, Eye, Edit, Download, Truck, Container, Phone, IdCard, Car } from "lucide-react";
 import { formatCurrency, cn } from "@/lib/utils";
 import { DocumentViewerModal } from "./DocumentViewerModal";
 
@@ -229,6 +229,121 @@ export function ProductReceiptDetailsModal({
                           <div className="flex justify-between">
                             <span className="text-gray-600">Contact Person</span>
                             <span className="font-medium">{receipt.supplier.contact_person}</span>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Logistics & Delivery Details */}
+                {(receipt.container_number || receipt.driver_name || receipt.driver_id_number || 
+                  receipt.driver_phone || receipt.vehicle_number_plate || receipt.vehicle_description || 
+                  receipt.receipt_date || receipt.landed_date) && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Truck className="h-5 w-5 text-indigo-600" />
+                        Logistics & Delivery Details
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Container & Dates Section */}
+                        {(receipt.container_number || receipt.receipt_date || receipt.landed_date) && (
+                          <div className="space-y-3">
+                            <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2 border-b pb-2">
+                              <Container className="h-4 w-4" />
+                              Shipping Information
+                            </h4>
+                            {receipt.container_number && (
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">Container Number</span>
+                                <span className="font-medium font-mono">{receipt.container_number}</span>
+                              </div>
+                            )}
+                            {receipt.landed_date && (
+                              <div className="flex justify-between">
+                                <span className="text-gray-600 flex items-center gap-1">
+                                  <Calendar className="h-3.5 w-3.5" />
+                                  Landed Date
+                                </span>
+                                <span className="font-medium">
+                                  {new Date(receipt.landed_date).toLocaleDateString()}
+                                </span>
+                              </div>
+                            )}
+                            {receipt.receipt_date && (
+                              <div className="flex justify-between">
+                                <span className="text-gray-600 flex items-center gap-1">
+                                  <Calendar className="h-3.5 w-3.5" />
+                                  Receipt Date
+                                </span>
+                                <span className="font-medium">
+                                  {new Date(receipt.receipt_date).toLocaleDateString()}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Driver Information Section */}
+                        {(receipt.driver_name || receipt.driver_id_number || receipt.driver_phone) && (
+                          <div className="space-y-3">
+                            <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2 border-b pb-2">
+                              <User className="h-4 w-4" />
+                              Driver Information
+                            </h4>
+                            {receipt.driver_name && (
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">Driver Name</span>
+                                <span className="font-medium">{receipt.driver_name}</span>
+                              </div>
+                            )}
+                            {receipt.driver_id_number && (
+                              <div className="flex justify-between">
+                                <span className="text-gray-600 flex items-center gap-1">
+                                  <IdCard className="h-3.5 w-3.5" />
+                                  ID Number
+                                </span>
+                                <span className="font-medium font-mono">{receipt.driver_id_number}</span>
+                              </div>
+                            )}
+                            {receipt.driver_phone && (
+                              <div className="flex justify-between">
+                                <span className="text-gray-600 flex items-center gap-1">
+                                  <Phone className="h-3.5 w-3.5" />
+                                  Phone
+                                </span>
+                                <span className="font-medium">{receipt.driver_phone}</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Vehicle Information Section */}
+                        {(receipt.vehicle_number_plate || receipt.vehicle_description) && (
+                          <div className="space-y-3 md:col-span-2">
+                            <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2 border-b pb-2">
+                              <Car className="h-4 w-4" />
+                              Vehicle Information
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {receipt.vehicle_number_plate && (
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600">Number Plate</span>
+                                  <span className="font-medium font-mono bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded">
+                                    {receipt.vehicle_number_plate}
+                                  </span>
+                                </div>
+                              )}
+                              {receipt.vehicle_description && (
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600">Vehicle Description</span>
+                                  <span className="font-medium">{receipt.vehicle_description}</span>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         )}
                       </div>
