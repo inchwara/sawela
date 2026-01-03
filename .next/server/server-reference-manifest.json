@@ -21,6 +21,83 @@
       "layer": {
         "app/product-receipt/page": "action-browser"
       }
+    },
+    "40660f4dc84abbc77c5ce247355aebdcbc53082dd5": {
+      "workers": {
+        "app/inventory/stock-adjustments/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Finchwara%2Fsawela%2Fapp%2Finventory%2Fstock-adjustments%2Factions.ts%22%2C%5B%7B%22id%22%3A%2240660f4dc84abbc77c5ce247355aebdcbc53082dd5%22%2C%22exportedName%22%3A%22createStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%224068439381f2defe305d4e9ed791d1445e7d936f53%22%2C%22exportedName%22%3A%22applyStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2240841b25d91a094221933b119c050113fbd785e55f%22%2C%22exportedName%22%3A%22approveStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2240c59d55f142e8794b5b5f5972ed381ec9a83d7eef%22%2C%22exportedName%22%3A%22submitStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2240df0c05262b8b0eff83cd20b7bc6099466c0ebfc1%22%2C%22exportedName%22%3A%22deleteStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%226076361e98cf751a1dc4fb32da2f45232296543684%22%2C%22exportedName%22%3A%22rejectStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%22607e298aeeb347b4fb2d32afe5ac4436910ce10662%22%2C%22exportedName%22%3A%22updateStockAdjustmentAction%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/inventory/stock-adjustments/page": "action-browser"
+      }
+    },
+    "4068439381f2defe305d4e9ed791d1445e7d936f53": {
+      "workers": {
+        "app/inventory/stock-adjustments/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Finchwara%2Fsawela%2Fapp%2Finventory%2Fstock-adjustments%2Factions.ts%22%2C%5B%7B%22id%22%3A%2240660f4dc84abbc77c5ce247355aebdcbc53082dd5%22%2C%22exportedName%22%3A%22createStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%224068439381f2defe305d4e9ed791d1445e7d936f53%22%2C%22exportedName%22%3A%22applyStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2240841b25d91a094221933b119c050113fbd785e55f%22%2C%22exportedName%22%3A%22approveStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2240c59d55f142e8794b5b5f5972ed381ec9a83d7eef%22%2C%22exportedName%22%3A%22submitStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2240df0c05262b8b0eff83cd20b7bc6099466c0ebfc1%22%2C%22exportedName%22%3A%22deleteStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%226076361e98cf751a1dc4fb32da2f45232296543684%22%2C%22exportedName%22%3A%22rejectStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%22607e298aeeb347b4fb2d32afe5ac4436910ce10662%22%2C%22exportedName%22%3A%22updateStockAdjustmentAction%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/inventory/stock-adjustments/page": "action-browser"
+      }
+    },
+    "40841b25d91a094221933b119c050113fbd785e55f": {
+      "workers": {
+        "app/inventory/stock-adjustments/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Finchwara%2Fsawela%2Fapp%2Finventory%2Fstock-adjustments%2Factions.ts%22%2C%5B%7B%22id%22%3A%2240660f4dc84abbc77c5ce247355aebdcbc53082dd5%22%2C%22exportedName%22%3A%22createStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%224068439381f2defe305d4e9ed791d1445e7d936f53%22%2C%22exportedName%22%3A%22applyStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2240841b25d91a094221933b119c050113fbd785e55f%22%2C%22exportedName%22%3A%22approveStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2240c59d55f142e8794b5b5f5972ed381ec9a83d7eef%22%2C%22exportedName%22%3A%22submitStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2240df0c05262b8b0eff83cd20b7bc6099466c0ebfc1%22%2C%22exportedName%22%3A%22deleteStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%226076361e98cf751a1dc4fb32da2f45232296543684%22%2C%22exportedName%22%3A%22rejectStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%22607e298aeeb347b4fb2d32afe5ac4436910ce10662%22%2C%22exportedName%22%3A%22updateStockAdjustmentAction%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/inventory/stock-adjustments/page": "action-browser"
+      }
+    },
+    "40c59d55f142e8794b5b5f5972ed381ec9a83d7eef": {
+      "workers": {
+        "app/inventory/stock-adjustments/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Finchwara%2Fsawela%2Fapp%2Finventory%2Fstock-adjustments%2Factions.ts%22%2C%5B%7B%22id%22%3A%2240660f4dc84abbc77c5ce247355aebdcbc53082dd5%22%2C%22exportedName%22%3A%22createStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%224068439381f2defe305d4e9ed791d1445e7d936f53%22%2C%22exportedName%22%3A%22applyStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2240841b25d91a094221933b119c050113fbd785e55f%22%2C%22exportedName%22%3A%22approveStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2240c59d55f142e8794b5b5f5972ed381ec9a83d7eef%22%2C%22exportedName%22%3A%22submitStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2240df0c05262b8b0eff83cd20b7bc6099466c0ebfc1%22%2C%22exportedName%22%3A%22deleteStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%226076361e98cf751a1dc4fb32da2f45232296543684%22%2C%22exportedName%22%3A%22rejectStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%22607e298aeeb347b4fb2d32afe5ac4436910ce10662%22%2C%22exportedName%22%3A%22updateStockAdjustmentAction%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/inventory/stock-adjustments/page": "action-browser"
+      }
+    },
+    "40df0c05262b8b0eff83cd20b7bc6099466c0ebfc1": {
+      "workers": {
+        "app/inventory/stock-adjustments/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Finchwara%2Fsawela%2Fapp%2Finventory%2Fstock-adjustments%2Factions.ts%22%2C%5B%7B%22id%22%3A%2240660f4dc84abbc77c5ce247355aebdcbc53082dd5%22%2C%22exportedName%22%3A%22createStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%224068439381f2defe305d4e9ed791d1445e7d936f53%22%2C%22exportedName%22%3A%22applyStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2240841b25d91a094221933b119c050113fbd785e55f%22%2C%22exportedName%22%3A%22approveStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2240c59d55f142e8794b5b5f5972ed381ec9a83d7eef%22%2C%22exportedName%22%3A%22submitStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2240df0c05262b8b0eff83cd20b7bc6099466c0ebfc1%22%2C%22exportedName%22%3A%22deleteStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%226076361e98cf751a1dc4fb32da2f45232296543684%22%2C%22exportedName%22%3A%22rejectStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%22607e298aeeb347b4fb2d32afe5ac4436910ce10662%22%2C%22exportedName%22%3A%22updateStockAdjustmentAction%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/inventory/stock-adjustments/page": "action-browser"
+      }
+    },
+    "6076361e98cf751a1dc4fb32da2f45232296543684": {
+      "workers": {
+        "app/inventory/stock-adjustments/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Finchwara%2Fsawela%2Fapp%2Finventory%2Fstock-adjustments%2Factions.ts%22%2C%5B%7B%22id%22%3A%2240660f4dc84abbc77c5ce247355aebdcbc53082dd5%22%2C%22exportedName%22%3A%22createStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%224068439381f2defe305d4e9ed791d1445e7d936f53%22%2C%22exportedName%22%3A%22applyStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2240841b25d91a094221933b119c050113fbd785e55f%22%2C%22exportedName%22%3A%22approveStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2240c59d55f142e8794b5b5f5972ed381ec9a83d7eef%22%2C%22exportedName%22%3A%22submitStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2240df0c05262b8b0eff83cd20b7bc6099466c0ebfc1%22%2C%22exportedName%22%3A%22deleteStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%226076361e98cf751a1dc4fb32da2f45232296543684%22%2C%22exportedName%22%3A%22rejectStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%22607e298aeeb347b4fb2d32afe5ac4436910ce10662%22%2C%22exportedName%22%3A%22updateStockAdjustmentAction%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/inventory/stock-adjustments/page": "action-browser"
+      }
+    },
+    "607e298aeeb347b4fb2d32afe5ac4436910ce10662": {
+      "workers": {
+        "app/inventory/stock-adjustments/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Finchwara%2Fsawela%2Fapp%2Finventory%2Fstock-adjustments%2Factions.ts%22%2C%5B%7B%22id%22%3A%2240660f4dc84abbc77c5ce247355aebdcbc53082dd5%22%2C%22exportedName%22%3A%22createStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%224068439381f2defe305d4e9ed791d1445e7d936f53%22%2C%22exportedName%22%3A%22applyStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2240841b25d91a094221933b119c050113fbd785e55f%22%2C%22exportedName%22%3A%22approveStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2240c59d55f142e8794b5b5f5972ed381ec9a83d7eef%22%2C%22exportedName%22%3A%22submitStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%2240df0c05262b8b0eff83cd20b7bc6099466c0ebfc1%22%2C%22exportedName%22%3A%22deleteStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%226076361e98cf751a1dc4fb32da2f45232296543684%22%2C%22exportedName%22%3A%22rejectStockAdjustmentAction%22%7D%2C%7B%22id%22%3A%22607e298aeeb347b4fb2d32afe5ac4436910ce10662%22%2C%22exportedName%22%3A%22updateStockAdjustmentAction%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/inventory/stock-adjustments/page": "action-browser"
+      }
     }
   },
   "edge": {},

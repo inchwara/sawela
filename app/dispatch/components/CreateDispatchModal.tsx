@@ -28,7 +28,8 @@ import {
   Plus,
   Minus,
   Loader2,
-  Search
+  Search,
+  X
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn, toSentenceCase } from "@/lib/utils";

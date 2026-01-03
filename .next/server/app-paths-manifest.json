@@ -1,7 +1,9 @@
 {
   "/sign-in/[[...sign-in]]/page": "app/sign-in/[[...sign-in]]/page.js",
-  "/requisitions/page": "app/requisitions/page.js",
+  "/page": "app/page.js",
+  "/settings/page": "app/settings/page.js",
+  "/purchase-orders/page": "app/purchase-orders/page.js",
   "/dashboard/page": "app/dashboard/page.js",
-  "/users/page": "app/users/page.js",
-  "/breakages/page": "app/breakages/page.js"
+  "/dispatch/page": "app/dispatch/page.js",
+  "/inventory/products/page": "app/inventory/products/page.js"
 }
