@@ -1,12 +1,51 @@
+# Dependencies
 node_modules
-.next/trace
-.next/cache/webpack/client-development/3.pack.gz
-.next/cache/webpack/client-development/16.pack.gz
-.next/cache/webpack/client-development/index.pack.gz
-.next/cache/webpack/client-development/index.pack.gz.old
-.next/static/chunks/webpack.js
-.next/static/chunks/app/layout.js
-.next/static/webpack/90c6c659b1f806d3.webpack.hot-update.json
-.next/static/webpack/webpack.90c6c659b1f806d3.hot-update.js
-.next/static/webpack/app/layout.90c6c659b1f806d3.hot-update.js
+/.pnp
+.pnp.js
+
+# Next.js build output
 .next
+out
+
+# Production build
+build
+dist
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Vercel
+.vercel
+
+# IDE / Editor
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Testing
+coverage
+.nyc_output
+
+# Misc
+*.pem
+*.log
