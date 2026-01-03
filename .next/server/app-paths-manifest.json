@@ -1,9 +1,0 @@
-{
-  "/_not-found/page": "app/_not-found/page.js",
-  "/sign-in/[[...sign-in]]/page": "app/sign-in/[[...sign-in]]/page.js",
-  "/dispatch/page": "app/dispatch/page.js",
-  "/purchase-orders/page": "app/purchase-orders/page.js",
-  "/dashboard/page": "app/dashboard/page.js",
-  "/inventory/products/page": "app/inventory/products/page.js",
-  "/settings/page": "app/settings/page.js"
-}
