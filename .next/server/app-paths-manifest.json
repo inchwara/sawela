@@ -1,7 +1,0 @@
-{
-  "/sign-in/[[...sign-in]]/page": "app/sign-in/[[...sign-in]]/page.js",
-  "/profile/page": "app/profile/page.js",
-  "/dashboard/page": "app/dashboard/page.js",
-  "/inventory/products/page": "app/inventory/products/page.js",
-  "/settings/page": "app/settings/page.js"
-}

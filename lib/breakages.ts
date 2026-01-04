@@ -17,6 +17,9 @@ export interface BreakageItem {
   updated_at: string;
   product?: any; // Will be populated by API
   variant?: any | null;
+  // Direct product/variant names from API
+  product_name?: string;
+  variant_name?: string | null;
   // Added for assignable item support
   assignable_item_id: string;
   assignableItem?: AssignableItem;
@@ -99,8 +102,8 @@ export async function createBreakage(payload: {
 
 // View Breakage Details
 export async function getBreakage(id: string): Promise<Breakage> {
-  const response = await apiCall<{ data: Breakage }>(`/whs/breakages/${id}`, "GET", undefined, true);
-  return response.data;
+  const response = await apiCall<{ status: string; breakage: Breakage }>(`/whs/breakages/${id}`, "GET", undefined, true);
+  return response.breakage;
 }
 
 // Approve Breakage

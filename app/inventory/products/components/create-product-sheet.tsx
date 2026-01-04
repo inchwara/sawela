@@ -10,9 +10,10 @@ import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { Loader2, Plus, Image as ImageIcon, Package, Trash2, X, Check, ChevronsUpDown } from "lucide-react"
+import { Loader2, Plus, Image as ImageIcon, Package, Trash2, X, Check, ChevronsUpDown, AlertTriangle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { createProduct, type PackagingUnit } from "@/lib/products"
+import { createProduct, getProducts, type PackagingUnit, type Product } from "@/lib/products"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { getProductCategories } from "@/lib/product-categories"
 import { getSuppliers } from "@/lib/suppliers"
 import { getStores } from "@/lib/stores"
@@ -175,6 +176,11 @@ export function CreateProductSheet({ open, onOpenChange, onProductCreated }: Cre
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false)
   const [categorySearchOpen, setCategorySearchOpen] = useState(false)
   
+  // Similar products detection
+  const [similarProducts, setSimilarProducts] = useState<Product[]>([])
+  const [isCheckingSimilar, setIsCheckingSimilar] = useState(false)
+  const similarCheckTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  
   // Load dropdown data
   useEffect(() => {
     if (open) {
@@ -305,6 +311,100 @@ export function CreateProductSheet({ open, onOpenChange, onProductCreated }: Cre
       description: `${newCategory.name} has been added successfully`
     })
   }
+  
+  // Calculate string similarity using Levenshtein distance
+  const calculateSimilarity = (str1: string, str2: string): number => {
+    const s1 = str1.toLowerCase().trim()
+    const s2 = str2.toLowerCase().trim()
+    
+    if (s1 === s2) return 1
+    if (s1.length === 0 || s2.length === 0) return 0
+    
+    // Check if one string contains the other
+    if (s1.includes(s2) || s2.includes(s1)) return 0.8
+    
+    // Levenshtein distance calculation
+    const matrix: number[][] = []
+    
+    for (let i = 0; i <= s1.length; i++) {
+      matrix[i] = [i]
+    }
+    for (let j = 0; j <= s2.length; j++) {
+      matrix[0][j] = j
+    }
+    
+    for (let i = 1; i <= s1.length; i++) {
+      for (let j = 1; j <= s2.length; j++) {
+        const cost = s1[i - 1] === s2[j - 1] ? 0 : 1
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j] + 1,
+          matrix[i][j - 1] + 1,
+          matrix[i - 1][j - 1] + cost
+        )
+      }
+    }
+    
+    const maxLength = Math.max(s1.length, s2.length)
+    return 1 - matrix[s1.length][s2.length] / maxLength
+  }
+  
+  // Check for similar products when name changes
+  const checkSimilarProducts = useCallback(async (productName: string) => {
+    if (!productName || productName.trim().length < 2) {
+      setSimilarProducts([])
+      return
+    }
+    
+    setIsCheckingSimilar(true)
+    try {
+      // Search for products with similar names
+      const result = await getProducts(1, 50, { search: productName.trim() })
+      
+      if (result.data && result.data.length > 0) {
+        // Filter products with similarity score > 0.5 (50% similar)
+        const similar = result.data.filter(product => {
+          const similarity = calculateSimilarity(productName, product.name)
+          return similarity > 0.5
+        }).slice(0, 5) // Limit to 5 similar products
+        
+        setSimilarProducts(similar)
+      } else {
+        setSimilarProducts([])
+      }
+    } catch (error) {
+      console.error("Error checking similar products:", error)
+      setSimilarProducts([])
+    } finally {
+      setIsCheckingSimilar(false)
+    }
+  }, [])
+  
+  // Debounced product name change handler
+  const handleProductNameChange = (value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      name: value
+    }))
+    
+    // Clear previous timeout
+    if (similarCheckTimeoutRef.current) {
+      clearTimeout(similarCheckTimeoutRef.current)
+    }
+    
+    // Set new timeout for debounced search (500ms delay)
+    similarCheckTimeoutRef.current = setTimeout(() => {
+      checkSimilarProducts(value)
+    }, 500)
+  }
+  
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (similarCheckTimeoutRef.current) {
+        clearTimeout(similarCheckTimeoutRef.current)
+      }
+    }
+  }, [])
   
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({
@@ -795,6 +895,9 @@ export function CreateProductSheet({ open, onOpenChange, onProductCreated }: Cre
           store_id: ""
         })
         
+        // Clear similar products
+        setSimilarProducts([])
+        
         setPackagingUnits([
           {
             unit_name: "Piece",
@@ -853,10 +956,10 @@ export function CreateProductSheet({ open, onOpenChange, onProductCreated }: Cre
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent 
-        className="w-full sm:max-w-4xl overflow-y-auto"
+        className="w-full sm:max-w-4xl flex flex-col"
         style={{ maxWidth: '800px' }}
       >
-        <SheetHeader>
+        <SheetHeader className="sticky top-0 bg-background z-10 pb-4 border-b">
           <SheetTitle className="flex items-center gap-2">
             <Plus className="h-5 w-5" />
             Add New Product
@@ -868,7 +971,9 @@ export function CreateProductSheet({ open, onOpenChange, onProductCreated }: Cre
             <Loader2 className="h-8 w-8 animate-spin" />
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="mt-6 space-y-6">
+          <>
+          <div className="flex-1 overflow-y-auto py-6">
+          <form id="create-product-form" onSubmit={handleSubmit} className="space-y-6">
             {/* Basic Information */}
             <Card>
               <CardHeader>
@@ -878,13 +983,43 @@ export function CreateProductSheet({ open, onOpenChange, onProductCreated }: Cre
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">Product Name *</Label>
-                    <Input
-                      id="name"
-                      value={formData.name}
-                      onChange={(e) => handleInputChange("name", e.target.value)}
-                      placeholder="Enter product name"
-                      required
-                    />
+                    <div className="relative">
+                      <Input
+                        id="name"
+                        value={formData.name}
+                        onChange={(e) => handleProductNameChange(e.target.value)}
+                        placeholder="Enter product name"
+                        required
+                      />
+                      {isCheckingSimilar && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                        </div>
+                      )}
+                    </div>
+                    {/* Similar Products Alert */}
+                    {similarProducts.length > 0 && (
+                      <Alert variant="default" className="mt-2 border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
+                        <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                        <AlertTitle className="text-amber-800 dark:text-amber-200 text-sm">
+                          Similar products found
+                        </AlertTitle>
+                        <AlertDescription className="text-amber-700 dark:text-amber-300 text-xs">
+                          <p className="mb-1">The following products have similar names:</p>
+                          <ul className="list-disc pl-4 space-y-0.5">
+                            {similarProducts.map((product) => (
+                              <li key={product.id} className="truncate">
+                                <span className="font-medium">{product.name}</span>
+                                {product.sku && <span className="text-amber-600 dark:text-amber-400 ml-1">({product.sku})</span>}
+                              </li>
+                            ))}
+                          </ul>
+                          <p className="mt-1 text-amber-600 dark:text-amber-400">
+                            Please verify this is a new product before continuing.
+                          </p>
+                        </AlertDescription>
+                      </Alert>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="brand">Brand</Label>
@@ -1858,34 +1993,36 @@ export function CreateProductSheet({ open, onOpenChange, onProductCreated }: Cre
                 </div>
               </CardContent>
             </Card>
-            
-            <Separator />
-            
-            {/* Submit Button */}
-            <div className="flex justify-end space-x-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isSubmitting}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Creating...
-                  </>
-                ) : (
-                  <>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Product
-                  </>
-                )}
-              </Button>
-            </div>
           </form>
+          </div>
+            
+            {/* Sticky Footer */}
+            <div className="sticky bottom-0 bg-background border-t pt-4">
+              <div className="flex justify-end space-x-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => onOpenChange(false)}
+                  disabled={isSubmitting}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" form="create-product-form" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Product
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </>
         )}
         
         {/* Create Category Modal */}

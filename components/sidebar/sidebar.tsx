@@ -101,7 +101,7 @@ function Sidebar() {
   // Define nav items with their required permissions (store removed)
   const navItems: { name: string; href: string; icon: React.ElementType; permission: string }[] = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, permission: "can_view_dashboard_menu" },
-    { name: "Logistics", href: "/logistics", icon: Route, permission: "can_view_logistics_menu" },
+    // { name: "Logistics", href: "/logistics", icon: Route, permission: "can_view_logistics_menu" },
     { name: "Dispatch", href: "/dispatch", icon: Send, permission: "can_view_dispatch_menu" },
     { name: "Requisitions", href: "/requisitions", icon: ClipboardList, permission: "can_view_requisitions_menu" },
     { name: "Breakages", href: "/breakages", icon: AlertTriangle, permission: "can_view_breakages_menu" },

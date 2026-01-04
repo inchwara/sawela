@@ -42,7 +42,13 @@ import {
   PlusCircle,
   Loader2,
   Save,
-  ShieldAlert
+  ShieldAlert,
+  Truck,
+  Container,
+  Phone,
+  IdCard,
+  Car,
+  Calendar
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatCurrency, cn } from "@/lib/utils";
@@ -124,6 +130,16 @@ export function CreateProductReceiptModal({
   const [storeId, setStoreId] = useState<string>("");
   const [document, setDocument] = useState<File | null>(null);
   
+  // Logistics fields state
+  const [containerNumber, setContainerNumber] = useState("");
+  const [driverName, setDriverName] = useState("");
+  const [driverIdNumber, setDriverIdNumber] = useState("");
+  const [driverPhone, setDriverPhone] = useState("");
+  const [vehicleNumberPlate, setVehicleNumberPlate] = useState("");
+  const [vehicleDescription, setVehicleDescription] = useState("");
+  const [receiptDate, setReceiptDate] = useState("");
+  const [landedDate, setLandedDate] = useState("");
+  
   // Data arrays
   const [stores, setStores] = useState<Store[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
@@ -195,6 +211,15 @@ type ProductReceiptFormValues = z.infer<typeof formSchema>;
     setShowVariantModal(false);
     setShowCreateProductModal(false);
     setSavedReceiptState(null);
+    // Reset logistics fields
+    setContainerNumber("");
+    setDriverName("");
+    setDriverIdNumber("");
+    setDriverPhone("");
+    setVehicleNumberPlate("");
+    setVehicleDescription("");
+    setReceiptDate("");
+    setLandedDate("");
   };
 
   const loadStores = async () => {
@@ -566,6 +591,15 @@ type ProductReceiptFormValues = z.infer<typeof formSchema>;
           }),
         })),
         document: document,
+        // Logistics fields - only include if they have values
+        ...(containerNumber && { container_number: containerNumber.trim() }),
+        ...(driverName && { driver_name: driverName.trim() }),
+        ...(driverIdNumber && { driver_id_number: driverIdNumber.trim() }),
+        ...(driverPhone && { driver_phone: driverPhone.trim() }),
+        ...(vehicleNumberPlate && { vehicle_number_plate: vehicleNumberPlate.trim() }),
+        ...(vehicleDescription && { vehicle_description: vehicleDescription.trim() }),
+        ...(receiptDate && { receipt_date: receiptDate }),
+        ...(landedDate && { landed_date: landedDate }),
       };
 
       await createProductReceipt(payload);
@@ -597,18 +631,19 @@ type ProductReceiptFormValues = z.infer<typeof formSchema>;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-4xl overflow-y-auto">
-        <SheetHeader>
+      <SheetContent side="right" className="w-full sm:max-w-4xl flex flex-col h-full p-0">
+        <SheetHeader className="px-6 py-4 border-b bg-white sticky top-0 z-10">
           <SheetTitle>Create Product Receipt</SheetTitle>
           <SheetDescription>
             Add a new product receipt to the system
           </SheetDescription>
         </SheetHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 overflow-hidden">
             {/* Check if user has permission to create before showing form */}
             {hasPermission("can_create_product_receipts") || isAdmin() ? (
               <>
+                <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="referenceNumber">Reference Number *</Label>
@@ -729,6 +764,134 @@ type ProductReceiptFormValues = z.infer<typeof formSchema>;
                     </Select>
                   </div>
                 </div>
+
+                {/* Logistics & Delivery Details Card */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Truck className="h-5 w-5 text-indigo-600" />
+                      Logistics & Delivery Details
+                      <Badge variant="secondary" className="ml-2 text-xs">Optional</Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* Shipping Information */}
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2 border-b pb-2">
+                        <Container className="h-4 w-4" />
+                        Shipping Information
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="containerNumber">Container Number</Label>
+                          <Input
+                            id="containerNumber"
+                            value={containerNumber}
+                            onChange={(e) => setContainerNumber(e.target.value)}
+                            placeholder="e.g., CONT123456789"
+                            disabled={isSubmitting}
+                            maxLength={100}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="landedDate">Landed Date</Label>
+                          <Input
+                            id="landedDate"
+                            type="date"
+                            value={landedDate}
+                            onChange={(e) => setLandedDate(e.target.value)}
+                            disabled={isSubmitting}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="receiptDate">Receipt Date</Label>
+                          <Input
+                            id="receiptDate"
+                            type="date"
+                            value={receiptDate}
+                            onChange={(e) => setReceiptDate(e.target.value)}
+                            disabled={isSubmitting}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Driver Information */}
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2 border-b pb-2">
+                        <User className="h-4 w-4" />
+                        Driver Information
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="driverName">Driver Name</Label>
+                          <Input
+                            id="driverName"
+                            value={driverName}
+                            onChange={(e) => setDriverName(e.target.value)}
+                            placeholder="e.g., John Doe"
+                            disabled={isSubmitting}
+                            maxLength={100}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="driverIdNumber">ID Number</Label>
+                          <Input
+                            id="driverIdNumber"
+                            value={driverIdNumber}
+                            onChange={(e) => setDriverIdNumber(e.target.value)}
+                            placeholder="e.g., ID12345678"
+                            disabled={isSubmitting}
+                            maxLength={50}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="driverPhone">Phone Number</Label>
+                          <Input
+                            id="driverPhone"
+                            value={driverPhone}
+                            onChange={(e) => setDriverPhone(e.target.value)}
+                            placeholder="e.g., +254712345678"
+                            disabled={isSubmitting}
+                            maxLength={20}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Vehicle Information */}
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2 border-b pb-2">
+                        <Car className="h-4 w-4" />
+                        Vehicle Information
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="vehicleNumberPlate">Number Plate</Label>
+                          <Input
+                            id="vehicleNumberPlate"
+                            value={vehicleNumberPlate}
+                            onChange={(e) => setVehicleNumberPlate(e.target.value)}
+                            placeholder="e.g., KAA 123A"
+                            disabled={isSubmitting}
+                            maxLength={20}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="vehicleDescription">Vehicle Description</Label>
+                          <Input
+                            id="vehicleDescription"
+                            value={vehicleDescription}
+                            onChange={(e) => setVehicleDescription(e.target.value)}
+                            placeholder="e.g., White Toyota Hilux"
+                            disabled={isSubmitting}
+                            maxLength={255}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
                 {/* Product Items */}
                 <Card>
@@ -1243,8 +1406,9 @@ type ProductReceiptFormValues = z.infer<typeof formSchema>;
                     )}
                   </CardContent>
                 </Card>
+                </div>
 
-                <SheetFooter>
+                <SheetFooter className="px-6 py-4 border-t bg-white sticky bottom-0">
                   <Button
                     type="button"
                     variant="outline"
@@ -1269,7 +1433,7 @@ type ProductReceiptFormValues = z.infer<typeof formSchema>;
                 </SheetFooter>
               </>
             ) : (
-              <div className="flex flex-col items-center justify-center py-12">
+              <div className="flex flex-col items-center justify-center py-12 px-6">
                 <ShieldAlert className="h-12 w-12 text-red-500 mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">Access Denied</h3>
                 <p className="text-gray-500 text-center">

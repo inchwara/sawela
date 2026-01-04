@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -12,15 +12,17 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/hooks/use-toast"
-import { X, Plus, Upload, Trash2, Star, ImageIcon, PlusCircle, Search, Check, ChevronsUpDown } from "lucide-react"
+import { X, Plus, Upload, Trash2, Star, ImageIcon, PlusCircle, Search, Check, ChevronsUpDown, Loader2, AlertTriangle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 import { createProduct } from "@/app/inventory/actions"
 import { getCachedStores, type Store } from "@/lib/stores"
 import { getProductCategories, createProductCategory, type ProductCategory } from "@/lib/product-categories"
 import { getSuppliers, type Supplier } from "@/lib/suppliers"
+import { getProducts, type Product } from "@/lib/products"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 interface ProductVariantForm {
   id: string
@@ -137,6 +139,11 @@ export function CreateProductModal({ isOpen, onClose, onSuccess }: CreateProduct
   const [supplierSearchQuery, setSupplierSearchQuery] = useState("")
   const [isSupplierDropdownOpen, setIsSupplierDropdownOpen] = useState(false)
 
+  // Similar products detection
+  const [similarProducts, setSimilarProducts] = useState<Product[]>([])
+  const [isCheckingSimilar, setIsCheckingSimilar] = useState(false)
+  const similarCheckTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
   // Load stores, categories, and suppliers when modal opens
   useEffect(() => {
     if (isOpen) {
@@ -200,6 +207,98 @@ export function CreateProductModal({ isOpen, onClose, onSuccess }: CreateProduct
       setIsLoadingSuppliers(false)
     }
   }
+
+  // Calculate string similarity using Levenshtein distance
+  const calculateSimilarity = (str1: string, str2: string): number => {
+    const s1 = str1.toLowerCase().trim()
+    const s2 = str2.toLowerCase().trim()
+    
+    if (s1 === s2) return 1
+    if (s1.length === 0 || s2.length === 0) return 0
+    
+    // Check if one string contains the other
+    if (s1.includes(s2) || s2.includes(s1)) return 0.8
+    
+    // Levenshtein distance calculation
+    const matrix: number[][] = []
+    
+    for (let i = 0; i <= s1.length; i++) {
+      matrix[i] = [i]
+    }
+    for (let j = 0; j <= s2.length; j++) {
+      matrix[0][j] = j
+    }
+    
+    for (let i = 1; i <= s1.length; i++) {
+      for (let j = 1; j <= s2.length; j++) {
+        const cost = s1[i - 1] === s2[j - 1] ? 0 : 1
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j] + 1,
+          matrix[i][j - 1] + 1,
+          matrix[i - 1][j - 1] + cost
+        )
+      }
+    }
+    
+    const maxLength = Math.max(s1.length, s2.length)
+    return 1 - matrix[s1.length][s2.length] / maxLength
+  }
+  
+  // Check for similar products when name changes
+  const checkSimilarProducts = useCallback(async (productName: string) => {
+    if (!productName || productName.trim().length < 2) {
+      setSimilarProducts([])
+      return
+    }
+    
+    setIsCheckingSimilar(true)
+    try {
+      // Search for products with similar names
+      const result = await getProducts(1, 50, { search: productName.trim() })
+      
+      if (result.data && result.data.length > 0) {
+        // Filter products with similarity score > 0.5 (50% similar)
+        const similar = result.data.filter(product => {
+          const similarity = calculateSimilarity(productName, product.name)
+          return similarity > 0.5
+        }).slice(0, 5) // Limit to 5 similar products
+        
+        setSimilarProducts(similar)
+      } else {
+        setSimilarProducts([])
+      }
+    } catch (error) {
+      console.error("Error checking similar products:", error)
+      setSimilarProducts([])
+    } finally {
+      setIsCheckingSimilar(false)
+    }
+  }, [])
+  
+  // Debounced product name change handler
+  const handleProductNameChange = (value: string) => {
+    setName(value)
+    if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }))
+    
+    // Clear previous timeout
+    if (similarCheckTimeoutRef.current) {
+      clearTimeout(similarCheckTimeoutRef.current)
+    }
+    
+    // Set new timeout for debounced search (500ms delay)
+    similarCheckTimeoutRef.current = setTimeout(() => {
+      checkSimilarProducts(value)
+    }, 500)
+  }
+  
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (similarCheckTimeoutRef.current) {
+        clearTimeout(similarCheckTimeoutRef.current)
+      }
+    }
+  }, [])
 
   const validateCurrentTab = (tab: string): boolean => {
     const newErrors: ValidationErrors = {}
@@ -777,6 +876,7 @@ export function CreateProductModal({ isOpen, onClose, onSuccess }: CreateProduct
     setErrors({})
     setSupplierSearchQuery("")
     setIsSupplierDropdownOpen(false)
+    setSimilarProducts([]) // Clear similar products
   }
 
   const currentTabIndex = tabOrder.indexOf(currentTab)
@@ -935,17 +1035,44 @@ export function CreateProductModal({ isOpen, onClose, onSuccess }: CreateProduct
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Product Name *</Label>
-                  <Input
-                    id="name"
-                    value={name}
-                    onChange={(e) => {
-                      setName(e.target.value)
-                      if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }))
-                    }}
-                    placeholder="Enter product name"
-                    className={errors.name ? "border-red-500" : ""}
-                  />
+                  <div className="relative">
+                    <Input
+                      id="name"
+                      value={name}
+                      onChange={(e) => handleProductNameChange(e.target.value)}
+                      placeholder="Enter product name"
+                      className={errors.name ? "border-red-500" : ""}
+                    />
+                    {isCheckingSimilar && (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                      </div>
+                    )}
+                  </div>
                   {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
+                  {/* Similar Products Alert */}
+                  {similarProducts.length > 0 && (
+                    <Alert variant="default" className="mt-2 border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
+                      <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                      <AlertTitle className="text-amber-800 dark:text-amber-200 text-sm">
+                        Similar products found
+                      </AlertTitle>
+                      <AlertDescription className="text-amber-700 dark:text-amber-300 text-xs">
+                        <p className="mb-1">The following products have similar names:</p>
+                        <ul className="list-disc pl-4 space-y-0.5">
+                          {similarProducts.map((product) => (
+                            <li key={product.id} className="truncate">
+                              <span className="font-medium">{product.name}</span>
+                              {product.sku && <span className="text-amber-600 dark:text-amber-400 ml-1">({product.sku})</span>}
+                            </li>
+                          ))}
+                        </ul>
+                        <p className="mt-1 text-amber-600 dark:text-amber-400">
+                          Please verify this is a new product before continuing.
+                        </p>
+                      </AlertDescription>
+                    </Alert>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="category">Category (optional)</Label>

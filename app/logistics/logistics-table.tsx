@@ -152,16 +152,21 @@ export function LogisticsTable() {
       
       // Search filter with null checks
       const searchLower = search.toLowerCase();
-      const orderNumberMatch = entry.order?.order_number?.toLowerCase().includes(searchLower) || false;
+      const trackingNumberMatch = entry.tracking_number?.toLowerCase().includes(searchLower) || false;
       const recipientNameMatch = entry.recipient_name?.toLowerCase().includes(searchLower) || false;
       const recipientPhoneMatch = entry.recipient_phone?.toLowerCase().includes(searchLower) || false;
-      const trackingNumberMatch = entry.tracking_number?.toLowerCase().includes(searchLower) || false;
+      const providerMatch = entry.logistics_provider?.toLowerCase().includes(searchLower) || false;
+      const cityMatch = entry.city?.toLowerCase().includes(searchLower) || false;
+      const addressMatch = entry.delivery_address?.toLowerCase().includes(searchLower) || false;
       
       return statusMatch && (
-        orderNumberMatch || 
+        !search || // If no search term, include all
+        trackingNumberMatch || 
         recipientNameMatch || 
         recipientPhoneMatch || 
-        trackingNumberMatch
+        providerMatch ||
+        cityMatch ||
+        addressMatch
       );
     });
 
@@ -221,6 +226,8 @@ export function LogisticsTable() {
         return "bg-yellow-100 text-yellow-800"
       case "cancelled":
         return "bg-red-100 text-red-800"
+      case "failed":
+        return "bg-orange-100 text-orange-800"
       default:
         return "bg-gray-100 text-gray-800"
     }
@@ -250,10 +257,11 @@ export function LogisticsTable() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="delivered">Delivered</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
                   <SelectItem value="dispatched">Dispatched</SelectItem>
                   <SelectItem value="in_transit">In Transit</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="delivered">Delivered</SelectItem>
+                  <SelectItem value="failed">Failed</SelectItem>
                   <SelectItem value="cancelled">Cancelled</SelectItem>
                 </SelectContent>
               </Select>
@@ -342,13 +350,13 @@ export function LogisticsTable() {
                     />
                   </div>
                 </TableHead>
-                <TableHead className="font-semibold">Order Number</TableHead>
+                <TableHead className="font-semibold">Tracking #</TableHead>
                 <TableHead className="font-semibold">Recipient</TableHead>
-                <TableHead className="font-semibold">Tracking</TableHead>
-                <TableHead className="font-semibold">Delivery Method</TableHead>
-                <TableHead className="font-semibold">Address</TableHead>
+                <TableHead className="font-semibold">Destination</TableHead>
+                <TableHead className="font-semibold">Provider</TableHead>
+                <TableHead className="font-semibold">Method</TableHead>
                 <TableHead className="font-semibold">Status</TableHead>
-                <TableHead className="font-semibold">Dispatch Date</TableHead>
+                <TableHead className="font-semibold">Est. Delivery</TableHead>
                 <TableHead className="text-right font-semibold">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -381,29 +389,32 @@ export function LogisticsTable() {
                               }
                             }}
                             onClick={(e) => e.stopPropagation()}
-                            aria-label={`Select ${entry.order.order_number}`}
+                            aria-label={`Select ${entry.tracking_number}`}
                             className="rounded-sm"
                           />
                         </div>
                       </TableCell>
-                      <TableCell className="font-medium">{entry.order.order_number}</TableCell>
+                      <TableCell className="font-medium font-mono text-sm">{entry.tracking_number}</TableCell>
                       <TableCell>
                         <div>
                           <div className="font-medium">{entry.recipient_name || "N/A"}</div>
                           <div className="text-sm text-muted-foreground">{entry.recipient_phone || "No phone"}</div>
                         </div>
                       </TableCell>
-                      <TableCell>{entry.tracking_number}</TableCell>
-                      <TableCell>{entry.delivery_method}</TableCell>
-                      <TableCell className="max-w-[200px] truncate" title={entry.delivery_address}>
-                        {entry.delivery_address || "N/A"}
+                      <TableCell>
+                        <div className="max-w-[180px]">
+                          <div className="truncate" title={entry.delivery_address}>{entry.delivery_address || "N/A"}</div>
+                          <div className="text-sm text-muted-foreground">{entry.city}{entry.state ? `, ${entry.state}` : ""}</div>
+                        </div>
                       </TableCell>
+                      <TableCell>{entry.logistics_provider || "N/A"}</TableCell>
+                      <TableCell>{capitalize(entry.delivery_method || "N/A")}</TableCell>
                       <TableCell>
                         <Badge className={getStatusBadgeClass(entry.delivery_status)}>
                           {capitalize(entry.delivery_status)}
                         </Badge>
                       </TableCell>
-                      <TableCell>{formatDate(entry.dispatch_time)}</TableCell>
+                      <TableCell>{formatDate(entry.estimated_delivery_time)}</TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
