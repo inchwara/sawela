@@ -114,7 +114,7 @@ function Sidebar() {
     // { name: "POS", href: "/POS", icon: Store, permission: "can_view_pos_menu" },
     // { name: "Chat", href: "/chat", icon: MessageSquare, permission: "can_view_chat_menu" },
     { name: "Users", href: "/users", icon: UserCheck, permission: "can_manage_users_and_roles" },
-    // { name: "Reports", href: "/reports", icon: LineChart, permission: "can_view_reports_menu" },
+    { name: "Reports", href: "/reports", icon: LineChart, permission: "can_view_reports_menu" },
     { name: "Settings", href: "/settings", icon: Settings, permission: "can_view_settings_menu" },
     { name: "Logout", href: "/", icon: LogOut, permission: "can_logout" },
   ]
