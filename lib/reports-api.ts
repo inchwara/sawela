@@ -217,25 +217,61 @@ export interface ProductSummaryData {
     total_products: number
     active_products: number
     inactive_products: number
-    tracked_products: number
-    total_categories: number
-    total_suppliers: number
-    average_price: string
-    average_cost: string
+    low_stock_products: number
+    out_of_stock_products: number
+    total_inventory_value: number
+    total_potential_value: number
+    potential_profit: number
   }
-  by_category: {
-    category: string
-    product_count: number
-    active_count: number
-  }[]
-  recent_products: {
+  products: {
     id: string
+    product_number: string
+    product_code: string | null
     name: string
-    sku: string
-    category: string
-    price: string
+    sku: string | null
+    barcode: string | null
+    price: number
+    unit_cost: number
+    stock_quantity: number
+    low_stock_threshold: number
+    is_active: boolean
+    is_featured: boolean
+    track_inventory: boolean
+    category: { id: string; name: string } | null
+    supplier: { id: string; name: string } | null
+    store: { id: string; name: string } | null
+    stock_status: "in_stock" | "low_stock" | "out_of_stock"
+    inventory_value: number
+    potential_value: number
+    primary_image_url: string | null
     created_at: string
+    updated_at: string
   }[]
+  filter_options: {
+    categories: { id: string; name: string; product_count: number }[]
+    suppliers: { id: string; name: string; product_count: number }[]
+    stores: { id: string; name: string; product_count: number }[]
+    status_options: { value: string; label: string }[]
+    sort_options: { value: string; label: string }[]
+  }
+  applied_filters: {
+    store_id: string | null
+    supplier_id: string | null
+    category_id: string | null
+    status: string
+    search: string | null
+    sort_by: string
+    sort_order: string
+  }
+  pagination: {
+    current_page: number
+    last_page: number
+    per_page: number
+    total: number
+    from: number
+    to: number
+  }
+  generated_at: string
 }
 
 export interface ProductByCategoryItem {

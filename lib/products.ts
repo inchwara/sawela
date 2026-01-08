@@ -648,11 +648,37 @@ export async function updateProduct(productId: string, productData: any): Promis
 
 /**
  * Fetches product summary from the API
+ * @param filters Optional filters for the report
  * @returns Promise<ApiProductSummary> Product summary data from API
  */
-export async function getProductSummary(): Promise<ApiProductSummary> {
+export async function getProductSummary(filters?: {
+  store_id?: string;
+  category_id?: string;
+  supplier_id?: string;
+  status?: string;
+  search?: string;
+  sort_by?: string;
+  sort_order?: string;
+  per_page?: number;
+  page?: number;
+}): Promise<ApiProductSummary> {
   try {
-    const response = await apiCall<ApiProductSummary>("/products/summary", "GET", undefined, true)
+    // Build query string from filters
+    const params = new URLSearchParams();
+    if (filters?.store_id) params.append('store_id', filters.store_id);
+    if (filters?.category_id) params.append('category_id', filters.category_id);
+    if (filters?.supplier_id) params.append('supplier_id', filters.supplier_id);
+    if (filters?.status && filters.status !== 'all') params.append('status', filters.status);
+    if (filters?.search) params.append('search', filters.search);
+    if (filters?.sort_by) params.append('sort_by', filters.sort_by);
+    if (filters?.sort_order) params.append('sort_order', filters.sort_order);
+    if (filters?.per_page) params.append('per_page', filters.per_page.toString());
+    if (filters?.page) params.append('page', filters.page.toString());
+    
+    const queryString = params.toString();
+    const endpoint = `/products/summary${queryString ? `?${queryString}` : ''}`;
+    
+    const response = await apiCall<ApiProductSummary>(endpoint, "GET", undefined, true)
     return response
   } catch (error: any) {
     // Enhanced error logging with full context
