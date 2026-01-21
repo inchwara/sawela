@@ -116,9 +116,16 @@ export function ReportFiltersBar({
 
   // Clear all filters
   const clearFilters = () => {
+    // reset calendar state
     setIsCustomRange(false);
+    setDateRange({ from: subDays(new Date(), 30), to: new Date() });
+    setPopoverOpen(false);
     onFiltersChange({
       period: "this_month",
+      start_date: undefined,
+      end_date: undefined,
+      store_id: undefined,
+      group_by: undefined,
     });
   };
 
@@ -234,11 +241,13 @@ export function ReportFiltersBar({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Stores</SelectItem>
-            {stores.map((store) => (
-              <SelectItem key={store.id} value={store.id}>
-                {store.name}
-              </SelectItem>
-            ))}
+            {stores
+              .filter((store) => String(store.name).trim().toLowerCase() !== "clear")
+              .map((store) => (
+                <SelectItem key={store.id} value={store.id}>
+                  {store.name}
+                </SelectItem>
+              ))}
           </SelectContent>
         </Select>
       )}

@@ -230,6 +230,10 @@ export default function ProductSummaryReport() {
     try {
       // Build filter parameters to pass to API
       const apiFilters = {
+        // Date/period filters from the shared ReportFiltersBar
+        period: filters.period,
+        start_date: filters.start_date,
+        end_date: filters.end_date,
         store_id: filters.store_id,
         category_id: selectedCategory !== "all" ? selectedCategory : undefined,
         supplier_id: selectedSupplier !== "all" ? selectedSupplier : undefined,
@@ -275,6 +279,13 @@ export default function ProductSummaryReport() {
       setLoading(false);
     }
   }, [toast, filters.store_id, filters.per_page, filters.page, selectedCategory, selectedSupplier, selectedStatus, searchQuery, sortBy, sortOrder]);
+
+  // Auto-generate the report on first mount using default date filters
+  React.useEffect(() => {
+    // intentionally call once on mount to apply default period (this_month)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchReport();
+  }, []);
 
   // Handle export - export the data shown in the table
   const handleExport = () => {
@@ -369,7 +380,7 @@ export default function ProductSummaryReport() {
   if (error && !data.length) {
     return (
       <ReportLayout
-        title="Product Summary"
+        title="Product Report"
         description="Overview of all products"
         category="products"
         categoryLabel="Products"
@@ -381,7 +392,7 @@ export default function ProductSummaryReport() {
 
   return (
     <ReportLayout
-      title="Product Summary"
+      title="Product Report"
       description="Comprehensive overview of all products with inventory status"
       category="products"
       categoryLabel="Products"
@@ -434,7 +445,7 @@ export default function ProductSummaryReport() {
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Products</SelectItem>
+                  <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="inactive">Inactive</SelectItem>
                   <SelectItem value="low_stock">Low Stock</SelectItem>
@@ -442,30 +453,7 @@ export default function ProductSummaryReport() {
                 </SelectContent>
               </Select>
 
-              {/* Sort By */}
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-[140px] h-9">
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="name">Name</SelectItem>
-                  <SelectItem value="unit_cost">Unit Cost</SelectItem>
-                  <SelectItem value="stock_quantity">Stock Qty</SelectItem>
-                  <SelectItem value="created_at">Date Added</SelectItem>
-                  <SelectItem value="updated_at">Last Updated</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {/* Sort Order */}
-              <Select value={sortOrder} onValueChange={setSortOrder}>
-                <SelectTrigger className="w-[100px] h-9">
-                  <SelectValue placeholder="Order" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="asc">Asc</SelectItem>
-                  <SelectItem value="desc">Desc</SelectItem>
-                </SelectContent>
-              </Select>
+              {/* NOTE: removed Sort By / Date Added dropdown as requested */}
 
               {/* Clear Filters */}
               <Button
@@ -477,7 +465,9 @@ export default function ProductSummaryReport() {
                   setSelectedStatus("all");
                   setSortBy("created_at");
                   setSortOrder("desc");
-                  setFilters(prev => ({ ...prev, store_id: undefined }));
+                  setSearchQuery("");
+                  setFilters(() => ({ period: "this_month", per_page: 25, page: 1, store_id: undefined, start_date: undefined, end_date: undefined, group_by: undefined }));
+                  setReportGenerated(false);
                 }}
                 className="h-9 gap-1"
               >
