@@ -2,7 +2,7 @@
 export const config = {
   // API Configuration
   api: {
-    baseUrl: process.env.NEXT_PUBLIC_API_URL,
+    baseUrl: process.env.NEXT_PUBLIC_API_URL || "https://sawela-main.laravel.cloud/",
     appUrl: process.env.NEXT_PUBLIC_APP_URL || "https://sawela-main.laravel.cloud/",
   },
 
