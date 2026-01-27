@@ -17,21 +17,24 @@ export default function ProductsPage() {
   const [pagination, setPagination] = useState<{ current_page: number, per_page: number, total: number, last_page: number } | undefined>(undefined)
   const { toast } = useToast()
 
-  // Fetch products on mount and when pagination changes
+  // Fetch products on mount (load all for client-side search)
   useEffect(() => {
     fetchProducts()
-  }, [currentPage, itemsPerPage])
+  }, []) // Empty dependency array - only fetch once
 
   const fetchProducts = async () => {
     try {
       setLoading(true)
-      console.log("Fetching products...")
-      const result = await getProducts(currentPage, itemsPerPage, {})
+      console.log("Fetching all products...")
+      // Fetch a large number to ensure we get all products
+      const result = await getProducts(1, 10000, {})
       console.log("Products data received:", result)
       
       // Ensure we always have an array
       setProducts(Array.isArray(result.data) ? result.data : [])
-      setPagination(result.pagination)
+      
+      // We don't use the API pagination anymore for the table
+      // setPagination(result.pagination)
     } catch (error: any) {
       console.error("Error fetching products:", error)
       setProducts([])
@@ -43,17 +46,6 @@ export default function ProductsPage() {
     } finally {
       setLoading(false)
     }
-  }
-
-  // Handle page change
-  const handlePageChange = (newPage: number) => {
-    setCurrentPage(newPage)
-  }
-
-  // Handle items per page change
-  const handleItemsPerPageChange = (newItemsPerPage: number) => {
-    setItemsPerPage(newItemsPerPage)
-    setCurrentPage(1) // Reset to first page when changing items per page
   }
 
   // Handle refresh
@@ -154,11 +146,6 @@ export default function ProductsPage() {
           onProductUpdated={handleRefresh}
           isLoading={loading}
           onRefresh={handleRefresh}
-          pagination={pagination}
-          onPageChange={handlePageChange}
-          onItemsPerPageChange={handleItemsPerPageChange}
-          currentPage={currentPage}
-          itemsPerPage={itemsPerPage}
         />
       </div>
     </PermissionGuard>

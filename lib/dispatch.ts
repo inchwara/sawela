@@ -167,26 +167,20 @@ export async function createDispatch(payload: {
   to_user_id: string;
   type: string;
   notes?: string;
-  items: Array<{
-    product_id: string;
-    variant_id?: string;
-    quantity: number;
-    is_returnable: boolean;
-    return_date?: string;
-    notes?: string;
-  }>;
+  return_date?: string;
+  requisition_id?: string;
 }): Promise<{ status: string; message: string; dispatch: Dispatch }> {
   const response = await apiCall<{ status: string; message: string; dispatch: Dispatch }>("/whs/dispatches", "POST", payload, true);
   return response;
 }
 
 // List Dispatches
-export async function listDispatches(params?: { 
-  from_store_id?: string; 
-  to_user_id?: string; 
-  type?: string; 
-  page?: number; 
-  per_page?: number 
+export async function listDispatches(params?: {
+  from_store_id?: string;
+  to_user_id?: string;
+  type?: string;
+  page?: number;
+  per_page?: number
 }): Promise<DispatchResponse> {
   const query = params ? "?" + Object.entries(params)
     .filter(([_, v]) => v !== undefined && v !== null)
@@ -258,6 +252,7 @@ export async function updateDispatch(
       return_date?: string;
       notes?: string;
     }>;
+    requisition_id?: string;
   }
 ): Promise<{ status: string; message: string; dispatch: Dispatch }> {
   const response = await apiCall<{ status: string; message: string; dispatch: Dispatch }>(`/whs/dispatches/${dispatchId}`, "PUT", payload, true);

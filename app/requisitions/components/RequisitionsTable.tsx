@@ -39,6 +39,8 @@ import {
   Package
 } from "lucide-react";
 import { type Requisition } from "@/lib/requisitions";
+import { usePermissions } from "@/hooks/use-permissions";
+import { useAuth } from "@/lib/auth-context";
 
 interface RequisitionsTableProps {
   requisitions: Requisition[];
@@ -79,8 +81,13 @@ export function RequisitionsTable({
   onRefresh,
   onCreateNew,
 }: RequisitionsTableProps) {
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string | undefined | null) => {
+    if (!status) {
+      return <Badge variant="secondary" className="bg-gray-100 text-gray-800">Draft</Badge>;
+    }
     switch (status.toLowerCase()) {
+      case "draft":
+        return <Badge variant="secondary" className="bg-gray-100 text-gray-800">Draft</Badge>;
       case "pending":
         return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Pending</Badge>;
       case "approved":
@@ -91,14 +98,21 @@ export function RequisitionsTable({
         return <Badge variant="secondary" className="bg-blue-100 text-blue-800">Fulfilled</Badge>;
       case "dispatched":
         return <Badge variant="secondary" className="bg-purple-100 text-purple-800">Dispatched</Badge>;
+      case "dispatch_created":
+        return <Badge variant="secondary" className="bg-purple-100 text-purple-800">Dispatch Created</Badge>;
       case "cancelled":
         return <Badge variant="secondary" className="bg-gray-100 text-gray-800">Cancelled</Badge>;
+      case "partially_fulfilled":
+        return <Badge variant="secondary" className="bg-orange-100 text-orange-800">Partially Fulfilled</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
   };
 
-  const getApprovalStatusBadge = (approvalStatus: string) => {
+  const getApprovalStatusBadge = (approvalStatus: string | undefined | null) => {
+    if (!approvalStatus) {
+      return <Badge variant="outline" className="border-gray-500 text-gray-700">Not Set</Badge>;
+    }
     switch (approvalStatus.toLowerCase()) {
       case "pending":
         return <Badge variant="outline" className="border-yellow-500 text-yellow-700">Pending Approval</Badge>;
@@ -214,7 +228,7 @@ export function RequisitionsTable({
                           {requisition.items.length} item{requisition.items.length !== 1 ? 's' : ''}
                         </span>
                         <span className="text-xs text-gray-500">
-                          Total Qty: {requisition.items.reduce((sum, item) => sum + item.quantity, 0)}
+                          Total Qty: {requisition.items.reduce((sum, item) => sum + (item.quantity_requested || 0), 0)}
                         </span>
                       </div>
                     </TableCell>
@@ -329,9 +343,17 @@ function ActionsDropdown({
   onApprove: () => void;
   onCreateDispatch: () => void;
 }) {
+  const { user } = useAuth();
+  const { hasPermission } = usePermissions();
+
+  const isDesignatedApprover = user?.id === requisition.approver_id;
+  const hasApprovalPermission = hasPermission('can_approve_requisitions') || hasPermission('can_manage_system') || hasPermission('can_manage_company');
+  const canApproveGeneric = requisition.approval_status === "pending";
+
   const canEdit = requisition.status === "pending" && requisition.approval_status === "pending";
   const canDelete = requisition.status === "pending" && requisition.approval_status === "pending";
-  const canApprove = requisition.approval_status === "pending";
+  // User can approve IF the requisition is pending AND (they are the designated approver OR they have admin permissions)
+  const canApprove = canApproveGeneric && (isDesignatedApprover || hasApprovalPermission);
   const canCreateDispatch = requisition.approval_status === "approved" && !requisition.dispatch_id;
 
   return (
@@ -359,6 +381,11 @@ function ActionsDropdown({
         {canEdit && (
           <DropdownMenuItem onClick={onEdit}>
             <Edit className="h-4 w-4 mr-2" /> Edit Requisition
+          </DropdownMenuItem>
+        )}
+        {canApprove && (
+          <DropdownMenuItem onClick={onApprove} className="text-green-600 focus:text-green-600">
+            <CheckCircle className="h-4 w-4 mr-2" /> Approve Requisition
           </DropdownMenuItem>
         )}
         {canDelete && (

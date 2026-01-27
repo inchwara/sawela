@@ -12,6 +12,7 @@ import { ApproveRequisitionModal } from "./ApproveRequisitionModal";
 import { CreateDispatchFromRequisitionModal } from "./CreateDispatchFromRequisitionModal";
 import { listRequisitions, type Requisition, type RequisitionResponse } from "@/lib/requisitions";
 import { PermissionGuard } from "@/components/PermissionGuard";
+import { useAuth } from "@/lib/auth-context";
 
 export function RequisitionsPage() {
   const [requisitions, setRequisitions] = useState<Requisition[]>([]);
@@ -32,6 +33,7 @@ export function RequisitionsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const fetchRequisitions = async () => {
     setLoading(true);
@@ -56,6 +58,15 @@ export function RequisitionsPage() {
   }, []);
 
   // Debounced search effect
+  useEffect(() => {
+    if (selectedRequisition) {
+      const updatedRequisition = requisitions.find(r => r.id === selectedRequisition.id);
+      if (updatedRequisition) {
+        setSelectedRequisition(updatedRequisition);
+      }
+    }
+  }, [requisitions]);
+
   useEffect(() => {
     if (searchDebounceTimer) {
       clearTimeout(searchDebounceTimer);

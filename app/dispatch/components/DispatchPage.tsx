@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { listDispatches, type Dispatch, type DispatchResponse } from "@/lib/dispatch";
 import DispatchModal from "./DispatchModal";
+import { CreateDispatchModal } from "./CreateDispatchModal";
 import { DispatchTable } from "./DispatchTable";
 import { EditDispatchModal } from "./EditDispatchModal";
 import { DeleteDispatchConfirmationDialog } from "./DeleteDispatchConfirmationDialog";
@@ -19,6 +20,7 @@ export default function DispatchPage() {
   const [dispatches, setDispatches] = useState<Dispatch[]>([]);
   const [selectedDispatch, setSelectedDispatch] = useState<Dispatch | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [returnModalOpen, setReturnModalOpen] = useState(false);
@@ -79,7 +81,7 @@ export default function DispatchPage() {
 
   const handleCreateDispatch = () => {
     setSelectedDispatch(null);
-    setModalOpen(true);
+    setCreateModalOpen(true);
   };
 
   const handleCloseModal = () => {
@@ -136,6 +138,11 @@ export default function DispatchPage() {
     fetchDispatches();
     setDispatchToReturn(null);
     setReturnModalOpen(false);
+  };
+
+  const handleCreateSuccess = () => {
+    fetchDispatches();
+    setCreateModalOpen(false);
   };
 
   const handleSearchChange = (value: string) => {
@@ -359,6 +366,14 @@ export default function DispatchPage() {
           dispatch={selectedDispatch} 
           onClose={handleCloseModal}
           onRefresh={handleRefresh}
+          onReturn={handleReturnItems}
+        />
+
+        {/* Create Modal */}
+        <CreateDispatchModal
+          open={createModalOpen}
+          onOpenChange={setCreateModalOpen}
+          onSuccess={handleCreateSuccess}
         />
 
         {/* Edit Modal */}

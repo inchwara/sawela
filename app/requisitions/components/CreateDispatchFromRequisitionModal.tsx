@@ -101,7 +101,7 @@ export function CreateDispatchFromRequisitionModal({
           items: requisition.items.map(item => ({
             product_id: item.product_id,
             variant_id: item.variant_id || undefined,
-            quantity: item.quantity,
+            quantity: item.quantity_requested || 0,
             is_returnable: true,
             return_date: format(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), "yyyy-MM-dd"),
             notes: item.notes || "",
@@ -178,6 +178,8 @@ export function CreateDispatchFromRequisitionModal({
     if (!validateForm() || !requisition) return;
 
     setLoading(true);
+    let dispatchId: string | undefined;
+
     try {
       const payload = {
         ...formData,
@@ -188,19 +190,41 @@ export function CreateDispatchFromRequisitionModal({
           is_returnable: item.is_returnable,
           return_date: item.return_date || undefined,
           notes: item.notes || undefined
-        }))
+        })),
+        requisition_id: requisition.id
       };
 
       // Create the dispatch
       const dispatchResponse = await createDispatch(payload);
       
       if (dispatchResponse.status === 'success') {
-        // Update requisition status to "dispatched" with dispatch_id
+        dispatchId = dispatchResponse.dispatch.id;
+      } else {
+         throw new Error(dispatchResponse.message || "Failed to create dispatch");
+      }
+    } catch (error: any) {
+      console.error("Error creating dispatch:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create dispatch. Please try again.",
+        variant: "destructive",
+      });
+      return; // Stop execution if dispatch creation fails
+    } finally {
+      setLoading(false);
+    }
+    
+    // If we're here, dispatch was created successfully. Now update requisition status.
+    // We do this outside the main try/catch so a failure here doesn't mask the dispatch creation success.
+    try {
+       // Update requisition status to "dispatched" with dispatch_id
         await updateRequisitionStatus(requisition.id, {
           status: "dispatched",
-          dispatch_id: dispatchResponse.dispatch.id
+          dispatch_id: dispatchId
         });
-
+        
+        // Only show success and close modal after both operations or if status update is non-critical? 
+        // Better to consider the flow complete.
         toast({
           title: "Success",
           description: `Dispatch created successfully for requisition ${requisition.requisition_number}`,
@@ -208,16 +232,17 @@ export function CreateDispatchFromRequisitionModal({
         
         onSuccess();
         onOpenChange(false);
-      }
-    } catch (error) {
-      console.error("Error creating dispatch:", error);
-      toast({
-        title: "Error",
-        description: "Failed to create dispatch. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
+
+    } catch (error: any) {
+      console.error("Error updating requisition status:", error);
+      // Dispatch was created but status update failed
+       toast({
+          title: "Warning",
+          description: "Dispatch created, but failed to update requisition status. Please refresh.",
+          variant: "destructive", // Or warning variant if available
+        });
+       onSuccess(); // Still trigger refresh since dispatch was created
+       onOpenChange(false);
     }
   };
 
@@ -276,7 +301,7 @@ export function CreateDispatchFromRequisitionModal({
                     <Label className="text-sm font-medium">Total Items</Label>
                     <p className="text-sm text-gray-700">
                       {requisition.items.length} product{requisition.items.length !== 1 ? 's' : ''} 
-                      ({requisition.items.reduce((sum, item) => sum + item.quantity, 0)} total qty)
+                      ({requisition.items.reduce((sum, item) => sum + (item.quantity_requested || 0), 0)} total qty)
                     </p>
                   </div>
                 </div>
@@ -471,15 +496,29 @@ export function CreateDispatchFromRequisitionModal({
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          {/* Quantity - Read-only since it comes from requisition */}
+                          {/* Quantity - Editable */}
                           <div className="space-y-2">
-                            <Label>Requested Quantity</Label>
+                            <div className="flex justify-between">
+                              <Label>Dispatch Quantity</Label>
+                              {requisition && (
+                                <span className="text-xs text-muted-foreground">
+                                  Requested: {requisition.items.find(ri => 
+                                    ri.product_id === item.product_id && 
+                                    ri.variant_id === item.variant_id
+                                  )?.quantity_requested || 0}
+                                </span>
+                              )}
+                            </div>
                             <Input
                               type="number"
+                              min="1"
                               value={item.quantity}
-                              readOnly
-                              className="bg-gray-50"
+                              onChange={(e) => updateItem(index, { quantity: parseInt(e.target.value) || 0 })}
+                              className="bg-white"
                             />
+                            {errors[`item_${index}_quantity`] && (
+                              <p className="text-xs text-red-600">{errors[`item_${index}_quantity`]}</p>
+                            )}
                           </div>
 
                           {/* Returnable */}

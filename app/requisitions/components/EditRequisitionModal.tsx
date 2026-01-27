@@ -22,7 +22,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { updateRequisition, type Requisition, type RequisitionItem } from "@/lib/requisitions";
 import { getProducts, type Product as LibProduct } from "@/lib/products";
-import { getUsers, type User } from "@/lib/users";
+import { getUsers, type UserData as User } from "@/lib/users";
 
 interface Product {
   id: string;
@@ -84,7 +84,7 @@ export function EditRequisitionModal({ open, onOpenChange, onSuccess, requisitio
           id: item.id,
           product_id: item.product_id,
           variant_id: item.variant_id || undefined,
-          quantity: item.quantity,
+          quantity: item.quantity_requested || 0,
           notes: item.notes || "",
           product: item.product,
           variant: item.variant
@@ -363,7 +363,7 @@ export function EditRequisitionModal({ open, onOpenChange, onSuccess, requisitio
                                 {product.has_variations && product.variants ? (
                                   <>
                                     <Select onValueChange={(variantId) => {
-                                      const variant = product.variants?.find(v => v.id === variantId);
+                                      const variant = product.variants?.find(v => String(v.id) === variantId);
                                       if (variant) addProduct(product, variant);
                                     }}>
                                       <SelectTrigger className="w-40">
@@ -373,7 +373,7 @@ export function EditRequisitionModal({ open, onOpenChange, onSuccess, requisitio
                                         {product.variants.map((variant) => (
                                           <SelectItem 
                                             key={variant.id} 
-                                            value={variant.id}
+                                            value={String(variant.id)}
                                             disabled={variant.stock_quantity <= 0}
                                           >
                                             <div className="flex items-center justify-between w-full">

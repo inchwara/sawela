@@ -187,12 +187,12 @@ export function CreateRequisitionModal({ open, onOpenChange, onSuccess }: Create
     
     try {
       const payload = {
-        approver_id: formData.approver_id,
+        approved_by: formData.approver_id,
         notes: formData.notes || undefined,
         items: formData.items.map(item => ({
           product_id: item.product_id,
           variant_id: item.variant_id || undefined,
-          quantity: item.quantity,
+          quantity_requested: item.quantity,
           notes: item.notes || undefined,
         })),
       };
@@ -314,7 +314,9 @@ export function CreateRequisitionModal({ open, onOpenChange, onSuccess }: Create
                                 {product.has_variations && product.variants ? (
                                   <>
                                     <Select onValueChange={(variantId) => {
-                                      const variant = product.variants?.find(v => v.id === variantId);
+                                      // Convert variantId to number to match variant.id type (number)
+                                      // OR convert variant.id to string. Since we set value as string below, let's compare as strings
+                                      const variant = product.variants?.find(v => String(v.id) === variantId);
                                       if (variant) addProduct(product, variant);
                                     }}>
                                       <SelectTrigger className="w-40">
@@ -324,7 +326,7 @@ export function CreateRequisitionModal({ open, onOpenChange, onSuccess }: Create
                                         {product.variants.map((variant) => (
                                           <SelectItem 
                                             key={variant.id} 
-                                            value={variant.id}
+                                            value={String(variant.id)}
                                             disabled={variant.stock_quantity <= 0}
                                           >
                                             <div className="flex items-center justify-between w-full">

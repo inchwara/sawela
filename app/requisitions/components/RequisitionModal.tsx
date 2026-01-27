@@ -25,9 +25,11 @@ import {
   CheckCircle, 
   XCircle,
   Edit,
-  Trash2
+  Trash2,
 } from "lucide-react";
 import { type Requisition } from "@/lib/requisitions";
+import { usePermissions } from "@/hooks/use-permissions";
+import { useAuth } from "@/lib/auth-context";
 import { useToast } from "@/hooks/use-toast";
 import { EditRequisitionModal } from "./EditRequisitionModal";
 import { DeleteRequisitionConfirmationDialog } from "./DeleteRequisitionConfirmationDialog";
@@ -58,6 +60,8 @@ export function RequisitionModal({
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [approveModalOpen, setApproveModalOpen] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { hasPermission } = usePermissions();
 
   useEffect(() => {
     setCurrentRequisition(initialRequisition);
@@ -86,13 +90,23 @@ export function RequisitionModal({
     // Keep the main modal open to show updated status
   };
 
+  const isDesignatedApprover = user?.id === currentRequisition?.approver_id;
+  const hasApprovalPermission = hasPermission('can_approve_requisitions') || hasPermission('can_manage_system') || hasPermission('can_manage_company');
+  const canApproveGeneric = currentRequisition?.approval_status === "pending";
+
   const canEdit = currentRequisition?.status === "pending" && currentRequisition?.approval_status === "pending";
   const canDelete = currentRequisition?.status === "pending" && currentRequisition?.approval_status === "pending";
-  const canApprove = currentRequisition?.approval_status === "pending";
+  // User can approve IF the requisition is pending AND (they are the designated approver OR they have admin permissions)
+  const canApprove = canApproveGeneric && (isDesignatedApprover || hasApprovalPermission);
   const canCreateDispatch = currentRequisition?.approval_status === "approved" && !currentRequisition?.dispatch_id;
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string | undefined | null) => {
+    if (!status) {
+      return <Badge variant="secondary" className="bg-gray-100 text-gray-800">Draft</Badge>;
+    }
     switch (status.toLowerCase()) {
+      case "draft":
+        return <Badge variant="secondary" className="bg-gray-100 text-gray-800">Draft</Badge>;
       case "pending":
         return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Pending</Badge>;
       case "approved":
@@ -103,14 +117,21 @@ export function RequisitionModal({
         return <Badge variant="secondary" className="bg-blue-100 text-blue-800">Fulfilled</Badge>;
       case "dispatched":
         return <Badge variant="secondary" className="bg-purple-100 text-purple-800">Dispatched</Badge>;
+      case "dispatch_created":
+        return <Badge variant="secondary" className="bg-purple-100 text-purple-800">Dispatch Created</Badge>;
       case "cancelled":
         return <Badge variant="secondary" className="bg-gray-100 text-gray-800">Cancelled</Badge>;
+      case "partially_fulfilled":
+        return <Badge variant="secondary" className="bg-orange-100 text-orange-800">Partially Fulfilled</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
   };
 
-  const getApprovalStatusBadge = (approvalStatus: string) => {
+  const getApprovalStatusBadge = (approvalStatus: string | undefined | null) => {
+    if (!approvalStatus) {
+      return <Badge variant="outline" className="border-gray-500 text-gray-700">Not Set</Badge>;
+    }
     switch (approvalStatus.toLowerCase()) {
       case "pending":
         return <Badge variant="outline" className="border-yellow-500 text-yellow-700">Pending Approval</Badge>;
@@ -230,6 +251,11 @@ export function RequisitionModal({
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
+                  {currentRequisition.items && currentRequisition.items.length > 0 && (
+                    <p className="text-sm text-gray-600 mb-4">
+                      {currentRequisition.items.length} item{currentRequisition.items.length !== 1 ? 's' : ''} • Total Qty: {currentRequisition.items.reduce((sum, item) => sum + (item.quantity_requested || 0), 0)}
+                    </p>
+                  )}
                   {currentRequisition.items && currentRequisition.items.length > 0 ? (
                     <div className="space-y-4">
                       {currentRequisition.items.map((item, index) => (
@@ -253,7 +279,7 @@ export function RequisitionModal({
                             </div>
                           </div>
                           <div className="text-right">
-                            <div className="font-semibold">Qty: {item.quantity}</div>
+                            <div className="font-semibold">Qty: {item.quantity_requested}</div>
                             <div className="text-sm text-gray-500">
                               {item.product.unit_of_measurement}
                             </div>

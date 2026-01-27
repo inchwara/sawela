@@ -2,8 +2,8 @@
 export const config = {
   // API Configuration
   api: {
-    baseUrl: process.env.NEXT_PUBLIC_API_URL || "https://sawela-main.laravel.cloud/api/",
-    appUrl: process.env.NEXT_PUBLIC_APP_URL || "https://sawela-main.laravel.cloud/api/",
+    baseUrl: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/",
+    appUrl: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:8000/",
   },
 
   // Email Configuration

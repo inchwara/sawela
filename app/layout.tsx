@@ -13,8 +13,8 @@ const figtree = Figtree({
 })
 
 export const metadata: Metadata = {
-  title: "Cherry360 ERP",
-  description: "Comprehensive Business Automation ERP Solution",
+  title: "Sawela WHS by Cherry360 ERP",
+  description: "Comprehensive Warehouse Management System",
 }
 
 export default function RootLayout({

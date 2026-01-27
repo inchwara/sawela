@@ -158,12 +158,8 @@ interface ProductTableProps {
   onProductUpdated: () => void
   isLoading?: boolean
   onRefresh?: () => void
-  pagination?: {
-    current_page: number
-    per_page: number
-    total: number
-    last_page: number
-  }
+  // Legacy props kept optional for compatibility but not used for logic anymore
+  pagination?: any
   onPageChange?: (page: number) => void
   onItemsPerPageChange?: (itemsPerPage: number) => void
   currentPage?: number
@@ -175,17 +171,17 @@ export function ProductTable({
   summaryData,
   onProductUpdated,
   isLoading = false,
-  onRefresh,
-  pagination,
-  onPageChange,
-  onItemsPerPageChange,
-  currentPage = 1,
-  itemsPerPage = 20
+  onRefresh
 }: ProductTableProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [sortBy, setSortBy] = useState<"name" | "price" | "stock">("name")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
+  
+  // Client-side pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(20)
+  
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [productToDelete, setProductToDelete] = useState<Product | null>(null)
@@ -268,8 +264,16 @@ export function ProductTable({
 
   // Reset to first page when filters change
   useEffect(() => {
-    // Note: We're not resetting pagination here since it's handled by the parent component
+    setCurrentPage(1)
   }, [searchTerm, statusFilter])
+  
+  // Calculate pagination
+  const totalItems = filteredAndSortedProducts.length
+  const totalPages = Math.ceil(totalItems / itemsPerPage)
+  const paginatedProducts = filteredAndSortedProducts.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  )
 
   // Handle delete success
   const handleDeleteSuccess = () => {
@@ -389,6 +393,7 @@ export function ProductTable({
                 <TableHead className="font-semibold">Product #</TableHead>
                 <TableHead className="font-semibold">Product Code</TableHead>
                 <TableHead className="font-semibold">Name</TableHead>
+                <TableHead className="font-semibold">Price</TableHead>
                 <TableHead className="font-semibold">Stock</TableHead>
                 <TableHead className="font-semibold">Category</TableHead>
                 <TableHead className="font-semibold">Status</TableHead>
@@ -396,7 +401,7 @@ export function ProductTable({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredAndSortedProducts.length === 0 ? (
+              {paginatedProducts.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={9} className="h-24 text-center">
                     <div className="text-gray-500">
@@ -406,7 +411,7 @@ export function ProductTable({
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredAndSortedProducts.map((product) => (
+                paginatedProducts.map((product) => (
                   <TableRow 
                     key={product.id}
                     className="cursor-pointer hover:bg-gray-50"
@@ -432,6 +437,11 @@ export function ProductTable({
                     </TableCell>
                     <TableCell>
                       <div className="font-medium">{product.name}</div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="font-medium">
+                        KES {parseFloat(product.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center">
@@ -503,25 +513,21 @@ export function ProductTable({
         </div>
 
         {/* Pagination */}
-        {pagination && pagination.total > 0 && (
+        {totalItems > 0 && (
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <p className="text-sm font-medium">
-                Showing {(pagination.current_page - 1) * pagination.per_page + 1} to{" "}
-                {Math.min(pagination.current_page * pagination.per_page, pagination.total)} of{" "}
-                {pagination.total} products
+                Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+                {Math.min(currentPage * itemsPerPage, totalItems)} of{" "}
+                {totalItems} products
               </p>
               <Select
                 value={itemsPerPage.toString()}
                 onValueChange={(value) => {
                   const newItemsPerPage = Number(value)
-                  if (onItemsPerPageChange) {
-                    onItemsPerPageChange(newItemsPerPage)
-                  }
                   // Reset to first page when changing items per page
-                  if (onPageChange) {
-                    onPageChange(1)
-                  }
+                  setItemsPerPage(newItemsPerPage)
+                  setCurrentPage(1)
                 }}
               >
                 <SelectTrigger className="h-8 w-[70px]">
@@ -539,20 +545,20 @@ export function ProductTable({
             <div className="flex items-center space-x-2">
               <Button
                 size="sm"
-                onClick={() => onPageChange && onPageChange(Math.max(1, pagination.current_page - 1))}
-                disabled={pagination.current_page === 1}
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
                 className="bg-primary text-white hover:bg-primary/90 disabled:opacity-50"
               >
                 <ChevronLeft className="h-4 w-4" />
                 Previous
               </Button>
               <div className="flex items-center justify-center text-sm font-medium">
-                Page {pagination.current_page} of {pagination.last_page}
+                Page {currentPage} of {totalPages}
               </div>
               <Button
                 size="sm"
-                onClick={() => onPageChange && onPageChange(Math.min(pagination.last_page, pagination.current_page + 1))}
-                disabled={pagination.current_page === pagination.last_page}
+                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage === totalPages}
                 className="bg-primary text-white hover:bg-primary/90 disabled:opacity-50"
               >
                 Next

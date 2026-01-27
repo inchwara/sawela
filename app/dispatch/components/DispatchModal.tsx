@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { acknowledgeReceipt, markItemsReturned, type Dispatch, type DispatchItem } from "@/lib/dispatch";
 import { DispatchItemManager } from "./DispatchItemManager";
-import { CreateDispatchModal } from "./CreateDispatchModal";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,7 +19,11 @@ import {
   User, 
   Calendar, 
   FileText,
+  RotateCcw,
 } from "lucide-react";
+
+// ... (omitting irrelevant lines) ...
+
 import { format } from "date-fns";
 import { toSentenceCase } from "@/lib/utils";
 
@@ -30,19 +33,12 @@ interface DispatchModalProps {
   dispatch?: Dispatch | null;
   onClose: () => void;
   onRefresh?: () => void;
+  onReturn?: (dispatch: Dispatch) => void;
 }
 
-export default function DispatchModal({ open, onOpenChange, dispatch, onClose, onRefresh }: DispatchModalProps) {
-  // If no dispatch is provided, show create modal
-  if (!dispatch) {
-    return (
-      <CreateDispatchModal
-        open={open}
-        onOpenChange={onOpenChange}
-        onSuccess={onClose}
-      />
-    );
-  }
+export default function DispatchModal({ open, onOpenChange, dispatch, onClose, onRefresh, onReturn }: DispatchModalProps) {
+  if (!dispatch) return null;
+
   // View mode for existing dispatch
   const [loading, setLoading] = useState(false);
   const [acknowledgingItems, setAcknowledgingItems] = useState<Record<string, number>>({});
@@ -217,6 +213,29 @@ export default function DispatchModal({ open, onOpenChange, dispatch, onClose, o
               </SheetDescription>
             </div>
           </div>
+          {dispatch && onReturn && (
+            (() => {
+              const canReturn = dispatch.dispatch_items?.some(item => 
+                item.is_returnable && 
+                !item.is_returned && 
+                item.received_quantity > (item.returned_quantity || 0)
+              );
+
+              if (!canReturn) return null;
+
+              return (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onReturn(dispatch)}
+                  className="ml-auto border-purple-200 text-purple-700 hover:bg-purple-50 hover:text-purple-800"
+                >
+                  <RotateCcw className="h-4 w-4 mr-2" />
+                  Return Items
+                </Button>
+              );
+            })()
+          )}
         </SheetHeader>
 
         {/* Content */}

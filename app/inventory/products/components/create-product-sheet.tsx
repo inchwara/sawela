@@ -1133,6 +1133,18 @@ export function CreateProductSheet({ open, onOpenChange, onProductCreated }: Cre
                       placeholder="clothing, premium, cotton"
                     />
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="price">Price</Label>
+                    <Input
+                      id="price"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={formData.price}
+                      onChange={(e) => handleInputChange("price", e.target.value)}
+                      placeholder="0.00"
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>

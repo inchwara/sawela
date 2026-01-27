@@ -102,7 +102,10 @@ export interface RequisitionItem {
   requisition_id: string;
   product_id: string;
   variant_id?: string | null;
-  quantity: number;
+  quantity_requested: number;
+  quantity_approved?: number | null;
+  quantity_fulfilled?: number | null;
+  quantity: number; // Deprecated, use quantity_requested
   notes?: string | null;
   created_at: string;
   updated_at: string;
@@ -154,11 +157,12 @@ export interface RequisitionResponse {
 
 // Create Requisition
 export async function createRequisition(payload: {
+  approved_by: string;
   notes?: string;
   items: Array<{
     product_id: string;
     variant_id?: string;
-    quantity: number;
+    quantity_requested: number;
     notes?: string;
   }>;
 }): Promise<{ status: string; message: string; requisition: Requisition }> {
@@ -167,12 +171,12 @@ export async function createRequisition(payload: {
 }
 
 // List Requisitions
-export async function listRequisitions(params?: { 
-  requester_id?: string; 
-  approval_status?: string; 
-  status?: string; 
-  page?: number; 
-  per_page?: number 
+export async function listRequisitions(params?: {
+  requester_id?: string;
+  approval_status?: string;
+  status?: string;
+  page?: number;
+  per_page?: number
 }): Promise<RequisitionResponse> {
   const query = params ? "?" + Object.entries(params)
     .filter(([_, v]) => v !== undefined && v !== null)
@@ -192,7 +196,7 @@ export async function getRequisition(id: string): Promise<Requisition> {
 export async function approveRequisition(
   requisitionId: string,
   payload: {
-    approver_id: string;
+    approved_by: string;
     approval_status: "approved";
     notes?: string;
   }

@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { approveRequisition, type Requisition } from "@/lib/requisitions";
+import { useAuth } from "@/lib/auth-context";
 import { format } from "date-fns";
 
 interface ApproveRequisitionModalProps {
@@ -30,7 +31,6 @@ interface ApproveRequisitionModalProps {
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
   requisition: Requisition | null;
-  currentUserId?: string;
 }
 
 export function ApproveRequisitionModal({ 
@@ -38,8 +38,8 @@ export function ApproveRequisitionModal({
   onOpenChange, 
   onSuccess, 
   requisition,
-  currentUserId 
 }: ApproveRequisitionModalProps) {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [notes, setNotes] = useState("Approved");
   const { toast } = useToast();
@@ -51,16 +51,22 @@ export function ApproveRequisitionModal({
     
     try {
       const payload = {
-        approver_id: currentUserId || requisition.approver_id || "",
+        approved_by: user?.id || requisition.approver_id || "",
         approval_status: "approved" as const,
         notes: notes || "Approved",
       };
 
-      console.log('Approving requisition with payload:', payload);
+      if (!payload.approved_by) {
+        toast({
+          title: "Error",
+          description: "Could not identify the approver. Please reload and try again.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
       
       const response = await approveRequisition(requisition.id, payload);
-      
-      console.log('Approve response:', response);
 
       toast({
         title: "Success",
@@ -170,7 +176,7 @@ export function ApproveRequisitionModal({
                   <div>
                     <Label className="text-sm font-medium">Items</Label>
                     <p className="text-sm text-gray-700">
-                      {requisition.items.length} item{requisition.items.length !== 1 ? 's' : ''} • Total Qty: {requisition.items.reduce((sum, item) => sum + item.quantity, 0)}
+                      {requisition.items.length} item{requisition.items.length !== 1 ? 's' : ''} • Total Qty: {requisition.items.reduce((sum, item) => sum + (item.quantity_requested || 0), 0)}
                     </p>
                   </div>
 

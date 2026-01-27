@@ -314,7 +314,7 @@ export function EditProductSheet({ open, onOpenChange, product, onProductUpdated
       images: Array.isArray(product.images) ? product.images : product.image_url ? [product.image_url] : [],
       primaryImageIndex: product.primary_image_index || 0,
       hasVariations: product.has_variations || false,
-      store_id: product.store_id || "",
+      store_id: product.store_id || (typeof product.store === 'object' ? product.store?.id || "" : product.store || ""),
       hasPackaging: product.has_packaging || false,
       baseUnit: product.base_unit || ""
     })
@@ -329,7 +329,7 @@ export function EditProductSheet({ open, onOpenChange, product, onProductUpdated
         cost: variant.cost?.toString() || "",
         stock_quantity: variant.stock_quantity?.toString() || "",
         is_active: variant.is_active ?? true,
-        store_id: variant.store_id || product.store_id || "",
+        store_id: variant.store_id || product.store_id || (typeof product.store === 'object' ? product.store?.id || "" : product.store || "") || "",
         images: Array.isArray(variant.images) ? variant.images : [],
         attributes: Array.isArray(variant.attributes) 
           ? variant.attributes.map((attr: any, index: number) => ({
@@ -900,6 +900,18 @@ export function EditProductSheet({ open, onOpenChange, product, onProductUpdated
                       value={formData.tags}
                       onChange={(e) => handleInputChange("tags", e.target.value)}
                       placeholder="clothing, premium, cotton"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="price">Price</Label>
+                    <Input
+                      id="price"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={formData.price}
+                      onChange={(e) => handleInputChange("price", e.target.value)}
+                      placeholder="0.00"
                     />
                   </div>
                 </div>
