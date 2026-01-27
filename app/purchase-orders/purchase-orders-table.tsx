@@ -416,6 +416,10 @@ export function PurchaseOrdersTable({ onDataChanged }: PurchaseOrdersTableProps)
           setReturnOrder(order)
           setIsReturnSheetOpen(true)
         }}
+        onEditClick={(order) => {
+          setEditOrder(order)
+          setIsEditSheetOpen(true)
+        }}
       />
       <PermissionGuard permissions={["can_update_purchase_orders", "can_manage_system", "can_manage_company"]} hideOnDenied>
         <EditPurchaseOrderSheet

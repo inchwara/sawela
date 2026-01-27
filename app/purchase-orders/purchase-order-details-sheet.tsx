@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -21,9 +21,10 @@ interface PurchaseOrderDetailsSheetProps {
   onOpenChange: (open: boolean) => void
   onReceiptClick?: (order: PurchaseOrder) => void
   onReturnClick?: (order: PurchaseOrder) => void
+  onEditClick?: (order: PurchaseOrder) => void
 }
 
-export function PurchaseOrderDetailsSheet({ orderId, open, onOpenChange, onReceiptClick, onReturnClick }: PurchaseOrderDetailsSheetProps) {
+export function PurchaseOrderDetailsSheet({ orderId, open, onOpenChange, onReceiptClick, onReturnClick, onEditClick }: PurchaseOrderDetailsSheetProps) {
   const { toast } = useToast()
   const [order, setOrder] = useState<PurchaseOrder | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -61,7 +62,7 @@ export function PurchaseOrderDetailsSheet({ orderId, open, onOpenChange, onRecei
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent 
-        className="w-[800px] max-w-[800px] !w-[800px] !max-w-[800px] overflow-y-auto"
+        className="w-[800px] max-w-[800px] !w-[800px] !max-w-[800px] flex flex-col h-full"
         style={{ width: 800, maxWidth: 800 }}
       >
         <SheetHeader>
@@ -70,7 +71,7 @@ export function PurchaseOrderDetailsSheet({ orderId, open, onOpenChange, onRecei
             Purchase Order Details
           </SheetTitle>
         </SheetHeader>
-        <div className="mt-6 space-y-6">
+        <div className="mt-6 space-y-6 flex-1 overflow-y-auto">
           {isLoading ? (
             <div className="space-y-4">
               <Skeleton className="h-8 w-48" />
@@ -85,42 +86,6 @@ export function PurchaseOrderDetailsSheet({ orderId, open, onOpenChange, onRecei
                 <div>
                   <h2 className="text-2xl font-bold">{order.order_number}</h2>
                   <Badge className="mt-2">{order.status}</Badge>
-                </div>
-                <div className="flex space-x-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => {
-                      if (onReceiptClick && order) {
-                        onOpenChange(false)
-                        onReceiptClick(order)
-                      }
-                    }}
-                  >
-                    <Package className="h-4 w-4 mr-2" />
-                    Receipt
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => {
-                      if (onReturnClick && order) {
-                        onOpenChange(false)
-                        onReturnClick(order)
-                      }
-                    }}
-                  >
-                    <RotateCcw className="h-4 w-4 mr-2" />
-                    Return
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete
-                  </Button>
                 </div>
               </div>
               <Separator />
@@ -195,6 +160,49 @@ export function PurchaseOrderDetailsSheet({ orderId, open, onOpenChange, onRecei
             </>
           ) : null}
         </div>
+        {order && (
+          <SheetFooter>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                if (onReceiptClick && order) {
+                  onOpenChange(false)
+                  onReceiptClick(order)
+                }
+              }}
+            >
+              <Package className="h-4 w-4 mr-2" />
+              Receipt
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                if (onReturnClick && order) {
+                  onOpenChange(false)
+                  onReturnClick(order)
+                }
+              }}
+            >
+              <RotateCcw className="h-4 w-4 mr-2" />
+              Return
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                if (onEditClick && order) {
+                  onOpenChange(false)
+                  onEditClick(order)
+                }
+              }}
+            >
+              <Edit className="h-4 w-4 mr-2" />
+              Edit
+            </Button>
+          </SheetFooter>
+        )}
       </SheetContent>
     </Sheet>
   )

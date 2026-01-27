@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -24,7 +24,7 @@ interface CreatePurchaseOrderSheetProps {
 }
 
 // Extend Product type locally to include variants
-interface ProductWithVariants extends BaseProduct {
+interface ProductWithVariants extends Omit<BaseProduct, 'variants'> {
   variants?: any[]
 }
 
@@ -267,7 +267,7 @@ export function CreatePurchaseOrderSheet({ open, onOpenChange, onPurchaseOrderCr
     setNewItem(prev => ({
       ...prev,
       variant_id: variant.id,
-      unit_price: parseFloat(variant.price || product.price || "0")
+      unit_price: parseFloat(variant.price || selectedProduct?.price || "0")
     }))
     setShowVariantModal(false)
   }
@@ -275,7 +275,7 @@ export function CreatePurchaseOrderSheet({ open, onOpenChange, onPurchaseOrderCr
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent 
-        className="w-[800px] max-w-[800px] !w-[800px] !max-w-[800px] overflow-y-auto"
+        className="w-[800px] max-w-[800px] !w-[800px] !max-w-[800px] flex flex-col h-full"
         style={{ width: 800, maxWidth: 800 }}
       >
         <SheetHeader>
@@ -284,7 +284,8 @@ export function CreatePurchaseOrderSheet({ open, onOpenChange, onPurchaseOrderCr
             Add Purchase Order
           </SheetTitle>
         </SheetHeader>
-        <form onSubmit={handleSubmit} className="mt-6 space-y-6">
+        <div className="flex-1 overflow-y-auto mt-6">
+        <form id="create-po-form" onSubmit={handleSubmit} className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Order Information</CardTitle>
@@ -592,7 +593,9 @@ export function CreatePurchaseOrderSheet({ open, onOpenChange, onPurchaseOrderCr
             </CardContent>
           </Card>
           <Separator />
-          <div className="flex justify-end space-x-2">
+        </form>
+        </div>
+        <SheetFooter className="mt-4">
             <Button
               type="button"
               variant="outline"
@@ -601,7 +604,7 @@ export function CreatePurchaseOrderSheet({ open, onOpenChange, onPurchaseOrderCr
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" form="create-po-form" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -614,8 +617,7 @@ export function CreatePurchaseOrderSheet({ open, onOpenChange, onPurchaseOrderCr
                 </>
               )}
             </Button>
-          </div>
-        </form>
+        </SheetFooter>
       </SheetContent>
 
       {/* Create Supplier Modal */}
