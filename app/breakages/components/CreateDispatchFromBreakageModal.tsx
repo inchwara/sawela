@@ -5,6 +5,7 @@ import { createDispatch } from "@/lib/dispatch";
 import { type Breakage, updateBreakageStatus } from "@/lib/breakages";
 import { getStores } from "@/lib/stores";
 import { fetchUsers, type UserData as UserType } from "@/lib/users";
+import { useAuth } from "@/lib/auth-context";
 import {
   Sheet,
   SheetContent,
@@ -55,7 +56,7 @@ interface DispatchItem {
   variant_id?: string;
   quantity: number;
   is_returnable: boolean;
-  return_date?: string;
+  return_date?: string | null;
   notes?: string;
   // Additional fields for display
   product?: any;
@@ -84,6 +85,7 @@ export function CreateDispatchFromBreakageModal({
   const [stores, setStores] = useState<Store[]>([]);
   const [users, setUsers] = useState<UserType[]>([]);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const [formData, setFormData] = useState<FormData>({
     from_store_id: "",
@@ -117,7 +119,7 @@ export function CreateDispatchFromBreakageModal({
         setFormData({
           from_store_id: "",
           to_entity: "warehouse", // Default to warehouse for internal dispatch
-          to_user_id: breakage.reported_by, // Set reporter as assigned user
+          to_user_id: user?.id || breakage.reported_by, // Set current user or reporter as assigned user
           type: "internal",
           notes: `Replacement dispatch for breakage ${breakage.breakage_number}`,
           items: replacementItems.map(item => ({
@@ -232,7 +234,7 @@ export function CreateDispatchFromBreakageModal({
           variant_id: item.variant_id || undefined,
           quantity: item.quantity,
           is_returnable: item.is_returnable,
-          return_date: item.return_date || undefined,
+          return_date: item.is_returnable && item.return_date ? item.return_date : null, // Send null if not returnable
           notes: item.notes || undefined
         }))
       };
@@ -254,11 +256,42 @@ export function CreateDispatchFromBreakageModal({
       }
     } catch (error) {
       console.error("Error creating dispatch:", error);
-      toast({
-        title: "Error",
-        description: "Failed to create dispatch. Please try again.",
-        variant: "destructive",
-      });
+      
+      // Handle validation errors from API
+      if ((error as any).errors) {
+        const apiErrors = (error as any).errors as Record<string, string[]>;
+        const newErrors: Record<string, string> = {};
+        
+        Object.entries(apiErrors).forEach(([key, messages]) => {
+          // Flatten array errors to first message
+          let errorKey = key;
+          
+          // Map API array notation (items.0.quantity) to local state notation (item_0_quantity)
+          if (key.startsWith('items.')) {
+            const parts = key.split('.');
+            if (parts.length === 3) {
+              const [_, index, field] = parts;
+              errorKey = `item_${index}_${field}`;
+            }
+          }
+          
+          newErrors[errorKey] = messages[0];
+        });
+        
+        setErrors(newErrors);
+        
+        toast({
+          title: "Validation Error",
+          description: "Please check the highlighted fields for errors.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: error instanceof Error ? error.message : "Failed to create dispatch. Please try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }

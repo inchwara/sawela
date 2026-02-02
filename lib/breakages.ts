@@ -67,12 +67,12 @@ export interface BreakageResponse {
 }
 
 // List Breakages
-export async function listBreakages(params?: { 
-  reported_by?: string; 
-  approval_status?: string; 
-  status?: string; 
-  page?: number; 
-  per_page?: number 
+export async function listBreakages(params?: {
+  reported_by?: string;
+  approval_status?: string;
+  status?: string;
+  page?: number;
+  per_page?: number
 }): Promise<BreakageResponse> {
   const query = params ? "?" + Object.entries(params)
     .filter(([_, v]) => v !== undefined && v !== null)
@@ -154,6 +154,7 @@ export async function deleteBreakage(breakageId: string): Promise<{ status: stri
 }
 
 // Get Assignable Items for Breakage Reporting
+// Note: Backend automatically returns all items for system admins, user-specific items for regular users
 export async function getAssignableItems(): Promise<{ status: string; message: string; items: AssignableItem[] }> {
   const response = await apiCall<{ status: string; message: string; items: AssignableItem[] }>("/whs/breakages/my-assignable-items", "GET", undefined, true);
   return response;

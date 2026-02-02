@@ -41,14 +41,14 @@ class ApiValidationError extends Error {
 const getToken = (): string | null => {
   if (typeof window !== "undefined") {
     const token = getStoredToken();
-    
+
     // Check if token is expired
     if (token && isTokenExpired()) {
       // Token is expired, clear it and return null
       // The auth context will handle redirecting to login
       return null;
     }
-    
+
     return token;
   }
 
@@ -158,7 +158,7 @@ async function apiCall<T>(
   try {
     const fullUrl = `${BASE_URL}${path}`;
     const response = await fetch(fullUrl, config)
-    
+
     const contentType = response.headers.get('content-type') || ''
 
     // Handle non-JSON responses (e.g., HTML error pages)
@@ -179,24 +179,24 @@ async function apiCall<T>(
         typeof data.message === "string"
           ? data.message
           : Object.values(data.message || {})
-              .flat()
-              .join(", ") || "An unknown API error occurred."
+            .flat()
+            .join(", ") || "An unknown API error occurred."
 
       const isPdoError = isPdoStatementError(errorMessage)
       const isTransactionErrorDetected = isTransactionError(errorMessage)
       const isDatabaseTypeErrorDetected = isDatabaseTypeError(errorMessage)
 
       // Prevent retries for POST requests to avoid duplicate record creation
-      const shouldRetry = (isPdoError || isTransactionErrorDetected || isDatabaseTypeErrorDetected) && 
-                         retryCount < MAX_RETRIES && 
-                         method !== 'POST'; // Don't retry POST requests
+      const shouldRetry = (isPdoError || isTransactionErrorDetected || isDatabaseTypeErrorDetected) &&
+        retryCount < MAX_RETRIES &&
+        method !== 'POST'; // Don't retry POST requests
 
       if (shouldRetry) {
         console.warn(`Retrying ${method} ${path} (attempt ${retryCount + 2}/${MAX_RETRIES + 1}) due to: ${errorMessage}`);
-        
+
         // Notify listeners about the retry
         notifyRetry(path, retryCount + 1, MAX_RETRIES)
-        
+
         await delay(RETRY_DELAY_MS * (retryCount + 1))
         return apiCall<T>(path, method, body, requiresAuth, retryCount + 1)
       }
@@ -217,21 +217,26 @@ async function apiCall<T>(
         // This is a validation error with field-specific errors
         throw new ApiValidationError(errorMessage, data);
       }
-      
+
       if (response.status === 500) {
         throw new Error(`Server error (500): ${errorMessage}. The server is experiencing issues. Please try again later or contact support.`)
       }
-      
+
       throw new Error(errorMessage || "An unknown error occurred. Please try again.")
     }
 
     return data as T
   } catch (error: any) {
+    // Propagate validation errors
+    if (error.name === 'ApiValidationError' || error.errors) {
+      throw error;
+    }
+
     // Friendly message for network errors
     if (error.message && error.message.includes('Failed to fetch')) {
       throw new Error("Could not connect to the server. Please check your internet connection or try again later.");
     }
-    
+
     // Fallback for all other errors
     throw new Error(error.message || "An unexpected error occurred. Please try again.");
   }

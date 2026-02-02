@@ -49,3 +49,4 @@ coverage
 # Misc
 *.pem
 *.log
+.DS_Store

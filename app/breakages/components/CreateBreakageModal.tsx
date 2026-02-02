@@ -3,6 +3,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { createBreakage } from "@/lib/breakages";
 import { fetchUsers, type UserData as UserType } from "@/lib/users";
+import { getStores, type Store } from "@/lib/stores";
+import { usePermissions } from "@/hooks/use-permissions";
 import {
   Sheet,
   SheetContent,
@@ -80,6 +82,7 @@ interface BreakageItem {
 }
 
 interface FormData {
+  store_id: string;
   approver_id: string;
   notes?: string;
   items: BreakageItem[];
@@ -115,12 +118,17 @@ export function CreateBreakageModal({
   const [loading, setLoading] = useState(false);
   const [assignableItemsLoading, setAssignableItemsLoading] = useState(false);
   const [usersLoading, setUsersLoading] = useState(false);
+  const [storesLoading, setStoresLoading] = useState(false);
   const [assignableItems, setAssignableItems] = useState<AssignableItem[]>([]);
   const [users, setUsers] = useState<UserType[]>([]);
+  const [stores, setStores] = useState<Store[]>([]);
   const [itemSearch, setItemSearch] = useState("");
+  const [storeSearch, setStoreSearch] = useState("");
   const { toast } = useToast();
+  const { isSystemAdmin } = usePermissions();
 
   const [formData, setFormData] = useState<FormData>({
+    store_id: "",
     approver_id: "",
     notes: "",
     items: []
@@ -132,19 +140,25 @@ export function CreateBreakageModal({
     if (open) {
       loadAssignableItems();
       loadUsers();
+      // Only load stores if user has system admin permission
+      if (isSystemAdmin()) {
+        loadStores();
+      }
     } else {
       resetForm();
     }
-  }, [open]);
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const resetForm = () => {
     setFormData({
+      store_id: "",
       approver_id: "",
       notes: "",
       items: []
     });
     setErrors({});
     setItemSearch("");
+    setStoreSearch("");
   };
 
   const loadAssignableItems = async () => {
@@ -152,6 +166,8 @@ export function CreateBreakageModal({
       setAssignableItemsLoading(true);
       // Import the function dynamically to avoid circular dependencies
       const { getAssignableItems } = await import("@/lib/breakages");
+      
+      // Backend automatically returns all items for system admins, user-specific items for regular users
       const response = await getAssignableItems();
       // Filter out fully returned items (is_returned can be string "true"/"false" or boolean)
       const availableItems = response.items.filter(item => {
@@ -187,6 +203,23 @@ export function CreateBreakageModal({
       });
     } finally {
       setUsersLoading(false);
+    }
+  };
+
+  const loadStores = async () => {
+    try {
+      setStoresLoading(true);
+      const response = await getStores();
+      setStores(response || []);
+    } catch (error) {
+      console.error("Error loading stores:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load stores. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setStoresLoading(false);
     }
   };
 
@@ -235,6 +268,7 @@ export function CreateBreakageModal({
     try {
       // Map form data to API payload
       const payload = {
+        store_id: formData.store_id,
         approver_id: formData.approver_id,
         notes: formData.notes,
         items: formData.items.map(item => {
@@ -331,6 +365,70 @@ export function CreateBreakageModal({
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto py-4 space-y-6">
+          {/* Store Selection - Only for System Admins */}
+          {isSystemAdmin() && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Store</CardTitle>
+                <CardDescription>
+                  Select the store where this breakage occurred
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <Label htmlFor="store_id">Store</Label>
+                  <Select 
+                    value={formData.store_id} 
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, store_id: value }))}
+                    disabled={storesLoading}
+                  >
+                    <SelectTrigger className={errors.store_id ? "border-red-500" : ""}>
+                      <SelectValue placeholder="Select store" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <div className="flex items-center px-2 pb-2 border-b">
+                        <Search className="h-4 w-4 mr-2 text-gray-400" />
+                        <Input
+                          placeholder="Search stores..."
+                          value={storeSearch}
+                          onChange={(e) => setStoreSearch(e.target.value)}
+                          className="h-8 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </div>
+                      {stores
+                        .filter(store => 
+                          store.name.toLowerCase().includes(storeSearch.toLowerCase()) ||
+                          (store.address && store.address.toLowerCase().includes(storeSearch.toLowerCase()))
+                        )
+                        .map((store) => (
+                          <SelectItem key={store.id} value={store.id}>
+                            <div>
+                              <div className="font-medium">{store.name}</div>
+                              {store.address && (
+                                <div className="text-xs text-gray-500">{store.address}</div>
+                              )}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      {stores.filter(store => 
+                        store.name.toLowerCase().includes(storeSearch.toLowerCase()) ||
+                        (store.address && store.address.toLowerCase().includes(storeSearch.toLowerCase()))
+                      ).length === 0 && (
+                        <div className="px-2 py-6 text-center text-sm text-gray-500">
+                          No stores found
+                        </div>
+                      )}
+                    </SelectContent>
+                  </Select>
+                  {errors.store_id && (
+                    <p className="text-sm text-red-600">{errors.store_id}</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Approver Selection */}
           <Card>
             <CardHeader>
