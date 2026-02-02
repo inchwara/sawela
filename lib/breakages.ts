@@ -1,5 +1,5 @@
 import apiCall from "./api";
-import { type User } from "./users";
+import { type UserData } from "./users";
 
 // Types for Breakage and BreakageItem based on API response
 export interface BreakageItem {
@@ -38,8 +38,8 @@ export interface Breakage {
   created_at: string;
   updated_at: string;
   items: BreakageItem[];
-  reporter?: User;
-  approver?: User | null;
+  reporter?: UserData;
+  approver?: UserData | null;
 }
 
 export interface BreakageResponse {

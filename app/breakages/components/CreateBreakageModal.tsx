@@ -169,13 +169,33 @@ export function CreateBreakageModal({
       
       // Backend automatically returns all items for system admins, user-specific items for regular users
       const response = await getAssignableItems();
-      // Filter out fully returned items (is_returned can be string "true"/"false" or boolean)
-      const availableItems = response.items.filter(item => {
-        const isReturned = item.is_returned === true || item.is_returned === "true";
-        // Also check if there's available quantity (received - returned)
-        const availableQty = item.received_quantity - (item.returned_quantity || 0);
-        return !isReturned && availableQty > 0;
-      });
+      
+      // Transform and filter items
+      // System admins get inventory products (product_id, stock_quantity)
+      // Regular users get dispatch items (id, received_quantity, is_returned)
+      const availableItems = response.items
+        .map((item: any) => {
+          // If item doesn't have an id, it's an inventory product (system admin)
+          // Generate a unique id from product_id and variant_id
+          if (!item.id && item.product_id) {
+            return {
+              ...item,
+              id: item.variant_id ? `${item.product_id}-${item.variant_id}` : item.product_id,
+              received_quantity: item.stock_quantity || 0,
+              returned_quantity: 0,
+              is_returned: false,
+              dispatch_number: 'N/A',
+              dispatch_id: null,
+            };
+          }
+          return item;
+        })
+        .filter((item: any) => {
+          const isReturned = item.is_returned === true || item.is_returned === "true";
+          // Check if there's available quantity
+          const availableQty = (item.received_quantity || 0) - (item.returned_quantity || 0);
+          return !isReturned && availableQty > 0;
+        });
       setAssignableItems(availableItems);
     } catch (error) {
       console.error("Error loading assignable items:", error);
