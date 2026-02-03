@@ -257,7 +257,7 @@ type ProductReceiptFormValues = z.infer<typeof formSchema>;
   const loadProducts = async () => {
     setLoadingProducts(true);
     try {
-      const { data } = await getProducts(1, 1000); // Load all products
+      const { data } = await getProducts(1, 10000); // Load all products
       setProducts(data);
     } catch (error: any) {
       toast({

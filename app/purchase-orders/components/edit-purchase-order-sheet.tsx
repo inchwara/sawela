@@ -129,7 +129,7 @@ export function EditPurchaseOrderSheet({ open, onOpenChange, order, onPurchaseOr
   const fetchProducts = async () => {
     setLoadingProducts(true)
     try {
-      const { data } = await getProducts(1, 100, { status: "active" })
+      const { data } = await getProducts(1, 10000, { status: "active" }) // Fetch all active products
       setProducts(data)
     } catch (error) {
       toast({

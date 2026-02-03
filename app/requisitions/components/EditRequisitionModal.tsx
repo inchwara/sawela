@@ -116,7 +116,7 @@ export function EditRequisitionModal({ open, onOpenChange, onSuccess, requisitio
   const fetchProducts = async () => {
     try {
       const [productsResponse, usersData] = await Promise.all([
-        getProducts(1, 100),
+        getProducts(1, 10000), // Fetch all products
         getUsers()
       ]);
       setProducts(productsResponse.data || []);

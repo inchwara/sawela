@@ -141,7 +141,7 @@ export function EditDispatchModal({ open, onOpenChange, dispatch, onSuccess }: E
         setUsers(usersData);
         
         // Load products for item management
-        const productsResponse = await getProducts(1, 100);
+        const productsResponse = await getProducts(1, 10000); // Fetch all products
         setProducts((productsResponse.data || []) as unknown as Product[]);
         
       } catch (error) {

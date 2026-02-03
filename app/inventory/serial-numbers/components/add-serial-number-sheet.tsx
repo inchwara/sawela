@@ -57,7 +57,7 @@ export function AddSerialNumberSheet({ open, onOpenChange, onSerialNumberAdded }
     setIsDataLoading(true)
     try {
       const [productsData, storesData, purchaseOrdersData] = await Promise.all([
-        getProducts(1, 100, { status: "active" }),
+        getProducts(1, 10000, { status: "active" }), // Fetch all active products
         getStores(),
         getPurchaseOrders()
       ])

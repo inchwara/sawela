@@ -53,7 +53,7 @@ export function CreateStockCountSheet({ isOpen, onOpenChange, onStockCountCreate
     async function fetchProducts() {
       try {
         setLoadingProducts(true)
-        const { data: productsList } = await getProducts()
+        const { data: productsList } = await getProducts(1, 10000) // Fetch all products
         setProducts(productsList || [])
       } catch (error: any) {
         toast({

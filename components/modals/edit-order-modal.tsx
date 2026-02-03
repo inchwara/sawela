@@ -78,7 +78,7 @@ export function EditOrderModal({ order, open, onOpenChange, onOrderUpdated }: Ed
   useEffect(() => {
     async function fetchProducts() {
       try {
-        const response = await getProducts()
+        const response = await getProducts(1, 10000) // Fetch all products
         setProducts(Array.isArray(response.data) ? response.data.map(p => ({
           ...p,
           variants: Array.isArray(p.variants) ? p.variants as ProductVariant[] : []

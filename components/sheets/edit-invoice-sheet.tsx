@@ -208,7 +208,7 @@ export function EditInvoiceSheet({ open, onClose, invoiceId, onSuccess }: EditIn
 
   const loadProducts = async () => {
     try {
-      const productsData = await getProducts()
+      const productsData = await getProducts(1, 10000) // Fetch all products
       setProducts(productsData?.data || [])
     } catch (error: any) {
       // Silently handle product loading errors

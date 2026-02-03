@@ -89,7 +89,7 @@ export function CreateStockAdjustmentSheet({
       // Load each dropdown independently with retry logic
       const [productsResult, storesResult] = await Promise.allSettled([
         retryFetch(
-          () => getProducts(1, 1000, {}),
+          () => getProducts(1, 10000, {}), // Fetch all products
           3,
           1000,
           "products"

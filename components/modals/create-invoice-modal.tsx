@@ -135,7 +135,7 @@ export function CreateInvoiceModal({ open, onClose, onSuccess }: CreateInvoiceMo
 
   const loadProducts = async () => {
     try {
-      const productsData = await getProducts()
+      const productsData = await getProducts(1, 10000) // Fetch all products
       setProducts(productsData.data || [])
     } catch (error) {
       console.error('Failed to load products:', error)

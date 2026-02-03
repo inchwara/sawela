@@ -138,7 +138,7 @@ export function CreateDispatchModal({ open, onOpenChange, onSuccess }: CreateDis
       setUsers(usersData);
 
       // Load products with inventory - type cast to handle interface mismatch
-      const productsResponse = await getProducts(1, 100);
+      const productsResponse = await getProducts(1, 10000); // Fetch all products
       setProducts((productsResponse.data || []) as unknown as Product[]);
       
     } catch (error) {

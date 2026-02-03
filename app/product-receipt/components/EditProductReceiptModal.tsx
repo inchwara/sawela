@@ -290,7 +290,7 @@ export function EditProductReceiptModal({
   const loadProducts = async () => {
     setLoadingProducts(true);
     try {
-      const { data } = await getProducts(1, 1000);
+      const { data } = await getProducts(1, 10000); // Load all products
       setProducts(data);
     } catch (error: any) {
       toast({

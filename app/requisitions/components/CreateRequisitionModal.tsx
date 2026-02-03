@@ -97,7 +97,7 @@ export function CreateRequisitionModal({ open, onOpenChange, onSuccess }: Create
   const fetchProducts = async () => {
     try {
       const [productsResponse, usersData] = await Promise.all([
-        getProducts(1, 100),
+        getProducts(1, 10000), // Fetch all products
         fetchUsers()
       ]);
       setProducts(productsResponse.data || []);

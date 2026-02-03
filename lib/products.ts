@@ -281,7 +281,7 @@ export interface ProductResponse {
  */
 export async function getProducts(
   page = 1,
-  pageSize = 20,
+  pageSize = 2000,
   filters: {
     search?: string
     status?: string
@@ -293,11 +293,11 @@ export async function getProducts(
     const queryParams = new URLSearchParams()
     queryParams.append('page', page.toString())
     queryParams.append('per_page', pageSize.toString())
-    
+
     if (filters.search) queryParams.append('search', filters.search)
     if (filters.status && filters.status !== 'all') queryParams.append('status', filters.status)
     if (filters.category && filters.category !== 'all') queryParams.append('category', filters.category)
-    
+
     const queryString = queryParams.toString() ? `?${queryParams.toString()}` : ''
 
     const response = await apiCall<ProductResponse>(`/products${queryString}`, "GET", undefined, true)
@@ -339,7 +339,7 @@ export async function getProducts(
         base_unit: product.base_unit || null,
         packaging_units: Array.isArray(product.packaging_units) ? product.packaging_units : [],
       }));
-      
+
       return {
         data: processedProducts,
         count: totalCount,
@@ -364,19 +364,19 @@ export async function getProducts(
       stack: error.stack,
       timestamp: new Date().toISOString()
     });
-    
+
     // Provide more user-friendly error messages
     if (error.message && error.message.includes("You are not logged in")) {
       throw new Error("You are not logged in. Please sign in and try again.")
     }
-    
+
     if (error.message && error.message.includes("Failed to fetch")) {
       throw new Error("Unable to connect to the server. Please check your internet connection and try again.")
     }
-    
+
     // Check for database errors
     if (error.message && (
-      error.message.includes("database") || 
+      error.message.includes("database") ||
       error.message.includes("transaction") ||
       error.message.includes("prepared statement")
     )) {
@@ -398,7 +398,7 @@ export async function getProductById(productId: string): Promise<any> {
 
     // Handle both "data" and "product" keys in response
     const productData = (response as any).product || response.data
-    
+
     if (response.status === "success" && productData) {
       let product = productData as any
       // Remove any quote or quote_items associations if present (type-safe)
@@ -518,20 +518,20 @@ export async function createProduct(productData: ProductData) {
       // Packaging fields
       has_packaging: productData.has_packaging || false,
       base_unit: productData.base_unit || null,
-      packaging_units: productData.has_packaging && Array.isArray(productData.packaging_units) 
+      packaging_units: productData.has_packaging && Array.isArray(productData.packaging_units)
         ? productData.packaging_units.map(unit => ({
-            unit_name: unit.unit_name,
-            unit_abbreviation: unit.unit_abbreviation,
-            base_unit_quantity: unit.base_unit_quantity,
-            is_base_unit: unit.is_base_unit,
-            is_sellable: unit.is_sellable !== undefined ? unit.is_sellable : true,
-            is_purchasable: unit.is_purchasable !== undefined ? unit.is_purchasable : true,
-            is_active: unit.is_active !== undefined ? unit.is_active : true,
-            price_per_unit: unit.price_per_unit || null,
-            cost_per_unit: unit.cost_per_unit || null,
-            barcode: unit.barcode || null,
-            display_order: unit.display_order || 0
-          }))
+          unit_name: unit.unit_name,
+          unit_abbreviation: unit.unit_abbreviation,
+          base_unit_quantity: unit.base_unit_quantity,
+          is_base_unit: unit.is_base_unit,
+          is_sellable: unit.is_sellable !== undefined ? unit.is_sellable : true,
+          is_purchasable: unit.is_purchasable !== undefined ? unit.is_purchasable : true,
+          is_active: unit.is_active !== undefined ? unit.is_active : true,
+          price_per_unit: unit.price_per_unit || null,
+          cost_per_unit: unit.cost_per_unit || null,
+          barcode: unit.barcode || null,
+          display_order: unit.display_order || 0
+        }))
         : [],
       variations: Array.isArray(productData.variants) ? productData.variants.map(variant => ({
         name: variant.name,
@@ -555,10 +555,10 @@ export async function createProduct(productData: ProductData) {
     console.log('Number of variations in payload:', payload.variations.length)
     console.log('Has packaging in payload:', payload.has_packaging)
     console.log('Number of packaging units in payload:', payload.packaging_units.length)
-    
+
     if (payload.has_variations && payload.variations.length > 0) {
       console.log('Variations data:', JSON.stringify(payload.variations, null, 2))
-      
+
       // Log the structure of the first variation to check if it matches expected format
       console.log('First variation structure:', {
         name: typeof payload.variations[0].name,
@@ -575,7 +575,7 @@ export async function createProduct(productData: ProductData) {
         attributes: typeof payload.variations[0].attributes
       });
     }
-    
+
     if (payload.has_packaging && payload.packaging_units.length > 0) {
       console.log('Packaging units data:', JSON.stringify(payload.packaging_units, null, 2))
     }
@@ -586,7 +586,7 @@ export async function createProduct(productData: ProductData) {
       payload,
       true
     )
-    
+
     console.log('API response received:', response)
 
     // Check if response indicates success
@@ -674,10 +674,10 @@ export async function getProductSummary(filters?: {
     if (filters?.sort_order) params.append('sort_order', filters.sort_order);
     if (filters?.per_page) params.append('per_page', filters.per_page.toString());
     if (filters?.page) params.append('page', filters.page.toString());
-    
+
     const queryString = params.toString();
     const endpoint = `/products/summary${queryString ? `?${queryString}` : ''}`;
-    
+
     const response = await apiCall<ApiProductSummary>(endpoint, "GET", undefined, true)
     return response
   } catch (error: any) {
@@ -688,16 +688,16 @@ export async function getProductSummary(filters?: {
       stack: error.stack,
       timestamp: new Date().toISOString()
     });
-    
+
     // Check for database errors
     if (error.message && (
-      error.message.includes("database") || 
+      error.message.includes("database") ||
       error.message.includes("transaction") ||
       error.message.includes("prepared statement")
     )) {
       throw new Error("Database connection issue. The summary service is temporarily unavailable. Showing calculated summary instead.")
     }
-    
+
     throw new Error(`Failed to fetch product summary: ${error.message || "Unknown error"}`)
   }
 }
@@ -720,7 +720,7 @@ export function calculateProductSummary(products: Product[]): ProductSummary {
 
   const totalProducts = products.length;
   const activeProducts = products.filter(p => p.is_active).length;
-  
+
   // Safely calculate total value
   let totalValue = 0;
   try {
@@ -733,7 +733,7 @@ export function calculateProductSummary(products: Product[]): ProductSummary {
     console.warn("Error calculating total product value:", error);
     totalValue = 0;
   }
-  
+
   const lowStockProducts = products.filter((p) => {
     const stockQuantity = Number(p.stock_quantity || 0);
     const lowStockThreshold = Number(p.low_stock_threshold || 10);
