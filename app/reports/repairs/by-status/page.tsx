@@ -4,40 +4,40 @@ import * as React from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useToast } from "@/hooks/use-toast";
 import { getStores, Store } from "@/lib/stores";
-import { getRepairsByStatus, downloadReportAsCsv, ReportFilters } from "@/lib/reports-api";
+import { getRepairsByStatus, downloadReportAsCsv, RepairByStatusData, ReportFilters } from "@/lib/reports-api";
 import { ReportLayout, ReportErrorState, ReportEmptyState } from "../../components/report-layout";
 import { ReportFiltersBar } from "../../components/report-filters";
-import { ReportTable, formatNumber, formatCurrency } from "../../components/report-table";
+import { ReportTable, formatNumber } from "../../components/report-table";
 import { SummaryCard, SummaryGrid } from "../../components/report-summary-cards";
-import { PieChartCard, BarChartCard } from "../../components/report-charts";
+import { PieChartCard } from "../../components/report-charts";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Clock, CheckCircle, XCircle, Wrench, Loader2, PackageCheck, AlertCircle } from "lucide-react";
+import { Clock, CheckCircle, XCircle, Wrench, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface StatusItem { status: string; count: number; total_quantity: number; total_cost: number; avg_repair_time?: number; }
+interface StatusRow { label: string; count: number; category: "status" | "approval"; }
 
 const statusConfig: Record<string, { icon: React.ComponentType<any>; color: string; bg: string; text: string }> = {
   pending: { icon: Clock, color: "#f59e0b", bg: "bg-amber-100", text: "text-amber-700" },
   in_progress: { icon: Loader2, color: "#3b82f6", bg: "bg-blue-100", text: "text-blue-700" },
-  awaiting_parts: { icon: AlertCircle, color: "#8b5cf6", bg: "bg-purple-100", text: "text-purple-700" },
+  repaired: { icon: Wrench, color: "#06b6d4", bg: "bg-cyan-100", text: "text-cyan-700" },
   completed: { icon: CheckCircle, color: "#22c55e", bg: "bg-green-100", text: "text-green-700" },
-  cancelled: { icon: XCircle, color: "#ef4444", bg: "bg-red-100", text: "text-red-700" },
-  returned: { icon: PackageCheck, color: "#10b981", bg: "bg-emerald-100", text: "text-emerald-700" },
+  approved: { icon: CheckCircle, color: "#22c55e", bg: "bg-green-100", text: "text-green-700" },
+  rejected: { icon: XCircle, color: "#ef4444", bg: "bg-red-100", text: "text-red-700" },
 };
 
-const columns: ColumnDef<StatusItem>[] = [
-  { accessorKey: "status", header: "Status", cell: ({ row }) => {
-    const status = row.original.status?.toLowerCase() || "pending";
-    const config = statusConfig[status] || statusConfig.pending;
-    const Icon = config.icon;
-    return <Badge className={cn(config.bg, config.text, "gap-1 border-0 capitalize")}><Icon className="h-3 w-3" />{status.replace(/_/g, " ")}</Badge>;
-  }},
-  { accessorKey: "count", header: "Repairs", cell: ({ row }) => formatNumber(row.original.count) },
-  { accessorKey: "total_quantity", header: "Items", cell: ({ row }) => <span className="font-mono">{formatNumber(row.original.total_quantity)}</span> },
-  { accessorKey: "total_cost", header: "Total Cost", cell: ({ row }) => <span className="font-mono font-medium">{formatCurrency(row.original.total_cost)}</span> },
-  { accessorKey: "avg_repair_time", header: "Avg Time", cell: ({ row }) => row.original.avg_repair_time ? `${row.original.avg_repair_time.toFixed(1)} days` : "—" },
+const statusColumns: ColumnDef<StatusRow>[] = [
+  { accessorKey: "category", header: "Category", cell: ({ row }) => <Badge variant="outline" className="capitalize">{row.original.category}</Badge> },
+  {
+    accessorKey: "label", header: "Status", cell: ({ row }) => {
+      const key = row.original.label?.toLowerCase() || "pending";
+      const config = statusConfig[key] || statusConfig.pending;
+      const Icon = config.icon;
+      return <Badge className={cn(config.bg, config.text, "gap-1 border-0 capitalize")}><Icon className="h-3 w-3" />{key.replace(/_/g, " ")}</Badge>;
+    },
+  },
+  { accessorKey: "count", header: "Count", cell: ({ row }) => <span className="text-lg font-bold">{formatNumber(row.original.count)}</span> },
 ];
 
 export default function RepairByStatusReport() {
@@ -47,7 +47,7 @@ export default function RepairByStatusReport() {
   const [error, setError] = React.useState<string | null>(null);
   const [stores, setStores] = React.useState<Store[]>([]);
   const [filters, setFilters] = React.useState<ReportFilters>({ period: "this_month" });
-  const [data, setData] = React.useState<StatusItem[]>([]);
+  const [rawData, setRawData] = React.useState<RepairByStatusData | null>(null);
   const [meta, setMeta] = React.useState<any>(null);
 
   React.useEffect(() => { getStores().then(setStores).catch(console.error); }, []);
@@ -56,7 +56,7 @@ export default function RepairByStatusReport() {
     setLoading(true); setError(null);
     try {
       const response = await getRepairsByStatus(filters);
-      if (response.success) { setData(response.data || []); setMeta(response.meta); }
+      if (response.success) { setRawData(response.data || null); setMeta(response.meta); }
     } catch (err: any) { setError(err.message || "Failed to load report"); toast({ title: "Error", description: err.message, variant: "destructive" }); }
     finally { setLoading(false); }
   }, [filters, toast]);
@@ -70,25 +70,33 @@ export default function RepairByStatusReport() {
     finally { setExportLoading(false); }
   };
 
-  const totalRepairs = data.reduce((a, s) => a + s.count, 0);
-  const totalCost = data.reduce((a, s) => a + s.total_cost, 0);
-  const pendingCount = data.find(s => s.status?.toLowerCase() === "pending")?.count || 0;
-  const completedCount = data.find(s => s.status?.toLowerCase() === "completed")?.count || 0;
-  const inProgressCount = data.find(s => s.status?.toLowerCase() === "in_progress")?.count || 0;
+  const byStatus = rawData?.by_status || [];
+  const byApprovalStatus = rawData?.by_approval_status || [];
 
-  const pieData = data.map(s => ({
+  const totalRepairs = byStatus.reduce((a, s) => a + s.count, 0);
+  const pendingCount = byStatus.find(s => s.status?.toLowerCase() === "pending")?.count || 0;
+  const completedCount = byStatus.find(s => s.status?.toLowerCase() === "completed")?.count || 0;
+  const approvedCount = byApprovalStatus.find(s => s.approval_status?.toLowerCase() === "approved")?.count || 0;
+
+  const statusPieData = byStatus.map(s => ({
     name: (s.status || "Unknown").replace(/_/g, " ").replace(/^\w/, c => c.toUpperCase()),
     value: s.count,
-    fill: statusConfig[s.status?.toLowerCase() || "pending"]?.color || "#6b7280"
+    fill: statusConfig[s.status?.toLowerCase() || "pending"]?.color || "#6b7280",
   }));
 
-  const barData = data.map(s => ({
-    name: (s.status || "Unknown").replace(/_/g, " ").replace(/^\w/, c => c.toUpperCase()),
-    count: s.count,
-    cost: s.total_cost
+  const approvalPieData = byApprovalStatus.map(s => ({
+    name: (s.approval_status || "Unknown").replace(/_/g, " ").replace(/^\w/, c => c.toUpperCase()),
+    value: s.count,
+    fill: statusConfig[s.approval_status?.toLowerCase() || "pending"]?.color || "#6b7280",
   }));
 
-  if (error && !data.length) {
+  // Flatten into single table
+  const tableData: StatusRow[] = [
+    ...byStatus.map(s => ({ label: s.status, count: s.count, category: "status" as const })),
+    ...byApprovalStatus.map(s => ({ label: s.approval_status, count: s.count, category: "approval" as const })),
+  ];
+
+  if (error && !byStatus.length) {
     return <ReportLayout title="Repairs by Status" description="Status breakdown" category="repairs" categoryLabel="Repairs"><ReportErrorState message={error} onRetry={fetchReport} /></ReportLayout>;
   }
 
@@ -100,8 +108,8 @@ export default function RepairByStatusReport() {
         <SummaryGrid>
           <SummaryCard title="Total Repairs" value={totalRepairs} icon="Wrench" loading={loading} />
           <SummaryCard title="Pending" value={pendingCount} icon="Clock" variant="warning" loading={loading} />
-          <SummaryCard title="In Progress" value={inProgressCount} icon="Loader2" variant="info" loading={loading} />
           <SummaryCard title="Completed" value={completedCount} icon="CheckCircle" variant="success" loading={loading} />
+          <SummaryCard title="Approved" value={approvedCount} icon="CheckCircle" variant="success" loading={loading} />
         </SummaryGrid>
 
         <Card className="border-2 border-blue-200 bg-blue-50/50">
@@ -110,20 +118,19 @@ export default function RepairByStatusReport() {
               <div className="flex items-center gap-4">
                 <div className="p-3 rounded-xl bg-blue-100"><Wrench className="h-6 w-6 text-blue-600" /></div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Total Repair Cost</p>
-                  <h3 className="text-2xl font-bold text-blue-600">{formatCurrency(totalCost)}</h3>
+                  <p className="text-sm text-muted-foreground">Repair Status Overview</p>
+                  <h3 className="text-2xl font-bold text-blue-600">{totalRepairs} total repairs</h3>
                 </div>
               </div>
               <div className="flex gap-6">
                 <div className="text-center"><p className="text-2xl font-bold">{totalRepairs > 0 ? ((completedCount / totalRepairs) * 100).toFixed(1) : 0}%</p><p className="text-sm text-muted-foreground">Completion Rate</p></div>
-                <div className="text-center"><p className="text-2xl font-bold">{totalRepairs > 0 ? formatCurrency(totalCost / totalRepairs) : "—"}</p><p className="text-sm text-muted-foreground">Avg Cost/Repair</p></div>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {data.map((status) => {
+          {byStatus.map((status) => {
             const key = status.status?.toLowerCase() || "pending";
             const config = statusConfig[key] || statusConfig.pending;
             const Icon = config.icon;
@@ -143,12 +150,12 @@ export default function RepairByStatusReport() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <PieChartCard title="Distribution by Status" description="Repair count by status" data={pieData} loading={loading} height={300} showLegend />
-          <BarChartCard title="Status Comparison" description="Count and cost by status" data={barData} dataKeys={[{ key: "count", name: "Repairs", color: "#3b82f6" }, { key: "cost", name: "Cost", color: "#f59e0b" }]} xAxisKey="name" loading={loading} height={300} />
+          {statusPieData.length > 0 && <PieChartCard title="By Status" description="Repair count by status" data={statusPieData} loading={loading} height={300} showLegend />}
+          {approvalPieData.length > 0 && <PieChartCard title="By Approval Status" description="Repair count by approval status" data={approvalPieData} loading={loading} height={300} showLegend />}
         </div>
 
-        {data.length === 0 && !loading ? <ReportEmptyState /> : (
-          <ReportTable columns={columns} data={data} loading={loading} searchColumn="status" searchPlaceholder="Search statuses..." />
+        {tableData.length === 0 && !loading ? <ReportEmptyState /> : (
+          <ReportTable columns={statusColumns} data={tableData} loading={loading} searchColumn="label" searchPlaceholder="Search statuses..." />
         )}
       </div>
     </ReportLayout>

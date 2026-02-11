@@ -18,10 +18,10 @@ import {
 import { ReportFiltersBar } from "../../components/report-filters";
 import { ReportTable, formatNumber, formatCurrency, formatDate } from "../../components/report-table";
 import { SummaryCard, SummaryGrid } from "../../components/report-summary-cards";
-import { BarChartCard, PieChartCard } from "../../components/report-charts";
+import { PieChartCard } from "../../components/report-charts";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertTriangle, Package, DollarSign, Clock, CheckCircle, XCircle } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { AlertTriangle, Clock, CheckCircle, XCircle, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const statusConfig: Record<string, { bg: string; text: string }> = {
@@ -36,39 +36,23 @@ const CHART_COLORS = ["#f59e0b", "#ef4444", "#3b82f6", "#22c55e", "#8b5cf6"];
 
 const columns: ColumnDef<BreakageSummaryItem>[] = [
   {
-    accessorKey: "reference",
+    accessorKey: "breakage_number",
     header: "Reference",
-    cell: ({ row }) => <span className="font-mono font-medium">{row.original.reference}</span>,
+    cell: ({ row }) => <span className="font-mono font-medium">{row.original.breakage_number}</span>,
   },
   {
-    accessorKey: "date",
+    accessorKey: "breakage_date",
     header: "Date",
-    cell: ({ row }) => formatDate(row.original.date),
+    cell: ({ row }) => formatDate(row.original.breakage_date),
   },
   {
-    accessorKey: "product",
-    header: "Product",
+    accessorKey: "breakage_type",
+    header: "Type",
     cell: ({ row }) => (
-      <div>
-        <p className="font-medium">{row.original.product?.name}</p>
-        <p className="text-sm text-muted-foreground">{row.original.product?.sku}</p>
-      </div>
+      <Badge variant="outline" className="capitalize">
+        {row.original.breakage_type?.replace(/_/g, " ") || "—"}
+      </Badge>
     ),
-  },
-  {
-    accessorKey: "quantity",
-    header: "Quantity",
-    cell: ({ row }) => <span className="font-mono text-red-600">{formatNumber(row.original.quantity)}</span>,
-  },
-  {
-    accessorKey: "loss_value",
-    header: "Loss Value",
-    cell: ({ row }) => <span className="font-mono font-medium text-red-600">{formatCurrency(row.original.loss_value || 0)}</span>,
-  },
-  {
-    accessorKey: "reason",
-    header: "Reason",
-    cell: ({ row }) => <span className="capitalize">{row.original.reason?.replace(/_/g, " ") || "—"}</span>,
   },
   {
     accessorKey: "status",
@@ -80,9 +64,33 @@ const columns: ColumnDef<BreakageSummaryItem>[] = [
     },
   },
   {
-    accessorKey: "store",
-    header: "Store",
-    cell: ({ row }) => row.original.store?.name || "—",
+    accessorKey: "approval_status",
+    header: "Approval",
+    cell: ({ row }) => {
+      const status = row.original.approval_status?.toLowerCase() || "pending";
+      const config = statusConfig[status] || statusConfig.pending;
+      return <Badge className={cn(config.bg, config.text, "border-0 capitalize")}>{status}</Badge>;
+    },
+  },
+  {
+    accessorKey: "total_value",
+    header: "Value",
+    cell: ({ row }) => <span className="font-mono text-red-600">{formatCurrency(parseFloat(row.original.total_value) || 0)}</span>,
+  },
+  {
+    accessorKey: "items",
+    header: "Items",
+    cell: ({ row }) => formatNumber(row.original.items?.length || 0),
+  },
+  {
+    accessorKey: "reporter",
+    header: "Reporter",
+    cell: ({ row }) => (
+      <div className="flex items-center gap-1.5">
+        <User className="h-3.5 w-3.5 text-muted-foreground" />
+        <span>{row.original.reporter?.full_name || "—"}</span>
+      </div>
+    ),
   },
 ];
 
@@ -133,21 +141,33 @@ export default function BreakageSummaryReport() {
     }
   };
 
-  const totalBreakages = summary?.total_breakages || data.length;
-  const totalLoss = summary?.total_loss || data.reduce((acc, b) => acc + (b.loss_value || 0), 0);
-  const totalQuantity = summary?.total_quantity || data.reduce((acc, b) => acc + b.quantity, 0);
-  const pendingCount = summary?.by_status?.find((s: any) => s.status === "pending")?.count || 0;
+  const totalBreakages = summary?.total_breakages || pagination.total;
+  const pendingCount = summary?.pending || 0;
+  const approvedCount = summary?.approved || 0;
+  const rejectedCount = summary?.rejected || 0;
 
-  const statusChartData = (summary?.by_status || []).map((s: any, idx: number) => ({
-    name: s.status.replace(/_/g, " ").replace(/^\w/, (c: string) => c.toUpperCase()),
-    value: s.count,
+  // Compute total items and value from visible data
+  const totalItems = data.reduce((acc, b) => acc + (b.items?.length || 0), 0);
+  const totalValue = data.reduce((acc, b) => acc + (parseFloat(b.total_value) || 0), 0);
+
+  // Approval status chart from summary
+  const approvalChartData = [
+    { name: "Pending", value: pendingCount, fill: "#f59e0b" },
+    { name: "Approved", value: approvedCount, fill: "#22c55e" },
+    { name: "Rejected", value: rejectedCount, fill: "#ef4444" },
+  ].filter(d => d.value > 0);
+
+  // Breakage type chart from visible data
+  const typeBreakdown = data.reduce((acc, b) => {
+    const type = b.breakage_type || "unknown";
+    acc[type] = (acc[type] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const typeChartData = Object.entries(typeBreakdown).map(([type, count], idx) => ({
+    name: type.replace(/_/g, " ").replace(/^\w/, c => c.toUpperCase()),
+    value: count,
     fill: CHART_COLORS[idx % CHART_COLORS.length],
-  }));
-
-  const reasonChartData = (summary?.by_reason || []).slice(0, 6).map((r: any) => ({
-    name: r.reason?.replace(/_/g, " ").replace(/^\w/, (c: string) => c.toUpperCase()) || "Other",
-    count: r.count,
-    loss: r.total_loss || 0,
   }));
 
   if (error && !data.length) {
@@ -176,20 +196,20 @@ export default function BreakageSummaryReport() {
 
         <SummaryGrid>
           <SummaryCard title="Total Breakages" value={totalBreakages} icon="AlertTriangle" variant="warning" loading={loading} />
-          <SummaryCard title="Total Loss" value={formatCurrency(totalLoss)} icon="DollarSign" variant="danger" loading={loading} />
-          <SummaryCard title="Units Affected" value={formatNumber(totalQuantity)} icon="Package" loading={loading} />
-          <SummaryCard title="Pending Review" value={pendingCount} subtitle="awaiting action" icon="Clock" variant={pendingCount > 0 ? "warning" : "default"} loading={loading} />
+          <SummaryCard title="Pending" value={pendingCount} icon="Clock" variant="warning" loading={loading} />
+          <SummaryCard title="Approved" value={approvedCount} icon="CheckCircle" variant="success" loading={loading} />
+          <SummaryCard title="Rejected" value={rejectedCount} icon="XCircle" variant="danger" loading={loading} />
         </SummaryGrid>
 
-        {totalLoss > 0 && (
+        {totalValue > 0 && (
           <Card className="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/20 dark:to-orange-950/20 border-red-200">
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
                 <div className="p-3 rounded-xl bg-red-500 text-white"><AlertTriangle className="h-6 w-6" /></div>
                 <div className="flex-1">
-                  <p className="text-sm text-muted-foreground">Total Loss This Period</p>
-                  <h3 className="text-3xl font-bold text-red-600">{formatCurrency(totalLoss)}</h3>
-                  <p className="text-sm text-muted-foreground">{formatNumber(totalQuantity)} units across {totalBreakages} incidents</p>
+                  <p className="text-sm text-muted-foreground">Total Value This Page</p>
+                  <h3 className="text-3xl font-bold text-red-600">{formatCurrency(totalValue)}</h3>
+                  <p className="text-sm text-muted-foreground">{formatNumber(totalItems)} items across {data.length} breakage records</p>
                 </div>
               </div>
             </CardContent>
@@ -197,14 +217,18 @@ export default function BreakageSummaryReport() {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <PieChartCard title="Breakages by Status" description="Distribution by status" data={statusChartData} loading={loading} height={300} showLegend />
-          <BarChartCard title="Breakages by Reason" description="Top causes of breakage" data={reasonChartData} dataKeys={[{ key: "count", name: "Count", color: "#f59e0b" }, { key: "loss", name: "Loss Value", color: "#ef4444" }]} xAxisKey="name" loading={loading} height={300} />
+          {approvalChartData.length > 0 && (
+            <PieChartCard title="Approval Status" description="Distribution by approval status" data={approvalChartData} loading={loading} height={300} showLegend />
+          )}
+          {typeChartData.length > 0 && (
+            <PieChartCard title="Breakage Type" description="Distribution by breakage type" data={typeChartData} loading={loading} height={300} showLegend />
+          )}
         </div>
 
         {data.length === 0 && !loading ? (
           <ReportEmptyState />
         ) : (
-          <ReportTable columns={columns} data={data} loading={loading} searchColumn="reference" searchPlaceholder="Search breakages..." pageSize={filters.per_page} totalItems={pagination.total} currentPage={pagination.currentPage} onPageChange={(page) => setFilters(prev => ({ ...prev, page }))} serverPagination />
+          <ReportTable columns={columns} data={data} loading={loading} searchColumn="breakage_number" searchPlaceholder="Search breakages..." pageSize={filters.per_page} totalItems={pagination.total} currentPage={pagination.currentPage} onPageChange={(page) => setFilters(prev => ({ ...prev, page }))} serverPagination />
         )}
       </div>
     </ReportLayout>

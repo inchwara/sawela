@@ -4,7 +4,7 @@ import * as React from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useToast } from "@/hooks/use-toast";
 import { getStores, Store } from "@/lib/stores";
-import { getStockAdjustmentSummary, downloadReportAsCsv, StockAdjustmentSummaryItem, ReportFilters } from "@/lib/reports-api";
+import { getStockAdjustmentSummary, downloadReportAsCsv, AdjustmentSummaryItem, ReportFilters } from "@/lib/reports-api";
 import { ReportLayout, ReportErrorState, ReportEmptyState } from "../../components/report-layout";
 import { ReportFiltersBar } from "../../components/report-filters";
 import { ReportTable, formatNumber, formatCurrency, formatDate } from "../../components/report-table";
@@ -13,7 +13,7 @@ import { BarChartCard, PieChartCard } from "../../components/report-charts";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { RefreshCw, Package, TrendingUp, TrendingDown, ArrowUpCircle, ArrowDownCircle } from "lucide-react";
+import { RefreshCw, Package, TrendingUp, TrendingDown, ArrowUpCircle, ArrowDownCircle, CheckCircle, XCircle, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const typeConfig: Record<string, { bg: string; text: string; icon: React.ComponentType<any> }> = {
@@ -22,17 +22,26 @@ const typeConfig: Record<string, { bg: string; text: string; icon: React.Compone
   correction: { bg: "bg-blue-100", text: "text-blue-700", icon: RefreshCw },
 };
 
+const statusConfig: Record<string, { bg: string; text: string; icon: React.ComponentType<any> }> = {
+  draft: { bg: "bg-gray-100", text: "text-gray-700", icon: RefreshCw },
+  pending: { bg: "bg-yellow-100", text: "text-yellow-700", icon: Clock },
+  approved: { bg: "bg-blue-100", text: "text-blue-700", icon: CheckCircle },
+  completed: { bg: "bg-green-100", text: "text-green-700", icon: CheckCircle },
+  rejected: { bg: "bg-red-100", text: "text-red-700", icon: XCircle },
+};
+
 const CHART_COLORS = ["#22c55e", "#ef4444", "#3b82f6", "#f59e0b", "#8b5cf6"];
 
-const columns: ColumnDef<StockAdjustmentSummaryItem>[] = [
-  { accessorKey: "reference", header: "Reference", cell: ({ row }) => <span className="font-mono font-medium">{row.original.reference}</span> },
-  { accessorKey: "date", header: "Date", cell: ({ row }) => formatDate(row.original.date) },
+const columns: ColumnDef<AdjustmentSummaryItem>[] = [
+  { accessorKey: "adjustment_number", header: "Reference", cell: ({ row }) => <span className="font-mono font-medium">{row.original.adjustment_number}</span> },
+  { accessorKey: "created_at", header: "Date", cell: ({ row }) => formatDate(row.original.created_at) },
   { accessorKey: "product", header: "Product", cell: ({ row }) => <div><p className="font-medium">{row.original.product?.name}</p><p className="text-sm text-muted-foreground">{row.original.product?.sku}</p></div> },
-  { accessorKey: "type", header: "Type", cell: ({ row }) => { const type = row.original.type?.toLowerCase() || "correction"; const config = typeConfig[type] || typeConfig.correction; const Icon = config.icon; return <Badge className={cn(config.bg, config.text, "gap-1 border-0 capitalize")}><Icon className="h-3 w-3" />{type}</Badge>; } },
-  { accessorKey: "quantity", header: "Quantity", cell: ({ row }) => { const qty = row.original.quantity; const isPositive = qty > 0; return <span className={cn("font-mono font-medium", isPositive ? "text-green-600" : "text-red-600")}>{isPositive ? "+" : ""}{formatNumber(qty)}</span>; } },
-  { accessorKey: "value_impact", header: "Value Impact", cell: ({ row }) => { const value = row.original.value_impact || 0; return <span className={cn("font-mono font-medium", value >= 0 ? "text-green-600" : "text-red-600")}>{formatCurrency(value)}</span>; } },
-  { accessorKey: "reason", header: "Reason", cell: ({ row }) => <span className="capitalize text-sm">{row.original.reason?.replace(/_/g, " ") || "—"}</span> },
-  { accessorKey: "store", header: "Store", cell: ({ row }) => row.original.store?.name || "—" },
+  { accessorKey: "adjustment_type", header: "Type", cell: ({ row }) => { const type = row.original.adjustment_type?.toLowerCase() || "increase"; const config = typeConfig[type] || typeConfig.increase; const Icon = config.icon; return <Badge className={cn(config.bg, config.text, "gap-1 border-0 capitalize")}><Icon className="h-3 w-3" />{type}</Badge>; } },
+  { accessorKey: "quantity_adjusted", header: "Quantity", cell: ({ row }) => { const qty = row.original.quantity_adjusted; const type = row.original.adjustment_type; const isPositive = type === "increase"; return <span className={cn("font-mono font-medium", isPositive ? "text-green-600" : "text-red-600")}>{isPositive ? "+" : "-"}{formatNumber(Math.abs(qty))}</span>; } },
+  { accessorKey: "total_value", header: "Value Impact", cell: ({ row }) => { const type = row.original.adjustment_type; const value = parseFloat(row.original.total_value || "0"); return <span className={cn("font-mono font-medium", type === "increase" ? "text-green-600" : "text-red-600")}>{type === "increase" ? "+" : "-"}{formatCurrency(value)}</span>; } },
+  { accessorKey: "reason_type", header: "Reason", cell: ({ row }) => <span className="capitalize text-sm">{row.original.reason_type?.replace(/_/g, " ") || "—"}</span> },
+  { accessorKey: "createdBy", header: "Created By", cell: ({ row }) => row.original.createdBy ? `${row.original.createdBy.first_name} ${row.original.createdBy.last_name}` : "—" },
+  { accessorKey: "status", header: "Status", cell: ({ row }) => { const status = row.original.status?.toLowerCase() || "draft"; const config = statusConfig[status] || statusConfig.draft; const Icon = config.icon; return <Badge className={cn(config.bg, config.text, "gap-1 border-0 capitalize")}><Icon className="h-3 w-3" />{status}</Badge>; } },
 ];
 
 export default function StockAdjustmentSummaryReport() {
@@ -42,7 +51,7 @@ export default function StockAdjustmentSummaryReport() {
   const [error, setError] = React.useState<string | null>(null);
   const [stores, setStores] = React.useState<Store[]>([]);
   const [filters, setFilters] = React.useState<ReportFilters>({ period: "this_month", per_page: 25, page: 1 });
-  const [data, setData] = React.useState<StockAdjustmentSummaryItem[]>([]);
+  const [data, setData] = React.useState<AdjustmentSummaryItem[]>([]);
   const [summary, setSummary] = React.useState<any>(null);
   const [meta, setMeta] = React.useState<any>(null);
   const [pagination, setPagination] = React.useState({ total: 0, currentPage: 1, lastPage: 1 });
@@ -70,18 +79,50 @@ export default function StockAdjustmentSummaryReport() {
     finally { setExportLoading(false); }
   };
 
-  const totalAdjustments = summary?.total_adjustments || data.length;
-  const netImpact = summary?.net_value_impact || data.reduce((acc, a) => acc + (a.value_impact || 0), 0);
-  const netQuantity = summary?.net_quantity || data.reduce((acc, a) => acc + a.quantity, 0);
-  const increaseCount = summary?.by_type?.find((t: any) => t.type === "increase")?.count || 0;
-  const decreaseCount = summary?.by_type?.find((t: any) => t.type === "decrease")?.count || 0;
+  const totalAdjustments = summary?.total_adjustments || 0;
+  const pendingCount = summary?.pending || 0;
+  const approvedCount = summary?.approved || 0;
+  const rejectedCount = summary?.rejected || 0;
+  const totalIncreased = summary?.total_increased || 0;
+  const totalDecreased = summary?.total_decreased || 0;
 
-  const typeChartData = (summary?.by_type || []).map((t: any, idx: number) => ({
+  // Calculate totals from data
+  const netImpact = data.reduce((acc, a) => {
+    const value = parseFloat(a.total_value || "0");
+    return a.adjustment_type === "increase" ? acc + value : acc - value;
+  }, 0);
+  const netQuantity = data.reduce((acc, a) => {
+    return a.adjustment_type === "increase" ? acc + a.quantity_adjusted : acc - a.quantity_adjusted;
+  }, 0);
+
+  // Group by type for chart
+  const typeData = [{ type: "increase", count: 0, total_quantity: 0 }, { type: "decrease", count: 0, total_quantity: 0 }];
+  data.forEach(item => {
+    const entry = typeData.find(t => t.type === item.adjustment_type);
+    if (entry) {
+      entry.count++;
+      entry.total_quantity += item.quantity_adjusted;
+    }
+  });
+
+  const typeChartData = typeData.map((t, idx) => ({
     name: t.type.replace(/^\w/, (c: string) => c.toUpperCase()), value: t.count, fill: CHART_COLORS[idx % CHART_COLORS.length]
   }));
 
-  const reasonChartData = (summary?.by_reason || []).slice(0, 6).map((r: any) => ({
-    name: r.reason?.replace(/_/g, " ").replace(/^\w/, (c: string) => c.toUpperCase()) || "Other", count: r.count, impact: Math.abs(r.value_impact || 0)
+  // Group by reason for chart
+  const reasonMap = new Map<string, { count: number; total_quantity: number }>();
+  data.forEach(item => {
+    const reason = item.reason_type || "other";
+    const existing = reasonMap.get(reason);
+    if (existing) {
+      existing.count++;
+      existing.total_quantity += item.quantity_adjusted;
+    } else {
+      reasonMap.set(reason, { count: 1, total_quantity: item.quantity_adjusted });
+    }
+  });
+  const reasonChartData = Array.from(reasonMap.entries()).slice(0, 6).map(([reason, data]) => ({
+    name: reason.replace(/_/g, " ").replace(/^\w/, (c: string) => c.toUpperCase()), count: data.count, quantity: data.total_quantity
   }));
 
   if (error && !data.length) {
@@ -95,9 +136,16 @@ export default function StockAdjustmentSummaryReport() {
 
         <SummaryGrid>
           <SummaryCard title="Total Adjustments" value={totalAdjustments} icon="RefreshCw" loading={loading} />
+          <SummaryCard title="Pending" value={pendingCount} icon="Clock" variant="warning" loading={loading} />
+          <SummaryCard title="Approved" value={approvedCount} icon="CheckCircle" variant="success" loading={loading} />
+          <SummaryCard title="Rejected" value={rejectedCount} icon="XCircle" variant="danger" loading={loading} />
+        </SummaryGrid>
+
+        <SummaryGrid className="mt-4">
           <SummaryCard title="Net Value Impact" value={formatCurrency(Math.abs(netImpact))} subtitle={netImpact >= 0 ? "increase" : "decrease"} icon={netImpact >= 0 ? "TrendingUp" : "TrendingDown"} variant={netImpact >= 0 ? "success" : "danger"} loading={loading} />
           <SummaryCard title="Net Quantity" value={formatNumber(Math.abs(netQuantity))} subtitle={netQuantity >= 0 ? "added" : "removed"} icon="Package" loading={loading} />
-          <SummaryCard title="Adjustment Ratio" value={`${increaseCount}/${decreaseCount}`} subtitle="increases/decreases" icon="ArrowRightLeft" loading={loading} />
+          <SummaryCard title="Total Increased" value={formatNumber(totalIncreased)} subtitle="units added" icon="ArrowUpCircle" variant="success" loading={loading} />
+          <SummaryCard title="Total Decreased" value={formatNumber(totalDecreased)} subtitle="units removed" icon="ArrowDownCircle" variant="danger" loading={loading} />
         </SummaryGrid>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

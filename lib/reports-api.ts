@@ -514,20 +514,27 @@ export interface DispatchByStoreItem {
 
 export interface BreakageSummaryItem {
   id: string
+  company_id: string
+  store_id: string | null
   breakage_number: string
-  notes: string
+  breakage_date: string
   status: string
+  breakage_type: string
+  total_value: string
+  notes: string | null
+  reported_by: string
+  approved_by: string | null
+  approved_at: string | null
   approval_status: string
-  created_at: string
   items: {
     id: string
     product_id: string
-    quantity: number
+    quantity: string
     cause: string
-    product: { id: string; name: string; sku: string }
+    product: { id: string; name: string; sku: string | null }
   }[]
-  reporter: { id: string; first_name: string; last_name: string }
-  approver: { id: string; first_name: string; last_name: string } | null
+  reporter: { id: string; first_name: string; last_name: string; full_name: string }
+  approver: { id: string; first_name: string; last_name: string; full_name: string } | null
 }
 
 export interface BreakageSummarySummary {
@@ -540,9 +547,9 @@ export interface BreakageSummarySummary {
 export interface BreakageByProductItem {
   product_id: string
   product_name: string
-  sku: string
+  sku: string | null
   breakage_count: number
-  total_quantity: number
+  total_quantity: string
 }
 
 export interface BreakageByStatusItem {
@@ -557,20 +564,26 @@ export interface BreakageByStatusItem {
 
 export interface RepairSummaryItem {
   id: string
+  company_id: string
+  store_id: string | null
   repair_number: string
-  notes: string
+  repair_date: string
   status: string
   approval_status: string
+  notes: string | null
+  reported_by: string
+  approved_by: string | null
+  approved_at: string | null
   created_at: string
   items: {
     id: string
     product_id: string
-    quantity: number
+    quantity: string
     issue_description: string
-    product: { id: string; name: string; sku: string }
+    product: { id: string; name: string; sku: string | null }
   }[]
-  reporter: { id: string; first_name: string; last_name: string }
-  approver: { id: string; first_name: string; last_name: string } | null
+  reporter: { id: string; first_name: string; last_name: string; full_name: string }
+  approver: { id: string; first_name: string; last_name: string; full_name: string } | null
 }
 
 export interface RepairSummarySummary {
@@ -591,9 +604,9 @@ export interface RepairByStatusData {
 export interface RepairByProductItem {
   product_id: string
   product_name: string
-  sku: string
+  sku: string | null
   repair_count: number
-  total_quantity: number
+  total_quantity: string
 }
 
 // ============================================================================
@@ -602,23 +615,37 @@ export interface RepairByProductItem {
 
 export interface RequisitionSummaryItem {
   id: string
+  company_id: string
+  store_id: string | null
   requisition_number: string
-  notes: string
-  status: string
+  requisition_date: string
+  required_date: string | null
   approval_status: string
+  requisition_type: string
+  total_amount: number
   priority: string
-  required_date: string
-  created_at: string
+  purpose: string | null
+  department: string | null
+  requested_by: string
+  approved_by: string | null
+  approved_at: string | null
+  dispatch_id: string | null
+  status: string
   items: {
     id: string
+    requisition_id: string
     product_id: string
-    requested_quantity: number
-    approved_quantity: number
-    fulfilled_quantity: number
-    product: { id: string; name: string; sku: string }
+    quantity_requested: number
+    quantity_approved: number | null
+    quantity_fulfilled: number
+    unit_cost: number | null
+    total_cost: number | null
+    status: string
+    notes: string | null
+    product: { id: string; name: string; sku: string | null }
   }[]
-  requester: { id: string; first_name: string; last_name: string }
-  approver: { id: string; first_name: string; last_name: string } | null
+  requester: { id: string; first_name: string; last_name: string; full_name: string }
+  approver: { id: string; first_name: string; last_name: string; full_name: string } | null
 }
 
 export interface RequisitionSummarySummary {
@@ -647,18 +674,46 @@ export interface RequisitionByRequesterItem {
 // Stock Adjustment Report Types
 // ============================================================================
 
+/**
+ * Complete stock adjustment record from API
+ * Sample: {
+ *   "id": "9e2f8a1b-3c4d-5e6f-7a8b-9c0d1e2f3a4b",
+ *   "adjustment_number": "ADJ-0032",
+ *   "adjustment_type": "increase",
+ *   "reason_type": "inventory_count",
+ *   "status": "approved",
+ *   "quantity_before": 100,
+ *   "quantity_adjusted": 25,
+ *   "quantity_after": 125,
+ *   "unit_cost": "25.00",
+ *   "total_cost": "625.00",
+ *   "total_value": "625.00",
+ *   "reason": "Found additional stock during quarterly count",
+ *   "notes": "Physical count exceeded system count",
+ *   "product": { "id": "...", "name": "USB Cable Type-C", "sku": "USBC-001" },
+ *   "createdBy": { "id": "...", "first_name": "John", "last_name": "Smith" },
+ *   "created_at": "2026-01-03T16:45:00Z",
+ *   "approved_at": "2026-01-03T17:00:00Z"
+ * }
+ */
 export interface AdjustmentSummaryItem {
   id: string
   adjustment_number: string
   adjustment_type: "increase" | "decrease"
-  reason_type: string
-  notes: string
-  status: string
+  reason_type: "inventory_count" | "damage" | "theft" | "expiry" | "return" | "correction" | "other"
+  status: "draft" | "pending" | "approved" | "rejected" | "completed"
+  quantity_before: number
   quantity_adjusted: number
+  quantity_after: number
+  unit_cost: string
+  total_cost: string
   total_value: string
-  created_at: string
+  reason: string
+  notes: string | null
   product: { id: string; name: string; sku: string }
-  created_by: { id: string; first_name: string; last_name: string }
+  createdBy: { id: string; first_name: string; last_name: string }
+  created_at: string
+  approved_at?: string | null
 }
 
 export interface AdjustmentSummarySummary {
@@ -670,6 +725,15 @@ export interface AdjustmentSummarySummary {
   total_decreased: number
 }
 
+/**
+ * Adjustments grouped by type
+ * Expected response: {
+ *   "data": [
+ *     { "adjustment_type": "increase", "count": 18, "total_quantity": 450, "total_value": "12500.00" },
+ *     { "adjustment_type": "decrease", "count": 14, "total_quantity": 185, "total_value": "5280.00" }
+ *   ]
+ * }
+ */
 export interface AdjustmentByTypeItem {
   adjustment_type: "increase" | "decrease"
   count: number
@@ -677,8 +741,17 @@ export interface AdjustmentByTypeItem {
   total_value: string
 }
 
+/**
+ * Adjustments grouped by reason
+ * Expected response: {
+ *   "data": [
+ *     { "reason_type": "inventory_count", "count": 12, "total_quantity": 285 },
+ *     { "reason_type": "damage", "count": 8, "total_quantity": 95 }
+ *   ]
+ * }
+ */
 export interface AdjustmentByReasonItem {
-  reason_type: string
+  reason_type: "inventory_count" | "damage" | "theft" | "expiry" | "return" | "correction" | "other"
   count: number
   total_quantity: number
 }
@@ -1139,7 +1212,7 @@ export const REPORT_CATEGORIES = {
       { key: "by-requester", label: "By Requester", description: "Requisition breakdown by requester" },
     ],
   },
-  adjustments: {
+  "stock-adjustments": {
     label: "Stock Adjustments",
     icon: "RefreshCw",
     color: "pink",

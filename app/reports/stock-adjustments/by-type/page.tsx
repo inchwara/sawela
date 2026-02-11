@@ -4,7 +4,7 @@ import * as React from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useToast } from "@/hooks/use-toast";
 import { getStores, Store } from "@/lib/stores";
-import { getStockAdjustmentByType, downloadReportAsCsv, ReportFilters } from "@/lib/reports-api";
+import { getStockAdjustmentByType, downloadReportAsCsv, AdjustmentByTypeItem, ReportFilters } from "@/lib/reports-api";
 import { ReportLayout, ReportErrorState, ReportEmptyState } from "../../components/report-layout";
 import { ReportFiltersBar } from "../../components/report-filters";
 import { ReportTable, formatNumber, formatCurrency } from "../../components/report-table";
@@ -12,10 +12,8 @@ import { SummaryCard, SummaryGrid } from "../../components/report-summary-cards"
 import { BarChartCard, PieChartCard } from "../../components/report-charts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { ArrowUpCircle, ArrowDownCircle, RefreshCw } from "lucide-react";
+import { ArrowUpCircle, ArrowDownCircle, RefreshCw, Layers, TrendingUp, TrendingDown, Package } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-interface TypeItem { type: string; count: number; total_quantity: number; total_value_impact: number; }
 
 const typeConfig: Record<string, { bg: string; text: string; icon: React.ComponentType<any>; color: string }> = {
   increase: { bg: "bg-green-100", text: "text-green-700", icon: ArrowUpCircle, color: "#22c55e" },
@@ -23,9 +21,9 @@ const typeConfig: Record<string, { bg: string; text: string; icon: React.Compone
   correction: { bg: "bg-blue-100", text: "text-blue-700", icon: RefreshCw, color: "#3b82f6" },
 };
 
-const columns: ColumnDef<TypeItem>[] = [
-  { accessorKey: "type", header: "Type", cell: ({ row }) => {
-    const type = row.original.type.toLowerCase();
+const columns: ColumnDef<AdjustmentByTypeItem>[] = [
+  { accessorKey: "adjustment_type", header: "Type", cell: ({ row }) => {
+    const type = row.original.adjustment_type.toLowerCase();
     const config = typeConfig[type] || typeConfig.correction;
     const Icon = config.icon;
     return <div className="flex items-center gap-2"><div className={cn("p-2 rounded-lg", config.bg)}><Icon className={cn("h-4 w-4", config.text)} /></div><span className="font-medium capitalize">{type}</span></div>;
@@ -33,14 +31,17 @@ const columns: ColumnDef<TypeItem>[] = [
   { accessorKey: "count", header: "Adjustments", cell: ({ row }) => formatNumber(row.original.count) },
   { accessorKey: "total_quantity", header: "Total Quantity", cell: ({ row }) => {
     const qty = row.original.total_quantity;
-    const type = row.original.type.toLowerCase();
+    const type = row.original.adjustment_type.toLowerCase();
     return <span className={cn("font-mono font-medium", type === "increase" ? "text-green-600" : type === "decrease" ? "text-red-600" : "text-blue-600")}>
       {type === "increase" ? "+" : type === "decrease" ? "-" : ""}{formatNumber(Math.abs(qty))}
     </span>;
   }},
-  { accessorKey: "total_value_impact", header: "Value Impact", cell: ({ row }) => {
-    const value = row.original.total_value_impact;
-    return <span className={cn("font-mono font-medium", value >= 0 ? "text-green-600" : "text-red-600")}>{formatCurrency(value)}</span>;
+  { accessorKey: "total_value", header: "Total Value", cell: ({ row }) => {
+    const value = parseFloat(row.original.total_value || "0");
+    const type = row.original.adjustment_type.toLowerCase();
+    return <span className={cn("font-mono font-medium", type === "increase" ? "text-green-600" : "text-red-600")}>
+      {type === "increase" ? "+" : "-"}{formatCurrency(value)}
+    </span>;
   }},
 ];
 
@@ -51,7 +52,7 @@ export default function StockAdjustmentByTypeReport() {
   const [error, setError] = React.useState<string | null>(null);
   const [stores, setStores] = React.useState<Store[]>([]);
   const [filters, setFilters] = React.useState<ReportFilters>({ period: "this_month" });
-  const [data, setData] = React.useState<TypeItem[]>([]);
+  const [data, setData] = React.useState<AdjustmentByTypeItem[]>([]);
   const [meta, setMeta] = React.useState<any>(null);
 
   React.useEffect(() => { getStores().then(setStores).catch(console.error); }, []);
@@ -75,20 +76,25 @@ export default function StockAdjustmentByTypeReport() {
   };
 
   const totalAdjustments = data.reduce((a, t) => a + t.count, 0);
-  const netQuantity = data.reduce((a, t) => a + t.total_quantity, 0);
-  const netValue = data.reduce((a, t) => a + t.total_value_impact, 0);
+  const netQuantity = data.reduce((a, t) => {
+    return t.adjustment_type === "increase" ? a + t.total_quantity : a - t.total_quantity;
+  }, 0);
+  const netValue = data.reduce((a, t) => {
+    const value = parseFloat(t.total_value || "0");
+    return t.adjustment_type === "increase" ? a + value : a - value;
+  }, 0);
 
   const pieData = data.map(t => ({
-    name: t.type.replace(/^\w/, c => c.toUpperCase()),
+    name: t.adjustment_type.replace(/^\w/, c => c.toUpperCase()),
     value: t.count,
-    fill: typeConfig[t.type.toLowerCase()]?.color || "#6b7280"
+    fill: typeConfig[t.adjustment_type.toLowerCase()]?.color || "#6b7280"
   }));
 
   const barData = data.map(t => ({
-    name: t.type.replace(/^\w/, c => c.toUpperCase()),
+    name: t.adjustment_type.replace(/^\w/, c => c.toUpperCase()),
     adjustments: t.count,
     quantity: Math.abs(t.total_quantity),
-    value: Math.abs(t.total_value_impact)
+    value: Math.abs(parseFloat(t.total_value || "0"))
   }));
 
   if (error && !data.length) {
@@ -109,20 +115,21 @@ export default function StockAdjustmentByTypeReport() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {data.map((type) => {
-            const config = typeConfig[type.type.toLowerCase()] || typeConfig.correction;
+            const config = typeConfig[type.adjustment_type.toLowerCase()] || typeConfig.correction;
             const Icon = config.icon;
             const percentage = totalAdjustments > 0 ? (type.count / totalAdjustments) * 100 : 0;
+            const value = parseFloat(type.total_value || "0");
             return (
-              <Card key={type.type} className={cn("border-2", config.bg)}>
+              <Card key={type.adjustment_type} className={cn("border-2", config.bg)}>
                 <CardContent className="p-6">
                   <div className="flex items-center gap-4 mb-4">
                     <div className={cn("p-3 rounded-xl", config.bg)}><Icon className={cn("h-6 w-6", config.text)} /></div>
-                    <div><p className="text-sm text-muted-foreground capitalize">{type.type} Adjustments</p><h3 className="text-2xl font-bold">{formatNumber(type.count)}</h3></div>
+                    <div><p className="text-sm text-muted-foreground capitalize">{type.adjustment_type} Adjustments</p><h3 className="text-2xl font-bold">{formatNumber(type.count)}</h3></div>
                   </div>
                   <Progress value={percentage} className="h-2 mb-2" />
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">{percentage.toFixed(1)}% of total</span>
-                    <span className={cn("font-medium", type.total_value_impact >= 0 ? "text-green-600" : "text-red-600")}>{formatCurrency(type.total_value_impact)}</span>
+                    <span className={cn("font-medium", type.adjustment_type === "increase" ? "text-green-600" : "text-red-600")}>{formatCurrency(value)}</span>
                   </div>
                 </CardContent>
               </Card>
