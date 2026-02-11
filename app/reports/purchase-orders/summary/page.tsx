@@ -1,14 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { getStores, Store } from "@/lib/stores";
 import {
-  getPurchaseOrderSummary,
+  getPurchaseSummary,
   downloadReportAsCsv,
-  PurchaseOrderSummaryItem,
+  PurchaseSummaryData,
   ReportFilters,
 } from "@/lib/reports-api";
 import {
@@ -17,10 +16,8 @@ import {
   ReportEmptyState,
 } from "../../components/report-layout";
 import { ReportFiltersBar } from "../../components/report-filters";
-import { ReportTable, formatNumber, formatCurrency, formatDate } from "../../components/report-table";
 import { SummaryCard, SummaryGrid } from "../../components/report-summary-cards";
 import { BarChartCard, PieChartCard, AreaChartCard } from "../../components/report-charts";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
@@ -29,103 +26,34 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ShoppingCart, Clock, CheckCircle, XCircle, AlertTriangle, Package } from "lucide-react";
+import { ShoppingCart, Clock, CheckCircle, XCircle, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatNumber } from "../../components/report-table";
 
 // Status badge config
-const statusConfig: Record<string, { bg: string; text: string; icon: React.ComponentType<any> }> = {
-  pending: { bg: "bg-yellow-100", text: "text-yellow-700", icon: Clock },
-  approved: { bg: "bg-blue-100", text: "text-blue-700", icon: CheckCircle },
-  ordered: { bg: "bg-purple-100", text: "text-purple-700", icon: ShoppingCart },
-  partial: { bg: "bg-orange-100", text: "text-orange-700", icon: AlertTriangle },
-  received: { bg: "bg-green-100", text: "text-green-700", icon: Package },
-  cancelled: { bg: "bg-red-100", text: "text-red-700", icon: XCircle },
+const statusConfig: Record<string, { bg: string; text: string; icon: React.ComponentType<any>; chartColor: string }> = {
+  pending: { bg: "bg-yellow-100", text: "text-yellow-700", icon: Clock, chartColor: "#f59e0b" },
+  approved: { bg: "bg-blue-100", text: "text-blue-700", icon: CheckCircle, chartColor: "#3b82f6" },
+  ordered: { bg: "bg-purple-100", text: "text-purple-700", icon: ShoppingCart, chartColor: "#8b5cf6" },
+  completed: { bg: "bg-green-100", text: "text-green-700", icon: CheckCircle, chartColor: "#22c55e" },
+  cancelled: { bg: "bg-red-100", text: "text-red-700", icon: XCircle, chartColor: "#ef4444" },
 };
-
-// Table columns
-const columns: ColumnDef<PurchaseOrderSummaryItem>[] = [
-  {
-    accessorKey: "po_number",
-    header: "PO Number",
-    cell: ({ row }) => (
-      <span className="font-mono font-medium">{row.original.po_number}</span>
-    ),
-  },
-  {
-    accessorKey: "date",
-    header: "Date",
-    cell: ({ row }) => formatDate(row.original.date),
-  },
-  {
-    accessorKey: "supplier",
-    header: "Supplier",
-    cell: ({ row }) => row.original.supplier?.name || "—",
-  },
-  {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => {
-      const status = row.original.status?.toLowerCase() || "pending";
-      const config = statusConfig[status] || statusConfig.pending;
-      const Icon = config.icon;
-      return (
-        <Badge className={cn(config.bg, config.text, "gap-1 border-0 capitalize")}>
-          <Icon className="h-3 w-3" />
-          {status}
-        </Badge>
-      );
-    },
-  },
-  {
-    accessorKey: "items_count",
-    header: "Items",
-    cell: ({ row }) => formatNumber(row.original.items_count || 0),
-  },
-  {
-    accessorKey: "total_quantity",
-    header: "Quantity",
-    cell: ({ row }) => (
-      <span className="font-mono">{formatNumber(row.original.total_quantity || 0)}</span>
-    ),
-  },
-  {
-    accessorKey: "total_amount",
-    header: "Amount",
-    cell: ({ row }) => (
-      <span className="font-mono font-medium">{formatCurrency(row.original.total_amount)}</span>
-    ),
-  },
-  {
-    accessorKey: "expected_delivery",
-    header: "Expected Delivery",
-    cell: ({ row }) => row.original.expected_delivery 
-      ? formatDate(row.original.expected_delivery)
-      : "—",
-  },
-];
 
 const CHART_COLORS = ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
 
-export default function PurchaseOrderSummaryReport() {
+export default function PurchaseSummaryReport() {
   const { toast } = useToast();
   const [loading, setLoading] = React.useState(true);
   const [exportLoading, setExportLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [stores, setStores] = React.useState<Store[]>([]);
-  const [filters, setFilters] = React.useState<ReportFilters & { status?: string }>({
+  const [filters, setFilters] = React.useState<ReportFilters>({
     period: "this_month",
-    per_page: 25,
-    page: 1,
+    group_by: "day",
   });
-  
-  const [data, setData] = React.useState<PurchaseOrderSummaryItem[]>([]);
-  const [summary, setSummary] = React.useState<any>(null);
+
+  const [data, setData] = React.useState<PurchaseSummaryData | null>(null);
   const [meta, setMeta] = React.useState<any>(null);
-  const [pagination, setPagination] = React.useState({
-    total: 0,
-    currentPage: 1,
-    lastPage: 1,
-  });
 
   // Fetch stores
   React.useEffect(() => {
@@ -137,16 +65,10 @@ export default function PurchaseOrderSummaryReport() {
     setLoading(true);
     setError(null);
     try {
-      const response = await getPurchaseOrderSummary(filters);
+      const response = await getPurchaseSummary(filters);
       if (response.success) {
-        setData(response.data.data);
-        setSummary(response.summary || null);
+        setData(response.data);
         setMeta(response.meta);
-        setPagination({
-          total: response.data.total,
-          currentPage: response.data.current_page,
-          lastPage: response.data.last_page,
-        });
       }
     } catch (err: any) {
       setError(err.message || "Failed to load report");
@@ -168,7 +90,7 @@ export default function PurchaseOrderSummaryReport() {
   const handleExport = async () => {
     setExportLoading(true);
     try {
-      await downloadReportAsCsv("/purchase-orders/summary", filters, "purchase_order_summary.csv");
+      await downloadReportAsCsv("/purchase/summary", filters, "purchase_summary.csv");
       toast({
         title: "Export successful",
         description: "The report has been downloaded as CSV",
@@ -184,31 +106,28 @@ export default function PurchaseOrderSummaryReport() {
     }
   };
 
-  // Calculate totals
-  const totalOrders = summary?.total_orders || data.length;
-  const totalAmount = summary?.total_amount || data.reduce((acc, po) => acc + po.total_amount, 0);
-  const totalItems = summary?.total_items || data.reduce((acc, po) => acc + (po.items_count || 0), 0);
-  const pendingCount = summary?.by_status?.find((s: any) => s.status.toLowerCase() === "pending")?.count || 0;
-  const receivedAmount = summary?.by_status?.find((s: any) => s.status.toLowerCase() === "received")?.total_amount || 0;
+  // Extract summary data
+  const summary = data?.summary;
+  const timeSeries = data?.time_series || [];
+  const byStatus = data?.by_status || [];
 
-  // Status distribution chart
-  const statusChartData = (summary?.by_status || []).map((s: any, idx: number) => ({
+  // Pie chart data
+  const statusChartData = byStatus.map((s, idx) => ({
     name: s.status.charAt(0).toUpperCase() + s.status.slice(1),
     value: s.count,
-    fill: CHART_COLORS[idx % CHART_COLORS.length],
+    fill: statusConfig[s.status.toLowerCase()]?.chartColor || CHART_COLORS[idx % CHART_COLORS.length],
   }));
 
-  // Trend chart data (if available)
-  const trendChartData = (summary?.by_date || []).map((d: any) => ({
-    date: format(new Date(d.date), "MMM d"),
-    orders: d.count,
-    amount: d.total_amount,
+  // Time series chart data
+  const trendChartData = timeSeries.map((d) => ({
+    date: format(new Date(d.period), "MMM d"),
+    orders: d.order_count,
   }));
 
-  if (error && !data.length) {
+  if (error && !data) {
     return (
       <ReportLayout
-        title="Purchase Orders Summary"
+        title="Purchase Summary"
         description="Overview of purchase orders"
         category="purchase-orders"
         categoryLabel="Purchase Orders"
@@ -220,8 +139,8 @@ export default function PurchaseOrderSummaryReport() {
 
   return (
     <ReportLayout
-      title="Purchase Orders Summary"
-      description="Track and analyze purchase orders with detailed status and financial metrics"
+      title="Purchase Summary"
+      description="Track and analyze purchase order activity with status and trend insights"
       category="purchase-orders"
       categoryLabel="Purchase Orders"
       loading={loading}
@@ -236,67 +155,59 @@ export default function PurchaseOrderSummaryReport() {
         <ReportFiltersBar
           filters={filters}
           onFiltersChange={setFilters}
-          showStoreFilter
-          stores={stores}
+          showStoreFilter={false}
+          showGroupBy
           loading={loading}
-          additionalFilters={
-            <Select
-              value={filters.status || "all"}
-              onValueChange={(value) =>
-                setFilters((prev) => ({
-                  ...prev,
-                  status: value === "all" ? undefined : value,
-                  page: 1,
-                }))
-              }
-            >
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="All Statuses" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="approved">Approved</SelectItem>
-                <SelectItem value="ordered">Ordered</SelectItem>
-                <SelectItem value="partial">Partial</SelectItem>
-                <SelectItem value="received">Received</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
-              </SelectContent>
-            </Select>
-          }
         />
 
         {/* Summary Cards */}
         <SummaryGrid>
           <SummaryCard
             title="Total Orders"
-            value={totalOrders}
+            value={summary?.total_orders ?? 0}
             icon="ShoppingCart"
             loading={loading}
           />
           <SummaryCard
-            title="Total Amount"
-            value={formatCurrency(totalAmount)}
-            icon="DollarSign"
+            title="Unique Suppliers"
+            value={summary?.unique_suppliers ?? 0}
+            icon="Building2"
+            loading={loading}
+          />
+          <SummaryCard
+            title="Completed"
+            value={summary?.completed_orders ?? 0}
+            subtitle="orders fulfilled"
+            icon="CheckCircle"
             variant="success"
             loading={loading}
           />
           <SummaryCard
-            title="Pending Orders"
-            value={pendingCount}
+            title="Pending"
+            value={summary?.pending_orders ?? 0}
             subtitle="awaiting action"
             icon="Clock"
-            variant={pendingCount > 0 ? "warning" : "default"}
-            loading={loading}
-          />
-          <SummaryCard
-            title="Received Value"
-            value={formatCurrency(receivedAmount)}
-            subtitle="completed orders"
-            icon="Package"
+            variant={summary?.pending_orders ? "warning" : "default"}
             loading={loading}
           />
         </SummaryGrid>
+
+        {/* Cancelled highlight */}
+        {(summary?.cancelled_orders ?? 0) > 0 && (
+          <Card className="border-red-200 dark:border-red-800 bg-red-50/50 dark:bg-red-950/20">
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900">
+                <XCircle className="h-5 w-5 text-red-600" />
+              </div>
+              <div>
+                <p className="font-medium">Cancelled Orders</p>
+                <p className="text-sm text-muted-foreground">
+                  {summary?.cancelled_orders} orders have been cancelled in this period
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -308,18 +219,17 @@ export default function PurchaseOrderSummaryReport() {
             height={300}
             showLegend
           />
-          
+
           {trendChartData.length > 0 ? (
             <AreaChartCard
               title="Order Trend"
               description="Purchase order activity over time"
               data={trendChartData}
-              dataKeys={[
-                { key: "orders", name: "Orders", color: "#3b82f6" },
-              ]}
+              dataKey="orders"
               xAxisKey="date"
               loading={loading}
               height={300}
+              color="#3b82f6"
             />
           ) : (
             <Card>
@@ -328,16 +238,12 @@ export default function PurchaseOrderSummaryReport() {
                 <CardDescription>Detailed view of order statuses</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {Object.entries(statusConfig).map(([status, config]) => {
-                  const statusData = (summary?.by_status || []).find(
-                    (s: any) => s.status.toLowerCase() === status
-                  );
-                  const count = statusData?.count || 0;
-                  const amount = statusData?.total_amount || 0;
+                {byStatus.map((item) => {
+                  const status = item.status.toLowerCase();
+                  const config = statusConfig[status] || statusConfig.pending;
                   const Icon = config.icon;
-                  
-                  if (count === 0) return null;
-                  
+                  if (item.count === 0) return null;
+
                   return (
                     <div key={status} className="flex items-center justify-between p-3 rounded-lg border">
                       <div className="flex items-center gap-3">
@@ -346,10 +252,9 @@ export default function PurchaseOrderSummaryReport() {
                         </div>
                         <div>
                           <p className="font-medium capitalize">{status}</p>
-                          <p className="text-sm text-muted-foreground">{count} orders</p>
+                          <p className="text-sm text-muted-foreground">{item.count} orders</p>
                         </div>
                       </div>
-                      <p className="font-bold">{formatCurrency(amount)}</p>
                     </div>
                   );
                 })}
@@ -358,22 +263,9 @@ export default function PurchaseOrderSummaryReport() {
           )}
         </div>
 
-        {/* Data Table */}
-        {data.length === 0 && !loading ? (
+        {/* Empty state */}
+        {!loading && (summary?.total_orders ?? 0) === 0 && (
           <ReportEmptyState />
-        ) : (
-          <ReportTable
-            columns={columns}
-            data={data}
-            loading={loading}
-            searchColumn="po_number"
-            searchPlaceholder="Search by PO number..."
-            pageSize={filters.per_page}
-            totalItems={pagination.total}
-            currentPage={pagination.currentPage}
-            onPageChange={(page) => setFilters(prev => ({ ...prev, page }))}
-            serverPagination
-          />
         )}
       </div>
     </ReportLayout>

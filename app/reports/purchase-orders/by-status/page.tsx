@@ -4,9 +4,9 @@ import * as React from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useToast } from "@/hooks/use-toast";
 import {
-  getPurchaseOrdersByStatus,
+  getPurchasesByStatus,
   downloadReportAsCsv,
-  PurchaseOrdersByStatusItem,
+  PurchaseByStatusItem,
   ReportFilters,
 } from "@/lib/reports-api";
 import {
@@ -15,13 +15,13 @@ import {
   ReportEmptyState,
 } from "../../components/report-layout";
 import { ReportFiltersBar } from "../../components/report-filters";
-import { ReportTable, formatNumber, formatCurrency } from "../../components/report-table";
+import { ReportTable, formatNumber } from "../../components/report-table";
 import { SummaryCard, SummaryGrid } from "../../components/report-summary-cards";
 import { PieChartCard, BarChartCard } from "../../components/report-charts";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Clock, CheckCircle, XCircle, AlertTriangle, Package, ShoppingCart, Truck } from "lucide-react";
+import { Clock, CheckCircle, XCircle, AlertTriangle, Package, ShoppingCart, Truck, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Status config
@@ -31,12 +31,13 @@ const statusConfig: Record<string, { bg: string; text: string; icon: React.Compo
   ordered: { bg: "bg-purple-100", text: "text-purple-700", icon: ShoppingCart, chartColor: "#8b5cf6" },
   partial: { bg: "bg-orange-100", text: "text-orange-700", icon: AlertTriangle, chartColor: "#f97316" },
   received: { bg: "bg-green-100", text: "text-green-700", icon: Package, chartColor: "#22c55e" },
+  completed: { bg: "bg-green-100", text: "text-green-700", icon: CheckCircle, chartColor: "#22c55e" },
   shipped: { bg: "bg-indigo-100", text: "text-indigo-700", icon: Truck, chartColor: "#6366f1" },
   cancelled: { bg: "bg-red-100", text: "text-red-700", icon: XCircle, chartColor: "#ef4444" },
 };
 
 // Table columns
-const columns: ColumnDef<PurchaseOrdersByStatusItem>[] = [
+const columns: ColumnDef<PurchaseByStatusItem>[] = [
   {
     accessorKey: "status",
     header: "Status",
@@ -60,19 +61,14 @@ const columns: ColumnDef<PurchaseOrdersByStatusItem>[] = [
     cell: ({ row }) => formatNumber(row.original.count),
   },
   {
-    accessorKey: "total_amount",
-    header: "Total Amount",
+    accessorKey: "unique_suppliers",
+    header: "Suppliers",
     cell: ({ row }) => (
-      <span className="font-mono font-medium">{formatCurrency(row.original.total_amount)}</span>
+      <div className="flex items-center gap-1.5">
+        <Users className="h-3.5 w-3.5 text-muted-foreground" />
+        <span>{row.original.unique_suppliers}</span>
+      </div>
     ),
-  },
-  {
-    accessorKey: "avg_amount",
-    header: "Avg Order",
-    cell: ({ row }) => {
-      const avg = row.original.count > 0 ? row.original.total_amount / row.original.count : 0;
-      return formatCurrency(avg);
-    },
   },
   {
     accessorKey: "percentage",
@@ -86,19 +82,17 @@ const columns: ColumnDef<PurchaseOrdersByStatusItem>[] = [
   },
 ];
 
-export default function PurchaseOrdersByStatusReport() {
+export default function PurchaseByStatusReport() {
   const { toast } = useToast();
   const [loading, setLoading] = React.useState(true);
   const [exportLoading, setExportLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [filters, setFilters] = React.useState<ReportFilters>({
     period: "this_month",
-    per_page: 50,
-    page: 1,
   });
-  
-  const [data, setData] = React.useState<PurchaseOrdersByStatusItem[]>([]);
-  const [summary, setSummary] = React.useState<any>(null);
+
+  const [data, setData] = React.useState<PurchaseByStatusItem[]>([]);
+  const [totalOrders, setTotalOrders] = React.useState(0);
   const [meta, setMeta] = React.useState<any>(null);
 
   // Fetch report
@@ -106,17 +100,11 @@ export default function PurchaseOrdersByStatusReport() {
     setLoading(true);
     setError(null);
     try {
-      const response = await getPurchaseOrdersByStatus(filters);
+      const response = await getPurchasesByStatus(filters);
       if (response.success) {
-        const items = Array.isArray(response.data) ? response.data : response.data.data;
-        // Calculate percentages
-        const totalOrders = items.reduce((acc: number, s: any) => acc + s.count, 0);
-        const itemsWithPercentage = items.map((item: any) => ({
-          ...item,
-          percentage: totalOrders > 0 ? (item.count / totalOrders) * 100 : 0,
-        }));
-        setData(itemsWithPercentage);
-        setSummary(response.summary || null);
+        const items = Array.isArray(response.data) ? response.data : [];
+        setData(items);
+        setTotalOrders(response.summary?.total_orders ?? items.reduce((acc, s) => acc + s.count, 0));
         setMeta(response.meta);
       }
     } catch (err: any) {
@@ -139,7 +127,7 @@ export default function PurchaseOrdersByStatusReport() {
   const handleExport = async () => {
     setExportLoading(true);
     try {
-      await downloadReportAsCsv("/purchase-orders/by-status", filters, "po_by_status.csv");
+      await downloadReportAsCsv("/purchase/by-status", filters, "po_by_status.csv");
       toast({
         title: "Export successful",
         description: "The report has been downloaded as CSV",
@@ -155,11 +143,10 @@ export default function PurchaseOrdersByStatusReport() {
     }
   };
 
-  // Calculate totals
-  const totalOrders = data.reduce((acc, s) => acc + s.count, 0);
-  const totalAmount = data.reduce((acc, s) => acc + s.total_amount, 0);
+  // Extract specific statuses
   const pendingData = data.find(s => s.status.toLowerCase() === "pending");
-  const receivedData = data.find(s => s.status.toLowerCase() === "received");
+  const completedData = data.find(s => s.status.toLowerCase() === "completed" || s.status.toLowerCase() === "received");
+  const totalUniqueSuppliers = data.reduce((acc, s) => acc + (s.unique_suppliers || 0), 0);
 
   // Chart data
   const pieChartData = data.map((s) => {
@@ -175,7 +162,7 @@ export default function PurchaseOrdersByStatusReport() {
   const barChartData = data.map((s) => ({
     name: s.status.charAt(0).toUpperCase() + s.status.slice(1),
     orders: s.count,
-    amount: s.total_amount,
+    suppliers: s.unique_suppliers,
   }));
 
   if (error && !data.length) {
@@ -223,25 +210,25 @@ export default function PurchaseOrdersByStatusReport() {
             loading={loading}
           />
           <SummaryCard
-            title="Total Value"
-            value={formatCurrency(totalAmount)}
-            icon="DollarSign"
-            variant="success"
+            title="Statuses"
+            value={data.length}
+            subtitle="different statuses"
+            icon="BarChart3"
             loading={loading}
           />
           <SummaryCard
             title="Pending"
             value={pendingData?.count || 0}
-            subtitle={formatCurrency(pendingData?.total_amount || 0)}
+            subtitle={`${pendingData?.unique_suppliers || 0} suppliers`}
             icon="Clock"
             variant="warning"
             loading={loading}
           />
           <SummaryCard
-            title="Received"
-            value={receivedData?.count || 0}
-            subtitle={formatCurrency(receivedData?.total_amount || 0)}
-            icon="Package"
+            title="Completed"
+            value={completedData?.count || 0}
+            subtitle={`${completedData?.unique_suppliers || 0} suppliers`}
+            icon="CheckCircle"
             variant="success"
             loading={loading}
           />
@@ -258,12 +245,12 @@ export default function PurchaseOrdersByStatusReport() {
             showLegend
           />
           <BarChartCard
-            title="Value by Status"
-            description="Purchase amounts per status"
+            title="Suppliers by Status"
+            description="Unique suppliers per order status"
             data={barChartData}
             dataKeys={[
               { key: "orders", name: "Orders", color: "#3b82f6" },
-              { key: "amount", name: "Amount", color: "#22c55e" },
+              { key: "suppliers", name: "Unique Suppliers", color: "#8b5cf6" },
             ]}
             xAxisKey="name"
             loading={loading}
@@ -283,11 +270,10 @@ export default function PurchaseOrdersByStatusReport() {
                 const status = item.status.toLowerCase();
                 const config = statusConfig[status] || statusConfig.pending;
                 const Icon = config.icon;
-                const avgOrder = item.count > 0 ? item.total_amount / item.count : 0;
-                
+
                 return (
-                  <div 
-                    key={index} 
+                  <div
+                    key={index}
                     className={cn(
                       "p-4 rounded-lg border-2 transition-all hover:shadow-md",
                       "border-l-4",
@@ -303,25 +289,21 @@ export default function PurchaseOrdersByStatusReport() {
                       </div>
                       <Badge variant="outline">{item.percentage?.toFixed(1)}%</Badge>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span className="text-muted-foreground text-sm">Orders</span>
                         <span className="font-bold">{item.count}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground text-sm">Total Value</span>
-                        <span className="font-bold">{formatCurrency(item.total_amount)}</span>
+                        <span className="text-muted-foreground text-sm">Unique Suppliers</span>
+                        <span className="font-bold">{item.unique_suppliers}</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground text-sm">Avg Order</span>
-                        <span className="font-medium">{formatCurrency(avgOrder)}</span>
-                      </div>
-                      <Progress 
-                        value={item.percentage} 
-                        className="h-2 mt-2" 
-                        style={{ 
-                          '--progress-background': config.chartColor 
+                      <Progress
+                        value={item.percentage}
+                        className="h-2 mt-2"
+                        style={{
+                          '--progress-background': config.chartColor
                         } as React.CSSProperties}
                       />
                     </div>

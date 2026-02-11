@@ -4,9 +4,9 @@ import * as React from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useToast } from "@/hooks/use-toast";
 import {
-  getPurchaseOrdersBySupplier,
+  getPurchasesBySupplier,
   downloadReportAsCsv,
-  PurchaseOrdersBySupplierItem,
+  PurchaseBySupplierItem,
   ReportFilters,
 } from "@/lib/reports-api";
 import {
@@ -15,32 +15,27 @@ import {
   ReportEmptyState,
 } from "../../components/report-layout";
 import { ReportFiltersBar } from "../../components/report-filters";
-import { ReportTable, formatNumber, formatCurrency } from "../../components/report-table";
+import { ReportTable, formatNumber } from "../../components/report-table";
 import { SummaryCard, SummaryGrid } from "../../components/report-summary-cards";
 import { BarChartCard, PieChartCard } from "../../components/report-charts";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Building2, ShoppingCart, TrendingUp, Star } from "lucide-react";
+import { Building2, ShoppingCart, TrendingUp, Star, CheckCircle } from "lucide-react";
 
 const CHART_COLORS = ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#14b8a6", "#f97316"];
 
 // Table columns
-const columns: ColumnDef<PurchaseOrdersBySupplierItem>[] = [
+const columns: ColumnDef<PurchaseBySupplierItem>[] = [
   {
-    accessorKey: "supplier",
+    accessorKey: "supplier_name",
     header: "Supplier",
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
         <div className="p-2 rounded-lg bg-primary/10">
           <Building2 className="h-4 w-4 text-primary" />
         </div>
-        <div>
-          <p className="font-medium">{row.original.supplier.name}</p>
-          {row.original.supplier.contact_person && (
-            <p className="text-sm text-muted-foreground">{row.original.supplier.contact_person}</p>
-          )}
-        </div>
+        <span className="font-medium">{row.original.supplier_name}</span>
       </div>
     ),
   },
@@ -50,62 +45,41 @@ const columns: ColumnDef<PurchaseOrdersBySupplierItem>[] = [
     cell: ({ row }) => formatNumber(row.original.order_count),
   },
   {
-    accessorKey: "total_amount",
-    header: "Total Amount",
-    cell: ({ row }) => (
-      <span className="font-mono font-medium">{formatCurrency(row.original.total_amount)}</span>
-    ),
-  },
-  {
-    accessorKey: "avg_order_value",
-    header: "Avg Order",
-    cell: ({ row }) => {
-      const avg = row.original.order_count > 0 
-        ? row.original.total_amount / row.original.order_count 
-        : 0;
-      return formatCurrency(avg);
-    },
-  },
-  {
-    accessorKey: "pending_orders",
-    header: "Pending",
-    cell: ({ row }) => (
-      <Badge variant={row.original.pending_orders > 0 ? "secondary" : "outline"}>
-        {row.original.pending_orders || 0}
-      </Badge>
-    ),
-  },
-  {
-    accessorKey: "received_orders",
-    header: "Received",
+    accessorKey: "completed_count",
+    header: "Completed",
     cell: ({ row }) => (
       <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-        {row.original.received_orders || 0}
+        {row.original.completed_count || 0}
       </Badge>
     ),
   },
   {
-    accessorKey: "total_quantity",
-    header: "Total Qty",
-    cell: ({ row }) => (
-      <span className="font-mono">{formatNumber(row.original.total_quantity || 0)}</span>
-    ),
+    accessorKey: "completion_rate",
+    header: "Completion Rate",
+    cell: ({ row }) => {
+      const rate = row.original.order_count > 0
+        ? (row.original.completed_count / row.original.order_count) * 100
+        : 0;
+      return (
+        <div className="flex items-center gap-2 w-32">
+          <Progress value={rate} className="h-2 flex-1" />
+          <span className="text-sm text-muted-foreground">{rate.toFixed(0)}%</span>
+        </div>
+      );
+    },
   },
 ];
 
-export default function PurchaseOrdersBySupplierReport() {
+export default function PurchaseBySupplierReport() {
   const { toast } = useToast();
   const [loading, setLoading] = React.useState(true);
   const [exportLoading, setExportLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [filters, setFilters] = React.useState<ReportFilters>({
     period: "this_month",
-    per_page: 50,
-    page: 1,
   });
-  
-  const [data, setData] = React.useState<PurchaseOrdersBySupplierItem[]>([]);
-  const [summary, setSummary] = React.useState<any>(null);
+
+  const [data, setData] = React.useState<PurchaseBySupplierItem[]>([]);
   const [meta, setMeta] = React.useState<any>(null);
 
   // Fetch report
@@ -113,11 +87,10 @@ export default function PurchaseOrdersBySupplierReport() {
     setLoading(true);
     setError(null);
     try {
-      const response = await getPurchaseOrdersBySupplier(filters);
+      const response = await getPurchasesBySupplier(filters);
       if (response.success) {
-        const items = Array.isArray(response.data) ? response.data : response.data.data;
+        const items = Array.isArray(response.data) ? response.data : [];
         setData(items);
-        setSummary(response.summary || null);
         setMeta(response.meta);
       }
     } catch (err: any) {
@@ -140,7 +113,7 @@ export default function PurchaseOrdersBySupplierReport() {
   const handleExport = async () => {
     setExportLoading(true);
     try {
-      await downloadReportAsCsv("/purchase-orders/by-supplier", filters, "po_by_supplier.csv");
+      await downloadReportAsCsv("/purchase/by-supplier", filters, "po_by_supplier.csv");
       toast({
         title: "Export successful",
         description: "The report has been downloaded as CSV",
@@ -159,25 +132,24 @@ export default function PurchaseOrdersBySupplierReport() {
   // Calculate totals
   const totalSuppliers = data.length;
   const totalOrders = data.reduce((acc, s) => acc + s.order_count, 0);
-  const totalAmount = data.reduce((acc, s) => acc + s.total_amount, 0);
-  const totalPending = data.reduce((acc, s) => acc + (s.pending_orders || 0), 0);
+  const totalCompleted = data.reduce((acc, s) => acc + (s.completed_count || 0), 0);
+  const completionRate = totalOrders > 0 ? ((totalCompleted / totalOrders) * 100).toFixed(1) : "0";
 
-  // Sort by amount
-  const topSuppliers = [...data].sort((a, b) => b.total_amount - a.total_amount).slice(0, 8);
+  // Sort by order count
+  const topSuppliers = [...data].sort((a, b) => b.order_count - a.order_count).slice(0, 8);
   const topSupplier = topSuppliers[0];
 
   // Chart data
-  const amountChartData = topSuppliers.map((s, idx) => ({
-    name: s.supplier.name.length > 12 ? s.supplier.name.slice(0, 12) + "..." : s.supplier.name,
-    value: s.total_amount,
+  const ordersChartData = topSuppliers.map((s, idx) => ({
+    name: s.supplier_name.length > 12 ? s.supplier_name.slice(0, 12) + "..." : s.supplier_name,
+    value: s.order_count,
     fill: CHART_COLORS[idx % CHART_COLORS.length],
   }));
 
-  const ordersChartData = topSuppliers.map((s) => ({
-    name: s.supplier.name.length > 10 ? s.supplier.name.slice(0, 10) + "..." : s.supplier.name,
+  const completionChartData = topSuppliers.map((s) => ({
+    name: s.supplier_name.length > 10 ? s.supplier_name.slice(0, 10) + "..." : s.supplier_name,
     orders: s.order_count,
-    pending: s.pending_orders || 0,
-    received: s.received_orders || 0,
+    completed: s.completed_count || 0,
   }));
 
   if (error && !data.length) {
@@ -196,7 +168,7 @@ export default function PurchaseOrdersBySupplierReport() {
   return (
     <ReportLayout
       title="Purchase Orders by Supplier"
-      description="Analyze purchase order distribution and spending across suppliers"
+      description="Analyze purchase order distribution and completion across suppliers"
       category="purchase-orders"
       categoryLabel="Purchase Orders"
       loading={loading}
@@ -231,18 +203,18 @@ export default function PurchaseOrdersBySupplierReport() {
             loading={loading}
           />
           <SummaryCard
-            title="Total Spend"
-            value={formatCurrency(totalAmount)}
-            icon="DollarSign"
+            title="Completed"
+            value={formatNumber(totalCompleted)}
+            icon="CheckCircle"
             variant="success"
             loading={loading}
           />
           <SummaryCard
-            title="Pending Orders"
-            value={totalPending}
+            title="Completion Rate"
+            value={`${completionRate}%`}
             subtitle="across all suppliers"
-            icon="Clock"
-            variant={totalPending > 0 ? "warning" : "default"}
+            icon="TrendingUp"
+            variant={Number(completionRate) >= 80 ? "success" : "warning"}
             loading={loading}
           />
         </SummaryGrid>
@@ -257,16 +229,16 @@ export default function PurchaseOrdersBySupplierReport() {
                     <Star className="h-6 w-6" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Highest Spend Supplier</p>
-                    <h3 className="text-xl font-bold">{topSupplier.supplier.name}</h3>
+                    <p className="text-sm text-muted-foreground">Most Active Supplier</p>
+                    <h3 className="text-xl font-bold">{topSupplier.supplier_name}</h3>
                     <p className="text-sm text-muted-foreground">{topSupplier.order_count} purchase orders</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-3xl font-bold text-blue-600">{formatCurrency(topSupplier.total_amount)}</p>
-                  <p className="text-muted-foreground">
-                    {((topSupplier.total_amount / totalAmount) * 100).toFixed(1)}% of total spend
+                  <p className="text-3xl font-bold text-blue-600">
+                    {topSupplier.completed_count || 0}
                   </p>
+                  <p className="text-muted-foreground">completed orders</p>
                 </div>
               </div>
             </CardContent>
@@ -276,21 +248,20 @@ export default function PurchaseOrdersBySupplierReport() {
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <PieChartCard
-            title="Spend Distribution"
-            description="Purchase amount by supplier"
-            data={amountChartData}
+            title="Order Distribution"
+            description="Purchase order count by supplier"
+            data={ordersChartData}
             loading={loading}
             height={320}
             showLegend
           />
           <BarChartCard
-            title="Orders by Supplier"
-            description="Order count and status breakdown"
-            data={ordersChartData}
+            title="Orders vs Completed"
+            description="Order count and completion per supplier"
+            data={completionChartData}
             dataKeys={[
               { key: "orders", name: "Total Orders", color: "#3b82f6" },
-              { key: "pending", name: "Pending", color: "#f59e0b" },
-              { key: "received", name: "Received", color: "#22c55e" },
+              { key: "completed", name: "Completed", color: "#22c55e" },
             ]}
             xAxisKey="name"
             loading={loading}
@@ -303,29 +274,30 @@ export default function PurchaseOrdersBySupplierReport() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
-              Supplier Spend Analysis
+              Supplier Analysis
             </CardTitle>
             <CardDescription>
-              Detailed breakdown of purchasing activity per supplier
+              Detailed breakdown of ordering activity per supplier
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {topSuppliers.map((supplier, index) => {
-                const spendShare = totalAmount > 0 ? (supplier.total_amount / totalAmount) * 100 : 0;
                 const orderShare = totalOrders > 0 ? (supplier.order_count / totalOrders) * 100 : 0;
-                const avgOrder = supplier.order_count > 0 ? supplier.total_amount / supplier.order_count : 0;
-                
+                const supplierCompletionRate = supplier.order_count > 0
+                  ? (supplier.completed_count / supplier.order_count) * 100
+                  : 0;
+
                 return (
-                  <div key={index} className="p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
+                  <div key={supplier.supplier_id || index} className="p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-3">
-                        <div 
-                          className="w-4 h-4 rounded-full" 
+                        <div
+                          className="w-4 h-4 rounded-full"
                           style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }}
                         />
                         <div className="flex items-center gap-2">
-                          <span className="font-medium">{supplier.supplier.name}</span>
+                          <span className="font-medium">{supplier.supplier_name}</span>
                           {index === 0 && (
                             <Badge className="bg-blue-100 text-blue-700 border-0">
                               <Star className="h-3 w-3 mr-1" />
@@ -335,39 +307,24 @@ export default function PurchaseOrdersBySupplierReport() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <span className="font-bold">{formatCurrency(supplier.total_amount)}</span>
-                        <span className="text-muted-foreground ml-2">({spendShare.toFixed(1)}%)</span>
+                        <span className="font-bold">{supplier.order_count} orders</span>
+                        <span className="text-muted-foreground ml-2">({orderShare.toFixed(1)}%)</span>
                       </div>
                     </div>
-                    
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+
+                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
                       <div>
-                        <p className="text-muted-foreground mb-1">Spend Share</p>
-                        <Progress value={spendShare} className="h-2" />
-                        <p className="mt-1 font-medium">{spendShare.toFixed(1)}%</p>
+                        <p className="text-muted-foreground mb-1">Order Share</p>
+                        <Progress value={orderShare} className="h-2" />
+                        <p className="mt-1 font-medium">{orderShare.toFixed(1)}%</p>
                       </div>
                       <div>
-                        <p className="text-muted-foreground">Total Orders</p>
-                        <p className="font-bold text-lg">{supplier.order_count}</p>
+                        <p className="text-muted-foreground">Completed</p>
+                        <p className="font-bold text-lg">{supplier.completed_count || 0}</p>
                       </div>
                       <div>
-                        <p className="text-muted-foreground">Avg Order Value</p>
-                        <p className="font-bold text-lg">{formatCurrency(avgOrder)}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Status</p>
-                        <div className="flex gap-2 mt-1">
-                          {(supplier.pending_orders || 0) > 0 && (
-                            <Badge variant="secondary" className="text-xs">
-                              {supplier.pending_orders} pending
-                            </Badge>
-                          )}
-                          {(supplier.received_orders || 0) > 0 && (
-                            <Badge variant="outline" className="text-xs bg-green-50 text-green-700">
-                              {supplier.received_orders} received
-                            </Badge>
-                          )}
-                        </div>
+                        <p className="text-muted-foreground">Completion Rate</p>
+                        <p className="font-bold text-lg">{supplierCompletionRate.toFixed(0)}%</p>
                       </div>
                     </div>
                   </div>
@@ -385,7 +342,7 @@ export default function PurchaseOrdersBySupplierReport() {
             columns={columns}
             data={data}
             loading={loading}
-            searchColumn="supplier"
+            searchColumn="supplier_name"
             searchPlaceholder="Search suppliers..."
           />
         )}

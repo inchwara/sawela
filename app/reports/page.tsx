@@ -107,7 +107,7 @@ const colorMap: Record<string, { bg: string; text: string; border: string; gradi
 const featuredReports = [
   { category: "inventory", report: "stock-levels", tag: "Popular" },
   { category: "inventory", report: "low-stock", tag: "Critical" },
-  { category: "purchase", report: "summary", tag: "Trending" },
+  { category: "purchase-orders", report: "summary", tag: "Trending" },
   { category: "suppliers", report: "performance", tag: "New" },
 ];
 

@@ -976,11 +976,11 @@ export async function downloadReportAsCsv(
 ): Promise<void> {
   const API_BASE_URL = getApiUrl()
   const token = getToken()
-  
+
   const queryFilters = { ...filters, export: "csv" as const }
   const query = buildQueryString(queryFilters)
   const url = `${API_BASE_URL}${BASE_PATH}${endpoint}${query}`
-  
+
   try {
     const response = await fetch(url, {
       method: "GET",
@@ -998,7 +998,7 @@ export async function downloadReportAsCsv(
     const downloadUrl = window.URL.createObjectURL(blob)
     const link = document.createElement("a")
     link.href = downloadUrl
-    
+
     // Get filename from Content-Disposition header or use provided filename
     const contentDisposition = response.headers.get("Content-Disposition")
     let downloadFilename = filename || "report.csv"
@@ -1008,7 +1008,7 @@ export async function downloadReportAsCsv(
         downloadFilename = filenameMatch[1].replace(/['"]/g, "")
       }
     }
-    
+
     link.setAttribute("download", downloadFilename)
     document.body.appendChild(link)
     link.click()
@@ -1047,7 +1047,7 @@ export const REPORT_CATEGORIES = {
       { key: "by-supplier", label: "By Supplier", description: "Product breakdown by supplier" },
     ],
   },
-  purchase: {
+  "purchase-orders": {
     label: "Purchase Orders",
     icon: "ShoppingCart",
     color: "purple",

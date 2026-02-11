@@ -2,13 +2,12 @@
 
 import * as React from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { getStores, Store } from "@/lib/stores";
 import {
-  getPurchaseOrderReceipts,
+  getProductReceipts,
   downloadReportAsCsv,
-  PurchaseOrderReceiptItem,
+  ProductReceiptItem,
   ReportFilters,
 } from "@/lib/reports-api";
 import {
@@ -19,21 +18,11 @@ import {
 import { ReportFiltersBar } from "../../components/report-filters";
 import { ReportTable, formatNumber, formatCurrency, formatDate } from "../../components/report-table";
 import { SummaryCard, SummaryGrid } from "../../components/report-summary-cards";
-import { BarChartCard, AreaChartCard } from "../../components/report-charts";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Package, Truck, Calendar, CheckCircle, Clock, AlertTriangle } from "lucide-react";
-import { cn } from "@/lib/utils";
-
-// Status config
-const receiptStatusConfig: Record<string, { bg: string; text: string }> = {
-  complete: { bg: "bg-green-100", text: "text-green-700" },
-  partial: { bg: "bg-yellow-100", text: "text-yellow-700" },
-  pending: { bg: "bg-blue-100", text: "text-blue-700" },
-};
+import { Package, Building2 } from "lucide-react";
 
 // Table columns
-const columns: ColumnDef<PurchaseOrderReceiptItem>[] = [
+const columns: ColumnDef<ProductReceiptItem>[] = [
   {
     accessorKey: "receipt_number",
     header: "Receipt #",
@@ -42,53 +31,28 @@ const columns: ColumnDef<PurchaseOrderReceiptItem>[] = [
     ),
   },
   {
-    accessorKey: "receipt_date",
+    accessorKey: "created_at",
     header: "Date",
-    cell: ({ row }) => formatDate(row.original.receipt_date),
-  },
-  {
-    accessorKey: "po_number",
-    header: "PO Number",
-    cell: ({ row }) => (
-      <span className="font-mono">{row.original.po_number}</span>
-    ),
+    cell: ({ row }) => formatDate(row.original.created_at),
   },
   {
     accessorKey: "supplier",
     header: "Supplier",
-    cell: ({ row }) => row.original.supplier?.name || "—",
-  },
-  {
-    accessorKey: "items_received",
-    header: "Items",
-    cell: ({ row }) => formatNumber(row.original.items_received || 0),
-  },
-  {
-    accessorKey: "quantity_received",
-    header: "Qty Received",
     cell: ({ row }) => (
-      <span className="font-mono">{formatNumber(row.original.quantity_received || 0)}</span>
+      <div className="flex items-center gap-2">
+        <div className="p-1.5 rounded bg-primary/10">
+          <Building2 className="h-3.5 w-3.5 text-primary" />
+        </div>
+        <span>{row.original.supplier?.name || "—"}</span>
+      </div>
     ),
   },
   {
-    accessorKey: "total_value",
-    header: "Value",
+    accessorKey: "total_amount",
+    header: "Amount",
     cell: ({ row }) => (
-      <span className="font-mono font-medium">{formatCurrency(row.original.total_value)}</span>
+      <span className="font-mono font-medium">{formatCurrency(row.original.total_amount)}</span>
     ),
-  },
-  {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => {
-      const status = row.original.status?.toLowerCase() || "complete";
-      const config = receiptStatusConfig[status] || receiptStatusConfig.complete;
-      return (
-        <Badge className={cn(config.bg, config.text, "border-0 capitalize")}>
-          {status}
-        </Badge>
-      );
-    },
   },
   {
     accessorKey: "store",
@@ -97,7 +61,7 @@ const columns: ColumnDef<PurchaseOrderReceiptItem>[] = [
   },
 ];
 
-export default function PurchaseOrderReceiptsReport() {
+export default function ProductReceiptsReport() {
   const { toast } = useToast();
   const [loading, setLoading] = React.useState(true);
   const [exportLoading, setExportLoading] = React.useState(false);
@@ -108,8 +72,8 @@ export default function PurchaseOrderReceiptsReport() {
     per_page: 25,
     page: 1,
   });
-  
-  const [data, setData] = React.useState<PurchaseOrderReceiptItem[]>([]);
+
+  const [data, setData] = React.useState<ProductReceiptItem[]>([]);
   const [summary, setSummary] = React.useState<any>(null);
   const [meta, setMeta] = React.useState<any>(null);
   const [pagination, setPagination] = React.useState({
@@ -128,7 +92,7 @@ export default function PurchaseOrderReceiptsReport() {
     setLoading(true);
     setError(null);
     try {
-      const response = await getPurchaseOrderReceipts(filters);
+      const response = await getProductReceipts(filters);
       if (response.success) {
         setData(response.data.data);
         setSummary(response.summary || null);
@@ -159,7 +123,7 @@ export default function PurchaseOrderReceiptsReport() {
   const handleExport = async () => {
     setExportLoading(true);
     try {
-      await downloadReportAsCsv("/purchase-orders/receipts", filters, "po_receipts.csv");
+      await downloadReportAsCsv("/purchase/receipts", filters, "product_receipts.csv");
       toast({
         title: "Export successful",
         description: "The report has been downloaded as CSV",
@@ -175,32 +139,17 @@ export default function PurchaseOrderReceiptsReport() {
     }
   };
 
-  // Calculate totals
+  // Extract summary values
   const totalReceipts = summary?.total_receipts || data.length;
-  const totalValue = summary?.total_value || data.reduce((acc, r) => acc + r.total_value, 0);
-  const totalQuantity = summary?.total_quantity || data.reduce((acc, r) => acc + (r.quantity_received || 0), 0);
-  const completeCount = summary?.by_status?.find((s: any) => s.status === "complete")?.count || 0;
-  const partialCount = summary?.by_status?.find((s: any) => s.status === "partial")?.count || 0;
-
-  // Trend data
-  const trendData = (summary?.by_date || []).map((d: any) => ({
-    date: format(new Date(d.date), "MMM d"),
-    receipts: d.count,
-    value: d.total_value,
-  }));
-
-  // By supplier chart
-  const supplierData = (summary?.by_supplier || []).slice(0, 8).map((s: any) => ({
-    name: s.supplier_name?.length > 10 ? s.supplier_name.slice(0, 10) + "..." : s.supplier_name,
-    receipts: s.count,
-    value: s.total_value,
-  }));
+  const uniqueSuppliers = summary?.unique_suppliers || 0;
+  const totalValue = summary?.total_value || data.reduce((acc, r) => acc + Number(r.total_amount || 0), 0);
+  const avgPerReceipt = totalReceipts > 0 ? Number(totalValue) / totalReceipts : 0;
 
   if (error && !data.length) {
     return (
       <ReportLayout
-        title="PO Receipts"
-        description="Purchase order receipt history"
+        title="Product Receipts"
+        description="Product receipt history"
         category="purchase-orders"
         categoryLabel="Purchase Orders"
       >
@@ -211,8 +160,8 @@ export default function PurchaseOrderReceiptsReport() {
 
   return (
     <ReportLayout
-      title="Purchase Order Receipts"
-      description="Track goods received against purchase orders"
+      title="Product Receipts"
+      description="Track goods received from suppliers"
       category="purchase-orders"
       categoryLabel="Purchase Orders"
       loading={loading}
@@ -241,98 +190,63 @@ export default function PurchaseOrderReceiptsReport() {
             loading={loading}
           />
           <SummaryCard
-            title="Total Value Received"
+            title="Unique Suppliers"
+            value={uniqueSuppliers}
+            icon="Building2"
+            loading={loading}
+          />
+          <SummaryCard
+            title="Total Value"
             value={formatCurrency(totalValue)}
             icon="DollarSign"
             variant="success"
             loading={loading}
           />
           <SummaryCard
-            title="Units Received"
-            value={formatNumber(totalQuantity)}
-            icon="Truck"
-            loading={loading}
-          />
-          <SummaryCard
-            title="Completion Rate"
-            value={`${totalReceipts > 0 ? ((completeCount / totalReceipts) * 100).toFixed(1) : 0}%`}
-            subtitle={`${completeCount} complete, ${partialCount} partial`}
-            icon="CheckCircle"
-            variant={completeCount > partialCount ? "success" : "warning"}
+            title="Avg per Receipt"
+            value={formatCurrency(avgPerReceipt)}
+            subtitle="average receipt value"
+            icon="TrendingUp"
             loading={loading}
           />
         </SummaryGrid>
 
-        {/* Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {trendData.length > 0 && (
-            <AreaChartCard
-              title="Receipt Trend"
-              description="Daily receiving activity"
-              data={trendData}
-              dataKeys={[
-                { key: "receipts", name: "Receipts", color: "#3b82f6" },
-              ]}
-              xAxisKey="date"
-              loading={loading}
-              height={300}
-            />
-          )}
-          
-          {supplierData.length > 0 && (
-            <BarChartCard
-              title="Receipts by Supplier"
-              description="Goods received per supplier"
-              data={supplierData}
-              dataKeys={[
-                { key: "receipts", name: "Receipts", color: "#3b82f6" },
-                { key: "value", name: "Value", color: "#22c55e" },
-              ]}
-              xAxisKey="name"
-              loading={loading}
-              height={300}
-            />
-          )}
-        </div>
-
-        {/* Receipt Status Summary */}
+        {/* Quick Stats */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5" />
-              Receipt Status Summary
+              <Package className="h-5 w-5" />
+              Receipt Overview
             </CardTitle>
-            <CardDescription>Overview of receipt completion status</CardDescription>
+            <CardDescription>Summary of product receipts for the selected period</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 rounded-lg border bg-green-50 dark:bg-green-950/20 border-green-200">
-                <div className="flex items-center gap-2 mb-2">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
-                  <span className="font-medium">Complete</span>
-                </div>
-                <p className="text-2xl font-bold text-green-600">{completeCount}</p>
-                <p className="text-sm text-muted-foreground">Fully received</p>
-              </div>
-              
-              <div className="p-4 rounded-lg border bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200">
-                <div className="flex items-center gap-2 mb-2">
-                  <AlertTriangle className="h-5 w-5 text-yellow-600" />
-                  <span className="font-medium">Partial</span>
-                </div>
-                <p className="text-2xl font-bold text-yellow-600">{partialCount}</p>
-                <p className="text-sm text-muted-foreground">Partially received</p>
-              </div>
-              
               <div className="p-4 rounded-lg border bg-blue-50 dark:bg-blue-950/20 border-blue-200">
                 <div className="flex items-center gap-2 mb-2">
-                  <Clock className="h-5 w-5 text-blue-600" />
-                  <span className="font-medium">Avg per Receipt</span>
+                  <Package className="h-5 w-5 text-blue-600" />
+                  <span className="font-medium">Total Receipts</span>
                 </div>
-                <p className="text-2xl font-bold text-blue-600">
-                  {formatCurrency(totalReceipts > 0 ? totalValue / totalReceipts : 0)}
-                </p>
-                <p className="text-sm text-muted-foreground">Average value</p>
+                <p className="text-2xl font-bold text-blue-600">{totalReceipts}</p>
+                <p className="text-sm text-muted-foreground">goods received entries</p>
+              </div>
+
+              <div className="p-4 rounded-lg border bg-green-50 dark:bg-green-950/20 border-green-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <Building2 className="h-5 w-5 text-green-600" />
+                  <span className="font-medium">Suppliers</span>
+                </div>
+                <p className="text-2xl font-bold text-green-600">{uniqueSuppliers}</p>
+                <p className="text-sm text-muted-foreground">unique suppliers</p>
+              </div>
+
+              <div className="p-4 rounded-lg border bg-purple-50 dark:bg-purple-950/20 border-purple-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <Package className="h-5 w-5 text-purple-600" />
+                  <span className="font-medium">Avg Value</span>
+                </div>
+                <p className="text-2xl font-bold text-purple-600">{formatCurrency(avgPerReceipt)}</p>
+                <p className="text-sm text-muted-foreground">per receipt</p>
               </div>
             </div>
           </CardContent>
