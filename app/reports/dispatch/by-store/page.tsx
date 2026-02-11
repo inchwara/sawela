@@ -3,7 +3,6 @@
 import * as React from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useToast } from "@/hooks/use-toast";
-import { getStores, Store } from "@/lib/stores";
 import {
   getDispatchByStore,
   downloadReportAsCsv,
@@ -16,84 +15,36 @@ import {
   ReportEmptyState,
 } from "../../components/report-layout";
 import { ReportFiltersBar } from "../../components/report-filters";
-import { ReportTable, formatNumber, formatCurrency } from "../../components/report-table";
+import { ReportTable, formatNumber } from "../../components/report-table";
 import { SummaryCard, SummaryGrid } from "../../components/report-summary-cards";
 import { BarChartCard, PieChartCard } from "../../components/report-charts";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Store as StoreIcon, Truck, Package, CheckCircle, Star, TrendingUp } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Store as StoreIcon, Truck, Star, TrendingUp } from "lucide-react";
 
 const CHART_COLORS = ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#14b8a6", "#f97316"];
 
 // Table columns
 const columns: ColumnDef<DispatchByStoreItem>[] = [
   {
-    accessorKey: "store",
+    accessorKey: "store_name",
     header: "Store",
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
         <div className="p-2 rounded-lg bg-primary/10">
           <StoreIcon className="h-4 w-4 text-primary" />
         </div>
-        <span className="font-medium">{row.original.store.name}</span>
+        <span className="font-medium">{row.original.store_name}</span>
       </div>
     ),
   },
   {
     accessorKey: "dispatch_count",
     header: "Dispatches",
-    cell: ({ row }) => formatNumber(row.original.dispatch_count),
-  },
-  {
-    accessorKey: "total_quantity",
-    header: "Total Qty",
     cell: ({ row }) => (
-      <span className="font-mono">{formatNumber(row.original.total_quantity || 0)}</span>
+      <span className="font-bold text-lg">{formatNumber(row.original.dispatch_count)}</span>
     ),
-  },
-  {
-    accessorKey: "total_value",
-    header: "Total Value",
-    cell: ({ row }) => (
-      <span className="font-mono font-medium">{formatCurrency(row.original.total_value)}</span>
-    ),
-  },
-  {
-    accessorKey: "delivered_count",
-    header: "Delivered",
-    cell: ({ row }) => (
-      <Badge variant="outline" className="bg-green-50 text-green-700">
-        {row.original.delivered_count || 0}
-      </Badge>
-    ),
-  },
-  {
-    accessorKey: "pending_count",
-    header: "Pending",
-    cell: ({ row }) => (
-      <Badge variant={row.original.pending_count > 0 ? "secondary" : "outline"}>
-        {row.original.pending_count || 0}
-      </Badge>
-    ),
-  },
-  {
-    accessorKey: "delivery_rate",
-    header: "Delivery Rate",
-    cell: ({ row }) => {
-      const rate = row.original.dispatch_count > 0 
-        ? ((row.original.delivered_count || 0) / row.original.dispatch_count) * 100 
-        : 0;
-      return (
-        <div className="flex items-center gap-2">
-          <Progress value={rate} className="w-16 h-2" />
-          <span className={cn("text-sm font-medium", rate >= 80 ? "text-green-600" : rate >= 60 ? "text-yellow-600" : "text-red-600")}>
-            {rate.toFixed(0)}%
-          </span>
-        </div>
-      );
-    },
   },
 ];
 
@@ -102,21 +53,12 @@ export default function DispatchByStoreReport() {
   const [loading, setLoading] = React.useState(true);
   const [exportLoading, setExportLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  const [stores, setStores] = React.useState<Store[]>([]);
   const [filters, setFilters] = React.useState<ReportFilters>({
     period: "this_month",
-    per_page: 50,
-    page: 1,
   });
-  
-  const [data, setData] = React.useState<DispatchByStoreItem[]>([]);
-  const [summary, setSummary] = React.useState<any>(null);
-  const [meta, setMeta] = React.useState<any>(null);
 
-  // Fetch stores
-  React.useEffect(() => {
-    getStores().then(setStores).catch(console.error);
-  }, []);
+  const [data, setData] = React.useState<DispatchByStoreItem[]>([]);
+  const [meta, setMeta] = React.useState<any>(null);
 
   // Fetch report
   const fetchReport = React.useCallback(async () => {
@@ -125,9 +67,8 @@ export default function DispatchByStoreReport() {
     try {
       const response = await getDispatchByStore(filters);
       if (response.success) {
-        const items = Array.isArray(response.data) ? response.data : response.data.data;
+        const items = Array.isArray(response.data) ? response.data : [];
         setData(items);
-        setSummary(response.summary || null);
         setMeta(response.meta);
       }
     } catch (err: any) {
@@ -166,11 +107,10 @@ export default function DispatchByStoreReport() {
     }
   };
 
-  // Calculate totals
+  // Calculations
   const totalStores = data.length;
   const totalDispatches = data.reduce((acc, s) => acc + s.dispatch_count, 0);
-  const totalValue = data.reduce((acc, s) => acc + s.total_value, 0);
-  const totalDelivered = data.reduce((acc, s) => acc + (s.delivered_count || 0), 0);
+  const avgPerStore = totalStores > 0 ? (totalDispatches / totalStores).toFixed(1) : "0";
 
   // Sort by dispatch count
   const sortedData = [...data].sort((a, b) => b.dispatch_count - a.dispatch_count);
@@ -178,16 +118,14 @@ export default function DispatchByStoreReport() {
 
   // Chart data
   const pieChartData = sortedData.slice(0, 8).map((s, idx) => ({
-    name: s.store.name.length > 12 ? s.store.name.slice(0, 12) + "..." : s.store.name,
+    name: s.store_name.length > 12 ? s.store_name.slice(0, 12) + "..." : s.store_name,
     value: s.dispatch_count,
     fill: CHART_COLORS[idx % CHART_COLORS.length],
   }));
 
   const barChartData = sortedData.slice(0, 8).map((s) => ({
-    name: s.store.name.length > 10 ? s.store.name.slice(0, 10) + "..." : s.store.name,
+    name: s.store_name.length > 10 ? s.store_name.slice(0, 10) + "..." : s.store_name,
     dispatches: s.dispatch_count,
-    delivered: s.delivered_count || 0,
-    pending: s.pending_count || 0,
   }));
 
   if (error && !data.length) {
@@ -206,7 +144,7 @@ export default function DispatchByStoreReport() {
   return (
     <ReportLayout
       title="Dispatch by Store"
-      description="Compare dispatch operations and performance across store locations"
+      description="Compare dispatch volume across store locations"
       category="dispatch"
       categoryLabel="Dispatch"
       loading={loading}
@@ -241,17 +179,17 @@ export default function DispatchByStoreReport() {
             loading={loading}
           />
           <SummaryCard
-            title="Total Value"
-            value={formatCurrency(totalValue)}
-            icon="DollarSign"
-            variant="success"
+            title="Avg per Store"
+            value={avgPerStore}
+            subtitle="dispatches per store"
+            icon="TrendingUp"
             loading={loading}
           />
           <SummaryCard
-            title="Delivery Rate"
-            value={`${totalDispatches > 0 ? ((totalDelivered / totalDispatches) * 100).toFixed(0) : 0}%`}
-            subtitle={`${formatNumber(totalDelivered)} delivered`}
-            icon="CheckCircle"
+            title="Top Store"
+            value={topStore?.store_name || "—"}
+            subtitle={topStore ? `${topStore.dispatch_count} dispatches` : ""}
+            icon="Star"
             variant="success"
             loading={loading}
           />
@@ -268,15 +206,17 @@ export default function DispatchByStoreReport() {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Most Active Store</p>
-                    <h3 className="text-xl font-bold">{topStore.store.name}</h3>
+                    <h3 className="text-xl font-bold">{topStore.store_name}</h3>
                     <p className="text-sm text-muted-foreground">
-                      {((topStore.dispatch_count / totalDispatches) * 100).toFixed(1)}% of all dispatches
+                      {totalDispatches > 0
+                        ? ((topStore.dispatch_count / totalDispatches) * 100).toFixed(1)
+                        : 0}% of all dispatches
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
                   <p className="text-3xl font-bold text-indigo-600">{formatNumber(topStore.dispatch_count)}</p>
-                  <p className="text-muted-foreground">{formatCurrency(topStore.total_value)} total value</p>
+                  <p className="text-muted-foreground">dispatches</p>
                 </div>
               </div>
             </CardContent>
@@ -294,13 +234,11 @@ export default function DispatchByStoreReport() {
             showLegend
           />
           <BarChartCard
-            title="Store Performance"
-            description="Dispatch status by store"
+            title="Store Comparison"
+            description="Dispatch count per store"
             data={barChartData}
             dataKeys={[
-              { key: "dispatches", name: "Total", color: "#3b82f6" },
-              { key: "delivered", name: "Delivered", color: "#22c55e" },
-              { key: "pending", name: "Pending", color: "#f59e0b" },
+              { key: "dispatches", name: "Dispatches", color: "#3b82f6" },
             ]}
             xAxisKey="name"
             loading={loading}
@@ -316,28 +254,26 @@ export default function DispatchByStoreReport() {
               Store Dispatch Analysis
             </CardTitle>
             <CardDescription>
-              Detailed breakdown of dispatch operations per store
+              Detailed breakdown of dispatch activity per store
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {sortedData.slice(0, 8).map((store, index) => {
-                const dispatchShare = totalDispatches > 0 ? (store.dispatch_count / totalDispatches) * 100 : 0;
-                const valueShare = totalValue > 0 ? (store.total_value / totalValue) * 100 : 0;
-                const deliveryRate = store.dispatch_count > 0 
-                  ? ((store.delivered_count || 0) / store.dispatch_count) * 100 
+              {sortedData.map((store, index) => {
+                const dispatchShare = totalDispatches > 0
+                  ? (store.dispatch_count / totalDispatches) * 100
                   : 0;
-                
+
                 return (
-                  <div key={index} className="p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
+                  <div key={store.store_id || index} className="p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-3">
-                        <div 
-                          className="w-4 h-4 rounded-full" 
+                        <div
+                          className="w-4 h-4 rounded-full"
                           style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }}
                         />
                         <div className="flex items-center gap-2">
-                          <span className="font-medium">{store.store.name}</span>
+                          <span className="font-medium">{store.store_name}</span>
                           {index === 0 && (
                             <Badge className="bg-indigo-100 text-indigo-700 border-0">
                               <Star className="h-3 w-3 mr-1" />
@@ -347,35 +283,17 @@ export default function DispatchByStoreReport() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <span className="font-bold">{formatCurrency(store.total_value)}</span>
-                        <span className="text-muted-foreground ml-2">({valueShare.toFixed(1)}%)</span>
+                        <span className="font-bold">{store.dispatch_count} dispatches</span>
+                        <span className="text-muted-foreground ml-2">({dispatchShare.toFixed(1)}%)</span>
                       </div>
                     </div>
-                    
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-                      <div>
-                        <p className="text-muted-foreground mb-1">Dispatch Share</p>
-                        <Progress value={dispatchShare} className="h-2" />
-                        <p className="mt-1 font-medium">{store.dispatch_count} ({dispatchShare.toFixed(1)}%)</p>
+
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Share of total</span>
+                        <span className="font-medium">{dispatchShare.toFixed(1)}%</span>
                       </div>
-                      <div>
-                        <p className="text-muted-foreground mb-1">Delivery Rate</p>
-                        <Progress value={deliveryRate} className="h-2 [&>div]:bg-green-500" />
-                        <p className="mt-1 font-medium">{deliveryRate.toFixed(0)}%</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Delivered</p>
-                        <p className="font-bold text-lg text-green-600">{store.delivered_count || 0}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Pending</p>
-                        <p className={cn(
-                          "font-bold text-lg",
-                          (store.pending_count || 0) > 0 ? "text-amber-600" : ""
-                        )}>
-                          {store.pending_count || 0}
-                        </p>
-                      </div>
+                      <Progress value={dispatchShare} className="h-2" />
                     </div>
                   </div>
                 );
@@ -392,7 +310,7 @@ export default function DispatchByStoreReport() {
             columns={columns}
             data={data}
             loading={loading}
-            searchColumn="store"
+            searchColumn="store_name"
             searchPlaceholder="Search stores..."
           />
         )}

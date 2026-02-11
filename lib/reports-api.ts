@@ -445,18 +445,50 @@ export interface DispatchSummaryItem {
   to_user_id: string
   type: "internal" | "external"
   is_returnable: boolean
+  return_date: string | null
+  is_returned: boolean
+  returned_by: string | null
   approval_status: string
-  notes: string
+  workflow_instance_id: string | null
+  notes: string | null
+  acknowledged_by: string | null
   created_at: string
+  updated_at: string
   store_name: string
   dispatch_items: {
     id: string
+    dispatch_id: string
     product_id: string
+    variant_id: string | null
+    unit_id: string | null
     quantity: number
+    unit_quantity: number | null
+    base_quantity: number | null
+    packaging_breakdown: any | null
     received_quantity: number
-    product: { id: string; name: string; sku: string }
+    is_returnable: boolean
+    is_returned: boolean
+    return_date: string | null
+    returned_quantity: number | null
+    return_notes: string | null
+    reminder_status: string | null
+    notes: string | null
+    created_at: string
+    updated_at: string
+    product: {
+      id: string
+      name: string
+      sku: string | null
+      image_urls: string[]
+      primary_image_url: string | null
+    }
   }[]
-  to_user: { id: string; first_name: string; last_name: string }
+  to_user: {
+    id: string
+    first_name: string
+    last_name: string
+    full_name: string
+  }
 }
 
 export interface DispatchSummarySummary {

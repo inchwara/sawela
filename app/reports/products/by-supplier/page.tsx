@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   getProductsBySupplier,
   downloadReportAsCsv,
-  ProductsBySupplierItem,
+  ProductBySupplierItem,
   ReportFilters,
 } from "@/lib/reports-api";
 import {
@@ -26,21 +26,16 @@ import { Building2, Package, DollarSign, TrendingUp, Star } from "lucide-react";
 const CHART_COLORS = ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#14b8a6", "#f97316"];
 
 // Table columns
-const columns: ColumnDef<ProductsBySupplierItem>[] = [
+const columns: ColumnDef<ProductBySupplierItem>[] = [
   {
-    accessorKey: "supplier",
+    accessorKey: "supplier_name",
     header: "Supplier",
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
         <div className="p-2 rounded-lg bg-primary/10">
           <Building2 className="h-4 w-4 text-primary" />
         </div>
-        <div>
-          <p className="font-medium">{row.original.supplier.name}</p>
-          {row.original.supplier.contact_person && (
-            <p className="text-sm text-muted-foreground">{row.original.supplier.contact_person}</p>
-          )}
-        </div>
+        <span className="font-medium">{row.original.supplier_name || "Unknown Supplier"}</span>
       </div>
     ),
   },
@@ -57,30 +52,11 @@ const columns: ColumnDef<ProductsBySupplierItem>[] = [
     ),
   },
   {
-    accessorKey: "total_sold",
-    header: "Units Sold",
-    cell: ({ row }) => (
-      <span className="font-mono">{formatNumber(row.original.total_sold || 0)}</span>
-    ),
-  },
-  {
-    accessorKey: "total_revenue",
-    header: "Revenue",
-    cell: ({ row }) => (
-      <span className="font-mono font-medium">{formatCurrency(row.original.total_revenue || 0)}</span>
-    ),
-  },
-  {
-    accessorKey: "stock_value",
+    accessorKey: "total_value",
     header: "Stock Value",
     cell: ({ row }) => (
-      <span className="font-mono">{formatCurrency(row.original.stock_value || 0)}</span>
+      <span className="font-mono font-medium">{formatCurrency(Number(row.original.total_value) || 0)}</span>
     ),
-  },
-  {
-    accessorKey: "total_purchase_cost",
-    header: "Purchase Cost",
-    cell: ({ row }) => formatCurrency(row.original.total_purchase_cost || 0),
   },
 ];
 
@@ -91,12 +67,9 @@ export default function ProductsBySupplierReport() {
   const [error, setError] = React.useState<string | null>(null);
   const [filters, setFilters] = React.useState<ReportFilters>({
     period: "this_month",
-    per_page: 50,
-    page: 1,
   });
-  
-  const [data, setData] = React.useState<ProductsBySupplierItem[]>([]);
-  const [summary, setSummary] = React.useState<any>(null);
+
+  const [data, setData] = React.useState<ProductBySupplierItem[]>([]);
   const [meta, setMeta] = React.useState<any>(null);
 
   // Fetch report data
@@ -106,9 +79,8 @@ export default function ProductsBySupplierReport() {
     try {
       const response = await getProductsBySupplier(filters);
       if (response.success) {
-        const items = Array.isArray(response.data) ? response.data : response.data.data;
+        const items = Array.isArray(response.data) ? response.data : [];
         setData(items);
-        setSummary(response.summary || null);
         setMeta(response.meta);
       }
     } catch (err: any) {
@@ -150,29 +122,31 @@ export default function ProductsBySupplierReport() {
   // Calculate totals
   const totalSuppliers = data.length;
   const totalProducts = data.reduce((acc, s) => acc + s.product_count, 0);
-  const totalRevenue = data.reduce((acc, s) => acc + (s.total_revenue || 0), 0);
-  const totalStockValue = data.reduce((acc, s) => acc + (s.stock_value || 0), 0);
-  const totalPurchaseCost = data.reduce((acc, s) => acc + (s.total_purchase_cost || 0), 0);
+  const totalStock = data.reduce((acc, s) => acc + s.total_stock, 0);
+  const totalValue = data.reduce((acc, s) => acc + (Number(s.total_value) || 0), 0);
 
-  // Sort by revenue
-  const topSuppliers = [...data].sort((a, b) => (b.total_revenue || 0) - (a.total_revenue || 0)).slice(0, 8);
-
-  // Find top supplier
+  // Sort by product count
+  const topSuppliers = [...data].sort((a, b) => b.product_count - a.product_count).slice(0, 8);
   const topSupplier = topSuppliers[0];
 
   // Chart data
-  const revenueChartData = topSuppliers.map((s, idx) => ({
-    name: s.supplier.name.length > 12 ? s.supplier.name.slice(0, 12) + "..." : s.supplier.name,
-    value: s.total_revenue || 0,
-    fill: CHART_COLORS[idx % CHART_COLORS.length],
-  }));
+  const productChartData = topSuppliers.map((s, idx) => {
+    const name = s.supplier_name || "Unknown";
+    return {
+      name: name.length > 12 ? name.slice(0, 12) + "..." : name,
+      value: s.product_count,
+      fill: CHART_COLORS[idx % CHART_COLORS.length],
+    };
+  });
 
-  const comparisonChartData = topSuppliers.map((s) => ({
-    name: s.supplier.name.length > 10 ? s.supplier.name.slice(0, 10) + "..." : s.supplier.name,
-    products: s.product_count,
-    sold: s.total_sold || 0,
-    stock: s.total_stock,
-  }));
+  const comparisonChartData = topSuppliers.map((s) => {
+    const name = s.supplier_name || "Unknown";
+    return {
+      name: name.length > 10 ? name.slice(0, 10) + "..." : name,
+      products: s.product_count,
+      stock: s.total_stock,
+    };
+  });
 
   if (error && !data.length) {
     return (
@@ -190,7 +164,7 @@ export default function ProductsBySupplierReport() {
   return (
     <ReportLayout
       title="Products by Supplier"
-      description="Analyze product distribution, sales performance, and inventory by supplier"
+      description="Analyze product distribution and inventory by supplier"
       category="products"
       categoryLabel="Products"
       loading={loading}
@@ -225,17 +199,16 @@ export default function ProductsBySupplierReport() {
             loading={loading}
           />
           <SummaryCard
-            title="Total Revenue"
-            value={formatCurrency(totalRevenue)}
-            icon="DollarSign"
-            variant="success"
+            title="Total Stock"
+            value={formatNumber(totalStock)}
+            icon="Box"
             loading={loading}
           />
           <SummaryCard
-            title="Purchase Costs"
-            value={formatCurrency(totalPurchaseCost)}
-            subtitle={`Stock: ${formatCurrency(totalStockValue)}`}
-            icon="Receipt"
+            title="Total Value"
+            value={formatCurrency(totalValue)}
+            icon="DollarSign"
+            variant="success"
             loading={loading}
           />
         </SummaryGrid>
@@ -251,15 +224,15 @@ export default function ProductsBySupplierReport() {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground flex items-center gap-1">
-                      Top Performing Supplier
+                      Top Supplier by Products
                     </p>
-                    <h3 className="text-xl font-bold">{topSupplier.supplier.name}</h3>
+                    <h3 className="text-xl font-bold">{topSupplier.supplier_name || "Unknown Supplier"}</h3>
                     <p className="text-sm text-muted-foreground">{topSupplier.product_count} products supplied</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-3xl font-bold text-amber-600">{formatCurrency(topSupplier.total_revenue || 0)}</p>
-                  <p className="text-muted-foreground">{formatNumber(topSupplier.total_sold || 0)} units sold</p>
+                  <p className="text-3xl font-bold text-amber-600">{formatNumber(topSupplier.total_stock)}</p>
+                  <p className="text-muted-foreground">total stock units</p>
                 </div>
               </div>
             </CardContent>
@@ -269,21 +242,20 @@ export default function ProductsBySupplierReport() {
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <PieChartCard
-            title="Revenue by Supplier"
-            description="Revenue distribution across suppliers"
-            data={revenueChartData}
+            title="Products by Supplier"
+            description="Product count distribution"
+            data={productChartData}
             loading={loading}
             height={320}
             showLegend
           />
           <BarChartCard
-            title="Supplier Comparison"
-            description="Products, units sold, and stock levels"
+            title="Stock Comparison"
+            description="Products and stock levels per supplier"
             data={comparisonChartData}
             dataKeys={[
               { key: "products", name: "Products", color: "#3b82f6" },
-              { key: "sold", name: "Units Sold", color: "#22c55e" },
-              { key: "stock", name: "Stock", color: "#f59e0b" },
+              { key: "stock", name: "Stock", color: "#22c55e" },
             ]}
             xAxisKey="name"
             loading={loading}
@@ -296,30 +268,29 @@ export default function ProductsBySupplierReport() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
-              Supplier Performance
+              Supplier Breakdown
             </CardTitle>
             <CardDescription>
-              Detailed performance metrics for each supplier
+              Product and stock details for each supplier
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {topSuppliers.map((supplier, index) => {
-                const revenueShare = totalRevenue > 0 ? ((supplier.total_revenue || 0) / totalRevenue) * 100 : 0;
                 const productShare = totalProducts > 0 ? (supplier.product_count / totalProducts) * 100 : 0;
-                const profit = (supplier.total_revenue || 0) - (supplier.total_purchase_cost || 0);
-                const profitMargin = supplier.total_revenue ? (profit / supplier.total_revenue) * 100 : 0;
-                
+                const stockShare = totalStock > 0 ? (supplier.total_stock / totalStock) * 100 : 0;
+                const supplierValue = Number(supplier.total_value) || 0;
+
                 return (
-                  <div key={index} className="p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
+                  <div key={supplier.supplier_id || index} className="p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-3">
-                        <div 
-                          className="w-4 h-4 rounded-full" 
+                        <div
+                          className="w-4 h-4 rounded-full"
                           style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }}
                         />
                         <div className="flex items-center gap-2">
-                          <span className="font-medium">{supplier.supplier.name}</span>
+                          <span className="font-medium">{supplier.supplier_name || "Unknown Supplier"}</span>
                           {index === 0 && (
                             <Badge className="bg-amber-100 text-amber-700 border-0">
                               <Star className="h-3 w-3 mr-1" />
@@ -329,35 +300,29 @@ export default function ProductsBySupplierReport() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <span className="font-bold">{formatCurrency(supplier.total_revenue || 0)}</span>
-                        <span className="text-muted-foreground ml-2">({revenueShare.toFixed(1)}%)</span>
+                        <span className="font-bold">{supplier.product_count} products</span>
+                        <span className="text-muted-foreground ml-2">({productShare.toFixed(1)}%)</span>
                       </div>
                     </div>
-                    
-                    <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 text-sm">
-                      <div>
-                        <p className="text-muted-foreground mb-1">Revenue Share</p>
-                        <Progress value={revenueShare} className="h-2" />
-                        <p className="mt-1 font-medium">{revenueShare.toFixed(1)}%</p>
-                      </div>
+
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
                       <div>
                         <p className="text-muted-foreground mb-1">Product Share</p>
-                        <Progress value={productShare} className="h-2 [&>div]:bg-blue-500" />
+                        <Progress value={productShare} className="h-2" />
                         <p className="mt-1 font-medium">{productShare.toFixed(1)}%</p>
                       </div>
                       <div>
-                        <p className="text-muted-foreground">Units Sold</p>
-                        <p className="font-bold text-lg">{formatNumber(supplier.total_sold || 0)}</p>
+                        <p className="text-muted-foreground mb-1">Stock Share</p>
+                        <Progress value={stockShare} className="h-2" />
+                        <p className="mt-1 font-medium">{stockShare.toFixed(1)}%</p>
                       </div>
                       <div>
                         <p className="text-muted-foreground">Stock Level</p>
                         <p className="font-bold text-lg">{formatNumber(supplier.total_stock)}</p>
                       </div>
                       <div>
-                        <p className="text-muted-foreground">Profit Margin</p>
-                        <p className={`font-bold text-lg ${profitMargin >= 0 ? "text-green-600" : "text-red-600"}`}>
-                          {profitMargin.toFixed(1)}%
-                        </p>
+                        <p className="text-muted-foreground">Stock Value</p>
+                        <p className="font-bold text-lg">{formatCurrency(supplierValue)}</p>
                       </div>
                     </div>
                   </div>
@@ -375,7 +340,7 @@ export default function ProductsBySupplierReport() {
             columns={columns}
             data={data}
             loading={loading}
-            searchColumn="supplier"
+            searchColumn="supplier_name"
             searchPlaceholder="Search suppliers..."
           />
         )}
