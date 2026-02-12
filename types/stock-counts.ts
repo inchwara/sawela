@@ -1,4 +1,4 @@
-export type StockCountType = "cycle_count" | "full_count" | "spot_check" | "receiving_count" | "full_inventory"
+export type StockCountType = "cycle_count" | "full_count"
 export type StockCountStatus = "draft" | "in_progress" | "completed" | "approved" | "cancelled"
 
 export interface StockCount {

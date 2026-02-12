@@ -305,7 +305,7 @@ export interface Order {
 
 // Stock Count types
 export type StockCountStatus = 'draft' | 'in_progress' | 'completed' | 'approved' | 'cancelled';
-export type StockCountType = 'cycle_count' | 'full_count';
+export type StockCountType = 'cycle_count' | 'full_count' | 'spot_check' | 'receiving_count' | 'full_inventory';
 
 export interface StockCountItem {
   id: string;
@@ -406,9 +406,10 @@ export interface CreateStockCountRequest {
   count_type: StockCountType;
   status: StockCountStatus;
   location?: string;
-  category_filter?: string;
+  category_filter?: string | null;
+  scheduled_date?: string | null;
   assigned_to?: string;
-  items: CreateStockCountItem[];
+  items?: CreateStockCountItem[];
 }
 
 export interface UpdateStockCountItem extends CreateStockCountItem {

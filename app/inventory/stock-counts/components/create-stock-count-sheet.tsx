@@ -10,13 +10,13 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Loader2, Search } from "lucide-react"
+import { Loader2, Search, Info } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { getProducts } from "@/lib/products"
 import { createStockCount } from "@/lib/stock-counts"
 import { getUsers } from "@/lib/users"
 import { getStores } from "@/lib/stores"
-import type { StockCount } from "@/app/types"
+import type { StockCount, StockCountStatus, StockCountType, CreateStockCountItem } from "@/app/types"
 import type { Product } from "@/lib/products"
 import type { UserData } from "@/lib/users"
 import type { Store } from "@/lib/stores"
@@ -37,23 +37,25 @@ export function CreateStockCountSheet({ isOpen, onOpenChange, onStockCountCreate
   const [loadingProducts, setLoadingProducts] = useState(false)
   const [loadingUsers, setLoadingUsers] = useState(false)
   const [loadingStores, setLoadingStores] = useState(false)
-  const [productSelectionMode, setProductSelectionMode] = useState<"all" | "category" | "manual">("all")
-  const [selectedCategory, setSelectedCategory] = useState<string>("")
   const [searchTerm, setSearchTerm] = useState("")
+  
   const [formState, setFormState] = useState({
     name: "",
-    count_type: "cycle_count" as "cycle_count" | "full_count",
+    count_type: "cycle_count" as StockCountType,
+    status: "draft" as StockCountStatus,
+    store_id: "",
     location: "",
     scheduled_date: "",
-    notes: "",
+    description: "",
     assigned_to: "",
+    category_filter: "",
   })
 
   useEffect(() => {
     async function fetchProducts() {
       try {
         setLoadingProducts(true)
-        const { data: productsList } = await getProducts(1, 10000) // Fetch all products
+        const { data: productsList } = await getProducts(1, 10000)
         setProducts(productsList || [])
       } catch (error: any) {
         toast({
@@ -106,17 +108,28 @@ export function CreateStockCountSheet({ isOpen, onOpenChange, onStockCountCreate
       setFormState({
         name: "",
         count_type: "cycle_count",
+        status: "draft",
+        store_id: "",
         location: "",
         scheduled_date: "",
-        notes: "",
+        description: "",
         assigned_to: "",
+        category_filter: "",
       })
       setSelectedProducts([])
-      setProductSelectionMode("all")
-      setSelectedCategory("")
       setSearchTerm("")
     }
   }, [isOpen, toast])
+
+  // Update location when store changes
+  useEffect(() => {
+    if (formState.store_id) {
+      const selectedStore = stores.find(s => s.id === formState.store_id)
+      if (selectedStore) {
+        setFormState(prev => ({ ...prev, location: selectedStore.name }))
+      }
+    }
+  }, [formState.store_id, stores])
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -130,135 +143,144 @@ export function CreateStockCountSheet({ isOpen, onOpenChange, onStockCountCreate
   // Get unique categories from products
   const categories = Array.from(new Set(products.map(p => p.category?.name).filter(Boolean))) as string[]
 
-  // Filter products based on search and mode
+  // Filter products based on search
   const filteredProducts = products.filter(product => {
-    const matchesSearch = searchTerm === "" || 
+    return searchTerm === "" || 
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (product.sku && product.sku.toLowerCase().includes(searchTerm.toLowerCase()))
-    
-    if (productSelectionMode === "category" && selectedCategory) {
-      return matchesSearch && product.category?.name === selectedCategory
-    }
-    return matchesSearch
   })
 
-  // Calculate products to count based on mode
-  const getProductsToCount = () => {
-    if (productSelectionMode === "all") {
-      return products.length
-    } else if (productSelectionMode === "category" && selectedCategory) {
-      return products.filter(p => p.category?.name === selectedCategory).length
-    } else {
-      return selectedProducts.length
+  // Get products to count for cycle_count
+  const getCycleCountProducts = () => {
+    if (formState.category_filter) {
+      return products.filter(p => p.category?.name === formState.category_filter)
     }
+    return selectedProducts.length > 0 
+      ? products.filter(p => selectedProducts.includes(p.id))
+      : []
   }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setSaving(true)
 
-    const { name, count_type, location, notes, assigned_to } = formState
+    const { name, count_type, status, store_id, location, description, assigned_to, scheduled_date, category_filter } = formState
 
-    // Validation based on selection mode
-    if (!name || !location) {
+    // Basic validation
+    if (!name || !store_id) {
       toast({
         title: "Validation Error",
-        description: "Please fill in all required fields.",
+        description: "Please fill in all required fields (Name and Store).",
         variant: "destructive",
       })
       setSaving(false)
       return
     }
 
-    if (productSelectionMode === "manual" && selectedProducts.length === 0) {
+    const selectedStore = stores.find(s => s.id === store_id)
+    if (!selectedStore) {
       toast({
         title: "Validation Error",
-        description: "Please select at least one product for manual selection mode.",
+        description: "Please select a valid store.",
         variant: "destructive",
       })
       setSaving(false)
       return
     }
 
-    if (productSelectionMode === "category" && !selectedCategory) {
-      toast({
-        title: "Validation Error",
-        description: "Please select a category.",
-        variant: "destructive",
-      })
-      setSaving(false)
-      return
+    // Validate cycle_count with in_progress status requires items
+    if (count_type === "cycle_count" && status === "in_progress") {
+      const hasItems = category_filter 
+        ? products.some(p => p.category?.name === category_filter)
+        : selectedProducts.length > 0
+        
+      if (!hasItems) {
+        toast({
+          title: "Validation Error",
+          description: "Cycle count in progress requires at least one product. Please select products or a category.",
+          variant: "destructive",
+        })
+        setSaving(false)
+        return
+      }
     }
 
     try {
-      // Get the selected store
-      const selectedStore = stores.find(s => s.id === location)
-      if (!selectedStore) throw new Error("Selected store not found")
-
-      // Prepare items data based on selection mode
-      let items: Array<{ product_id: string; expected_quantity: number; counted_quantity: null; notes: string }>
-      
-      if (productSelectionMode === "all") {
-        items = products.map((product) => ({
-          product_id: product.id,
-          expected_quantity: product.stock_quantity || 0,
-          counted_quantity: null,
-          notes: "",
-        }))
-      } else if (productSelectionMode === "category" && selectedCategory) {
-        const categoryProducts = products.filter(p => p.category?.name === selectedCategory)
-        items = categoryProducts.map((product) => ({
-          product_id: product.id,
-          expected_quantity: product.stock_quantity || 0,
-          counted_quantity: null,
-          notes: "",
-        }))
-      } else {
-        items = selectedProducts.map((productId) => ({
-          product_id: productId,
-          expected_quantity: products.find((p) => p.id === productId)?.stock_quantity || 0,
-          counted_quantity: null,
-          notes: "",
-        }))
-      }
-
-      // Create stock count via API
-      const payload = {
+      // Prepare base payload
+      const payload: {
+        company_id: string
+        store_id: string
+        name: string
+        description?: string
+        count_type: StockCountType
+        status: StockCountStatus
+        location?: string
+        category_filter?: string | null
+        scheduled_date?: string | null
+        assigned_to?: string
+        items?: CreateStockCountItem[]
+      } = {
         company_id: selectedStore.company_id,
         store_id: selectedStore.id,
         name,
-        description: notes || undefined,
+        description: description || undefined,
         count_type,
-        status: "draft" as const,
-        location: selectedStore.name,
+        status,
+        location: location || selectedStore.name,
+        category_filter: category_filter || null,
+        scheduled_date: scheduled_date ? new Date(scheduled_date).toISOString() : null,
         assigned_to: assigned_to || undefined,
-        items,
       }
-      
+
+      // Handle items based on count_type and status
+      if (count_type === "cycle_count" && status === "in_progress") {
+        // Cycle count in progress: must include items
+        let itemsToInclude: Product[] = []
+        
+        if (category_filter) {
+          itemsToInclude = products.filter(p => p.category?.name === category_filter)
+        } else {
+          itemsToInclude = products.filter(p => selectedProducts.includes(p.id))
+        }
+        
+        payload.items = itemsToInclude.map((product): CreateStockCountItem => ({
+          product_id: product.id,
+          expected_quantity: product.stock_quantity ?? 0,
+          counted_quantity: null,
+          notes: "",
+          requires_recount: false,
+        }))
+      }
+      // full_count with in_progress: items array is optional - backend auto-populates
+      // draft status: items not required
+
       console.log("Creating stock count with payload:", JSON.stringify(payload, null, 2))
       
       const newStockCount = await createStockCount(payload)
 
       if (!newStockCount) throw new Error("Failed to create stock count")
 
+      const itemCount = payload.items?.length || (count_type === "full_count" && status === "in_progress" ? "auto-populated" : 0)
       toast({
         title: "Success",
-        description: `Stock count created successfully with ${items.length} products!`,
+        description: `Stock count created successfully${payload.items ? ` with ${payload.items.length} products` : count_type === "full_count" && status === "in_progress" ? " (products will be auto-populated)" : "!"}`,
       })
       onStockCountCreated(newStockCount)
       onOpenChange(false)
+      
       // Reset form state
       setFormState({
         name: "",
         count_type: "cycle_count",
+        status: "draft",
+        store_id: "",
         location: "",
         scheduled_date: "",
-        notes: "",
+        description: "",
         assigned_to: "",
+        category_filter: "",
       })
       setSelectedProducts([])
-      setProductSelectionMode("all")
-      setSelectedCategory("")
       setSearchTerm("")
     } catch (error: any) {
       console.error("Stock count creation error:", error)
@@ -271,6 +293,12 @@ export function CreateStockCountSheet({ isOpen, onOpenChange, onStockCountCreate
       setSaving(false)
     }
   }
+
+  // Show product selection for cycle_count in_progress
+  const showProductSelection = formState.count_type === "cycle_count" && formState.status === "in_progress"
+  
+  // Show category filter for full_count
+  const showCategoryFilter = formState.count_type === "full_count"
 
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
@@ -289,15 +317,23 @@ export function CreateStockCountSheet({ isOpen, onOpenChange, onStockCountCreate
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Count Name *</Label>
-                <Input id="name" name="name" value={formState.name} onChange={handleFormChange} required placeholder="e.g., Monthly Inventory Count" />
+                <Input 
+                  id="name" 
+                  name="name" 
+                  value={formState.name} 
+                  onChange={handleFormChange} 
+                  required 
+                  placeholder="e.g., Monthly Inventory Count" 
+                />
               </div>
+              
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="count_type">Count Type *</Label>
                   <Select
                     name="count_type"
                     value={formState.count_type}
-                    onValueChange={(value) => setFormState((prev) => ({ ...prev, count_type: value as "cycle_count" | "full_count" }))}
+                    onValueChange={(value) => setFormState((prev) => ({ ...prev, count_type: value as StockCountType }))}
                     required
                   >
                     <SelectTrigger id="count_type">
@@ -310,14 +346,34 @@ export function CreateStockCountSheet({ isOpen, onOpenChange, onStockCountCreate
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="location">Store/Location *</Label>
+                  <Label htmlFor="status">Status *</Label>
                   <Select
-                    name="location"
-                    value={formState.location}
-                    onValueChange={(value) => setFormState((prev) => ({ ...prev, location: value }))}
+                    name="status"
+                    value={formState.status}
+                    onValueChange={(value) => setFormState((prev) => ({ ...prev, status: value as StockCountStatus }))}
                     required
                   >
-                    <SelectTrigger id="location">
+                    <SelectTrigger id="status">
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="draft">Draft (Plan Later)</SelectItem>
+                      <SelectItem value="in_progress">In Progress (Start Counting)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="store_id">Store *</Label>
+                  <Select
+                    name="store_id"
+                    value={formState.store_id}
+                    onValueChange={(value) => setFormState((prev) => ({ ...prev, store_id: value }))}
+                    required
+                  >
+                    <SelectTrigger id="store_id">
                       <SelectValue placeholder="Select store" />
                     </SelectTrigger>
                     <SelectContent>
@@ -335,17 +391,27 @@ export function CreateStockCountSheet({ isOpen, onOpenChange, onStockCountCreate
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="location">Location (Optional)</Label>
+                  <Input
+                    id="location"
+                    name="location"
+                    value={formState.location}
+                    onChange={handleFormChange}
+                    placeholder="e.g., Warehouse A - Shelf B12"
+                  />
+                </div>
               </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="scheduled_date">Scheduled Date *</Label>
+                  <Label htmlFor="scheduled_date">Scheduled Date</Label>
                   <Input
                     id="scheduled_date"
                     name="scheduled_date"
-                    type="date"
+                    type="datetime-local"
                     value={formState.scheduled_date}
                     onChange={handleFormChange}
-                    required
                   />
                 </div>
                 <div className="space-y-2">
@@ -388,11 +454,11 @@ export function CreateStockCountSheet({ isOpen, onOpenChange, onStockCountCreate
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                <Label htmlFor="notes">Notes</Label>
+                <Label htmlFor="description">Description</Label>
                 <Textarea 
-                  id="notes" 
-                  name="notes" 
-                  value={formState.notes} 
+                  id="description" 
+                  name="description" 
+                  value={formState.description} 
                   onChange={handleFormChange} 
                   rows={3} 
                   placeholder="Add any special instructions or notes..."
@@ -401,134 +467,190 @@ export function CreateStockCountSheet({ isOpen, onOpenChange, onStockCountCreate
             </CardContent>
           </Card>
 
-          {/* Products Selection Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Products to Count *</CardTitle>
-              <CardDescription>
-                {getProductsToCount() > 0 
-                  ? `${getProductsToCount()} product${getProductsToCount() !== 1 ? 's' : ''} will be counted`
-                  : 'Select which products to include in this count'}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Selection Mode */}
-              <div className="space-y-2">
-                <Label>Selection Mode</Label>
-                <Select value={productSelectionMode} onValueChange={(value: any) => setProductSelectionMode(value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Products (Full Inventory Count)</SelectItem>
-                    <SelectItem value="category">By Category (Cycle Count)</SelectItem>
-                    <SelectItem value="manual">Manual Selection (Specific Products)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Category Selection - shown when mode is "category" */}
-              {productSelectionMode === "category" && (
+          {/* Category Filter for Full Count */}
+          {showCategoryFilter && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Category Filter (Optional)</CardTitle>
+                <CardDescription>Filter full count by product category</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="category">Select Category *</Label>
-                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                    <SelectTrigger id="category">
-                      <SelectValue placeholder="Choose a category" />
+                  <Label htmlFor="category_filter">Filter by Category</Label>
+                  <Select
+                    name="category_filter"
+                    value={formState.category_filter || "none"}
+                    onValueChange={(value) => setFormState((prev) => ({ ...prev, category_filter: value === "none" ? "" : value }))}
+                  >
+                    <SelectTrigger id="category_filter">
+                      <SelectValue placeholder="All categories (no filter)" />
                     </SelectTrigger>
                     <SelectContent>
-                      {categories.length === 0 ? (
-                        <SelectItem value="none" disabled>No categories available</SelectItem>
-                      ) : (
-                        categories.map((category) => (
-                          <SelectItem key={category} value={category}>
-                            {category} ({products.filter(p => p.category?.name === category).length} products)
-                          </SelectItem>
-                        ))
-                      )}
+                      <SelectItem value="none">All categories</SelectItem>
+                      {categories.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
-              )}
+                
+                <div className="p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900 rounded-md flex gap-2">
+                  <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                  <p className="text-sm text-blue-900 dark:text-blue-100">
+                    {formState.status === "in_progress" 
+                      ? <>Full count items will be <strong>auto-populated</strong> by the system from products with inventory at this store.{formState.category_filter && <> Only <strong>{formState.category_filter}</strong> products will be included.</>}</>
+                      : <>Create as draft now. When you start the count, the system will auto-populate items from products with inventory.{formState.category_filter && <> Only <strong>{formState.category_filter}</strong> products will be included.</>}</>
+                    }
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-              {/* Manual Selection - shown when mode is "manual" */}
-              {productSelectionMode === "manual" && (
+          {/* Products Selection for Cycle Count */}
+          {showProductSelection && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Products to Count *</CardTitle>
+                <CardDescription>
+                  Select products to include in this cycle count
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Selection Mode */}
                 <div className="space-y-2">
-                  <Label htmlFor="product-search">Search Products</Label>
-                  <Input
-                    id="product-search"
-                    placeholder="Search by name or SKU..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                  <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto border rounded-md p-4 bg-muted/20">
-                    {loadingProducts ? (
-                      <div className="flex items-center justify-center py-8">
-                        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                        <span className="ml-2 text-muted-foreground">Loading products...</span>
-                      </div>
-                    ) : filteredProducts.length === 0 ? (
-                      <p className="text-center text-muted-foreground py-8">
-                        {searchTerm ? 'No products match your search' : 'No products available'}
-                      </p>
-                    ) : (
-                      filteredProducts.map((product) => (
-                        <div key={product.id} className="flex items-start space-x-2 p-2 rounded hover:bg-muted/50 transition-colors">
-                          <input
-                            type="checkbox"
-                            id={`product-${product.id}`}
-                            checked={selectedProducts.includes(product.id)}
-                            onChange={(e) => handleProductSelection(product.id, e.target.checked)}
-                            className="mt-0.5 h-4 w-4 text-[#1E2764] border-gray-300 rounded focus:ring-[#1E2764]"
-                          />
-                          <label
-                            htmlFor={`product-${product.id}`}
-                            className="text-sm leading-tight cursor-pointer flex-1"
-                          >
-                            <div className="font-medium">{product.name}</div>
-                            <div className="text-xs text-muted-foreground">
-                              {product.sku || 'No SKU'} • Stock: {product.stock_quantity || 0}
-                            </div>
-                          </label>
+                  <Label>Selection Mode</Label>
+                  <Select 
+                    value={formState.category_filter ? "category" : "manual"} 
+                    onValueChange={(value: "category" | "manual") => {
+                      if (value === "manual") {
+                        setFormState(prev => ({ ...prev, category_filter: "" }))
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="manual">Manual Selection (Specific Products)</SelectItem>
+                      <SelectItem value="category">By Category</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Category Selection */}
+                {formState.category_filter !== undefined && (
+                  <div className="space-y-2">
+                    <Label htmlFor="category">Select Category *</Label>
+                    <Select 
+                      value={formState.category_filter || ""} 
+                      onValueChange={(value) => setFormState(prev => ({ ...prev, category_filter: value }))}
+                    >
+                      <SelectTrigger id="category">
+                        <SelectValue placeholder="Choose a category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.length === 0 ? (
+                          <SelectItem value="none" disabled>No categories available</SelectItem>
+                        ) : (
+                          categories.map((category) => (
+                            <SelectItem key={category} value={category}>
+                              {category} ({products.filter(p => p.category?.name === category).length} products)
+                            </SelectItem>
+                          ))
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                {/* Manual Selection */}
+                {!formState.category_filter && (
+                  <div className="space-y-2">
+                    <Label htmlFor="product-search">Search Products</Label>
+                    <div className="relative">
+                      <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                      <Input
+                        id="product-search"
+                        placeholder="Search by name or SKU..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-8"
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto border rounded-md p-4 bg-muted/20">
+                      {loadingProducts ? (
+                        <div className="flex items-center justify-center py-8">
+                          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                          <span className="ml-2 text-muted-foreground">Loading products...</span>
                         </div>
-                      ))
+                      ) : filteredProducts.length === 0 ? (
+                        <p className="text-center text-muted-foreground py-8">
+                          {searchTerm ? 'No products match your search' : 'No products available'}
+                        </p>
+                      ) : (
+                        filteredProducts.map((product) => (
+                          <div key={product.id} className="flex items-start space-x-2 p-2 rounded hover:bg-muted/50 transition-colors">
+                            <input
+                              type="checkbox"
+                              id={`product-${product.id}`}
+                              checked={selectedProducts.includes(product.id)}
+                              onChange={(e) => handleProductSelection(product.id, e.target.checked)}
+                              className="mt-0.5 h-4 w-4 text-[#1E2764] border-gray-300 rounded focus:ring-[#1E2764]"
+                            />
+                            <label
+                              htmlFor={`product-${product.id}`}
+                              className="text-sm leading-tight cursor-pointer flex-1"
+                            >
+                              <div className="font-medium">{product.name}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {product.sku || 'No SKU'} • Stock: {product.stock_quantity || 0}
+                                {product.category?.name && ` • ${product.category.name}`}
+                              </div>
+                            </label>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                    {selectedProducts.length > 0 && (
+                      <div className="flex items-center justify-between pt-2 text-sm">
+                        <span className="text-muted-foreground">{selectedProducts.length} products selected</span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedProducts([])}
+                        >
+                          Clear selection
+                        </Button>
+                      </div>
                     )}
                   </div>
-                  {selectedProducts.length > 0 && (
-                    <div className="flex items-center justify-between pt-2 text-sm">
-                      <span className="text-muted-foreground">{selectedProducts.length} products selected</span>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setSelectedProducts([])}
-                      >
-                        Clear selection
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              )}
+                )}
 
-              {/* Summary for All/Category modes */}
-              {productSelectionMode !== "manual" && (
+                {/* Summary */}
                 <div className="p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900 rounded-md">
                   <p className="text-sm text-blue-900 dark:text-blue-100">
-                    {productSelectionMode === "all" ? (
+                    {formState.category_filter ? (
                       <>
-                        <strong>Full inventory count:</strong> All {products.length} products in your inventory will be included in this count.
+                        <strong>Category count:</strong> {products.filter(p => p.category?.name === formState.category_filter).length} products in "{formState.category_filter}" category will be included.
                       </>
-                    ) : selectedCategory ? (
+                    ) : selectedProducts.length > 0 ? (
                       <>
-                        <strong>Category count:</strong> All products in the "{selectedCategory}" category will be included ({products.filter(p => p.category?.name === selectedCategory).length} products).
+                        <strong>Manual selection:</strong> {selectedProducts.length} product{selectedProducts.length !== 1 ? 's' : ''} will be included in this count.
                       </>
                     ) : (
-                      'Select a category to see how many products will be counted.'
+                      <>
+                        <strong>Warning:</strong> Please select at least one product or a category for the cycle count.
+                      </>
                     )}
                   </p>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
         </form>
         <SheetFooter className="mt-auto pt-4 border-t bg-background dark:bg-gray-950">
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
