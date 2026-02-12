@@ -155,8 +155,23 @@ export async function deleteBreakage(breakageId: string): Promise<{ status: stri
 
 // Get Assignable Items for Breakage Reporting
 // Note: Backend automatically returns all items for system admins, user-specific items for regular users
-export async function getAssignableItems(): Promise<{ status: string; message: string; items: AssignableItem[] }> {
-  const response = await apiCall<{ status: string; message: string; items: AssignableItem[] }>("/whs/breakages/my-assignable-items", "GET", undefined, true);
+export async function getAssignableItems(params?: {
+  per_page?: number;
+  page?: number;
+}): Promise<{ status: string; message: string; items: AssignableItem[] }> {
+  const query = params
+    ? "?" +
+      Object.entries(params)
+        .filter(([_, v]) => v !== undefined && v !== null)
+        .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v as string)}`)
+        .join("&")
+    : "";
+  const response = await apiCall<{ status: string; message: string; items: AssignableItem[] }>(
+    `/whs/breakages/my-assignable-items${query}`,
+    "GET",
+    undefined,
+    true
+  );
   return response;
 }
 

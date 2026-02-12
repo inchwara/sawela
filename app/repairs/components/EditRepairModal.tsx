@@ -166,7 +166,8 @@ export function EditRepairModal({
   const fetchAssignableItems = async () => {
     setLoadingItems(true);
     try {
-      const response = await getAssignableItemsForRepair();
+      // Fetch all items for client-side search
+      const response = await getAssignableItemsForRepair({ per_page: 10000 });
       // Filter out returned items
       const availableItems = response.items.filter(item => !item.is_returned);
       setAssignableItems(availableItems);

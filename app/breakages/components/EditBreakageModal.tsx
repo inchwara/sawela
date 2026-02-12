@@ -167,7 +167,8 @@ export function EditBreakageModal({
       setAssignableItemsLoading(true);
       // Import the function dynamically to avoid circular dependencies
       const { getAssignableItems } = await import("@/lib/breakages");
-      const response = await getAssignableItems();
+      // Fetch all items for client-side search
+      const response = await getAssignableItems({ per_page: 10000 });
       // Filter out returned items
       const availableItems = response.items.filter(item => !item.is_returned);
       setAssignableItems(availableItems);

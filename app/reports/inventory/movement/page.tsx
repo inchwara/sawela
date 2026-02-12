@@ -127,25 +127,21 @@ export default function StockMovementReport() {
   const [stores, setStores] = React.useState<Store[]>([]);
   const [filters, setFilters] = React.useState<ReportFilters & { type?: string }>({
     period: "this_month",
-    per_page: 25,
+    per_page: 10000, // Load all items for client-side search
     page: 1,
   });
   
   const [data, setData] = React.useState<StockMovementItem[]>([]);
   const [summary, setSummary] = React.useState<StockMovementSummary | null>(null);
   const [meta, setMeta] = React.useState<any>(null);
-  const [pagination, setPagination] = React.useState({
-    total: 0,
-    currentPage: 1,
-    lastPage: 1,
-  });
+  const [totalItems, setTotalItems] = React.useState(0);
 
   // Fetch stores on mount
   React.useEffect(() => {
     getStores().then(setStores).catch(console.error);
   }, []);
 
-  // Fetch report data
+  // Fetch report data - load all items for client-side search
   const fetchReport = React.useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -153,13 +149,9 @@ export default function StockMovementReport() {
       const response = await getStockMovement(filters);
       if (response.success) {
         setData(response.data.data);
+        setTotalItems(response.data.total);
         setSummary(response.summary || null);
         setMeta(response.meta);
-        setPagination({
-          total: response.data.total,
-          currentPage: response.data.current_page,
-          lastPage: response.data.last_page,
-        });
       }
     } catch (err: any) {
       setError(err.message || "Failed to load report");
@@ -197,10 +189,7 @@ export default function StockMovementReport() {
     }
   };
 
-  // Handle page change
-  const handlePageChange = (page: number) => {
-    setFilters((prev) => ({ ...prev, page }));
-  };
+
 
   // Calculate totals from summary
   const totalInbound = summary?.by_type
@@ -384,11 +373,8 @@ export default function StockMovementReport() {
             loading={loading}
             searchColumn="product"
             searchPlaceholder="Search by product..."
-            pageSize={filters.per_page}
-            totalItems={pagination.total}
-            currentPage={pagination.currentPage}
-            onPageChange={handlePageChange}
-            serverPagination
+            totalItems={totalItems}
+            serverPagination={false}
           />
         )}
       </div>

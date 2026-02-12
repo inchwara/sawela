@@ -318,8 +318,23 @@ export async function deleteRepair(repairId: string): Promise<{ status: string; 
 
 // Get User's Assignable Items for Repair Reporting
 // Note: Backend automatically returns all products for system admins, user-specific dispatch items for regular users
-export async function getAssignableItemsForRepair(): Promise<{ status: string; message: string; items: AssignableItem[] }> {
-  const response = await apiCall<{ status: string; message: string; items: AssignableItem[] }>("/whs/repairs/my-assignable-items", "GET", undefined, true);
+export async function getAssignableItemsForRepair(params?: {
+  per_page?: number;
+  page?: number;
+}): Promise<{ status: string; message: string; items: AssignableItem[] }> {
+  const query = params
+    ? "?" +
+      Object.entries(params)
+        .filter(([_, v]) => v !== undefined && v !== null)
+        .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v as string)}`)
+        .join("&")
+    : "";
+  const response = await apiCall<{ status: string; message: string; items: AssignableItem[] }>(
+    `/whs/repairs/my-assignable-items${query}`,
+    "GET",
+    undefined,
+    true
+  );
   return response;
 }
 

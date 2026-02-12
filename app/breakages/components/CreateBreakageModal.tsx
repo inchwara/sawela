@@ -168,7 +168,8 @@ export function CreateBreakageModal({
       const { getAssignableItems } = await import("@/lib/breakages");
       
       // Backend automatically returns all items for system admins, user-specific items for regular users
-      const response = await getAssignableItems();
+      // Fetch all items for client-side search
+      const response = await getAssignableItems({ per_page: 10000 });
       
       // Transform and filter items
       // System admins get inventory products (product_id, stock_quantity)

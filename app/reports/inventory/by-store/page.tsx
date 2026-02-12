@@ -94,25 +94,21 @@ export default function StockByStoreReport() {
   const [error, setError] = React.useState<string | null>(null);
   const [stores, setStores] = React.useState<Store[]>([]);
   const [filters, setFilters] = React.useState<ReportFilters>({
-    per_page: 25,
+    per_page: 10000, // Load all items for client-side search
     page: 1,
   });
   
   const [data, setData] = React.useState<StockByStoreItem[]>([]);
   const [summary, setSummary] = React.useState<StockByStoreSummary | null>(null);
   const [meta, setMeta] = React.useState<any>(null);
-  const [pagination, setPagination] = React.useState({
-    total: 0,
-    currentPage: 1,
-    lastPage: 1,
-  });
+  const [totalItems, setTotalItems] = React.useState(0);
 
   // Fetch stores on mount
   React.useEffect(() => {
     getStores().then(setStores).catch(console.error);
   }, []);
 
-  // Fetch report data
+  // Fetch report data - load all items for client-side search
   const fetchReport = React.useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -122,11 +118,7 @@ export default function StockByStoreReport() {
         // API returns data as flat array directly
         const reportData = Array.isArray(response.data) ? response.data : [];
         setData(reportData);
-        setPagination({
-          total: reportData.length,
-          currentPage: 1,
-          lastPage: 1,
-        });
+        setTotalItems(reportData.length);
         setSummary(response.summary || null);
         setMeta(response.meta);
       }
@@ -166,10 +158,7 @@ export default function StockByStoreReport() {
     }
   };
 
-  // Handle page change
-  const handlePageChange = (page: number) => {
-    setFilters((prev) => ({ ...prev, page }));
-  };
+
 
   // Calculate totals from data array
   const totalStores = data.length;
@@ -397,11 +386,8 @@ export default function StockByStoreReport() {
             loading={loading}
             searchColumn="store_name"
             searchPlaceholder="Search by store..."
-            pageSize={filters.per_page}
-            totalItems={pagination.total}
-            currentPage={pagination.currentPage}
-            onPageChange={handlePageChange}
-            serverPagination={pagination.lastPage > 1}
+            totalItems={totalItems}
+            serverPagination={false}
           />
         )}
       </div>

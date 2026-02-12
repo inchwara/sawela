@@ -211,27 +211,22 @@ export default function StockLevelsReport() {
   const [data, setData] = React.useState<ExtendedStockLevelItem[]>([]);
   const [summary, setSummary] = React.useState<StockLevelsSummary | null>(null);
   const [meta, setMeta] = React.useState<any>(null);
-  const [pagination, setPagination] = React.useState({
-    currentPage: 1,
-    lastPage: 1,
-    total: 0,
-    perPage: 25,
-  });
+  const [totalItems, setTotalItems] = React.useState(0);
 
   // Fetch stores on mount
   React.useEffect(() => {
     getStores().then(setStores).catch(console.error);
   }, []);
 
-  // Fetch report data
-  const fetchReport = React.useCallback(async (page: number = 1) => {
+  // Fetch report data - load all items for client-side search/pagination
+  const fetchReport = React.useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const apiFilters: ReportFilters = {
         ...filters,
-        page,
-        per_page: 25,
+        per_page: 10000, // Fetch all items like products page
+        page: 1,
       };
       
       // Add group_by if selected
@@ -242,14 +237,9 @@ export default function StockLevelsReport() {
       const response = await getStockLevels(apiFilters);
       if (response.success) {
         setData(response.data.data as ExtendedStockLevelItem[]);
+        setTotalItems(response.data.total);
         setSummary(response.summary || null);
         setMeta(response.meta);
-        setPagination({
-          currentPage: response.data.current_page,
-          lastPage: response.data.last_page,
-          total: response.data.total,
-          perPage: response.data.per_page,
-        });
       }
     } catch (err: any) {
       setError(err.message || "Failed to load report");
@@ -264,13 +254,8 @@ export default function StockLevelsReport() {
   }, [filters, groupBy, toast]);
 
   React.useEffect(() => {
-    fetchReport(1);
+    fetchReport();
   }, [fetchReport]);
-
-  // Handle page change
-  const handlePageChange = (page: number) => {
-    fetchReport(page);
-  };
 
   // Handle export
   const handleExport = async () => {
@@ -309,7 +294,7 @@ export default function StockLevelsReport() {
         category="inventory"
         categoryLabel="Inventory"
       >
-        <ReportErrorState message={error} onRetry={() => fetchReport(1)} />
+        <ReportErrorState message={error} onRetry={() => fetchReport()} />
       </ReportLayout>
     );
   }
@@ -323,7 +308,7 @@ export default function StockLevelsReport() {
       loading={loading}
       generatedAt={meta?.generated_at}
       onExport={handleExport}
-      onRefresh={() => fetchReport(1)}
+      onRefresh={() => fetchReport()}
       exportLoading={exportLoading}
     >
       <div className="space-y-6">
@@ -470,11 +455,8 @@ export default function StockLevelsReport() {
             loading={loading}
             searchColumn="name"
             searchPlaceholder="Search products..."
-            totalItems={pagination.total}
-            currentPage={pagination.currentPage}
-            pageSize={pagination.perPage}
-            onPageChange={handlePageChange}
-            serverPagination
+            totalItems={totalItems}
+            serverPagination={false}
           />
         )}
       </div>

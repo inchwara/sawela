@@ -108,7 +108,8 @@ export function CreateRepairModal({
   const fetchAssignableItems = async () => {
     setLoadingItems(true);
     try {
-      const response = await getAssignableItemsForRepair();
+      // Fetch all items by using a large per_page value (same pattern as products page)
+      const response = await getAssignableItemsForRepair({ per_page: 10000 });
       
       // Transform and filter items
       // System admins get inventory products (product_id, stock_quantity)
