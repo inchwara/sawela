@@ -38,7 +38,7 @@ import {
 } from "@/lib/repairs";
 import { fetchUsers, type UserData as UserType } from "@/lib/users";
 import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
+import { usePermissions } from "@/hooks/use-permissions";
 
 
 
@@ -75,8 +75,8 @@ export function CreateRepairModal({
   const [loadingItems, setLoadingItems] = useState(false);
   const [usersLoading, setUsersLoading] = useState(false);
   const [itemSearch, setItemSearch] = useState("");
-  const [selectedProduct, setSelectedProduct] = useState<AssignableItem | null>(null);
   const { toast } = useToast();
+  const { isSystemAdmin } = usePermissions();
 
   const [formData, setFormData] = useState<FormData>({
     approver_id: "",
@@ -103,19 +103,40 @@ export function CreateRepairModal({
     });
     setErrors({});
     setItemSearch("");
-    setSelectedProduct(null);
   };
 
   const fetchAssignableItems = async () => {
     setLoadingItems(true);
     try {
       const response = await getAssignableItemsForRepair();
-      // Filter out returned items (handle both string and boolean)
-      const availableItems = response.items.filter(item => {
-        const isReturned = item.is_returned === true || item.is_returned === "true";
-        const availableQty = item.received_quantity - (item.returned_quantity || 0);
-        return !isReturned && availableQty > 0;
-      });
+      
+      // Transform and filter items
+      // System admins get inventory products (product_id, stock_quantity)
+      // Regular users get dispatch items (id, received_quantity, is_returned)
+      const availableItems = response.items
+        .map((item: any) => {
+          // If item doesn't have an id, it's an inventory product (system admin)
+          // Generate a unique id from product_id and variant_id
+          if (!item.id && item.product_id) {
+            return {
+              ...item,
+              id: item.variant_id ? `${item.product_id}-${item.variant_id}` : item.product_id,
+              received_quantity: item.stock_quantity || 0,
+              returned_quantity: 0,
+              is_returned: false,
+              dispatch_number: 'N/A',
+              dispatch_id: null,
+            };
+          }
+          return item;
+        })
+        .filter((item: any) => {
+          const isReturned = item.is_returned === true || item.is_returned === "true";
+          // Check if there's available quantity
+          const availableQty = (item.received_quantity || 0) - (item.returned_quantity || 0);
+          return !isReturned && availableQty > 0;
+        });
+      
       setAssignableItems(availableItems);
     } catch (error) {
       console.error('Error fetching assignable items:', error);
@@ -223,40 +244,7 @@ export function CreateRepairModal({
     }
   };
 
-  const addSelectedProduct = () => {
-    if (!selectedProduct) return;
-    
-    // Check if product is already added
-    const existingItem = formData.items.find(item => item.assignable_item_id === selectedProduct.id);
-    if (existingItem) {
-      toast({
-        title: "Item already added",
-        description: "This product is already in the repair list.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setFormData(prev => ({
-      ...prev,
-      items: [
-        ...prev.items,
-        {
-          assignable_item_id: selectedProduct.id,
-          product_id: selectedProduct.product_id,
-          product_variant: selectedProduct.variant_id || undefined,
-          quantity: 1,
-          notes: "",
-          is_repairable: true,
-          assignableItem: selectedProduct
-        }
-      ]
-    }));
-    
-    // Clear selection
-    setSelectedProduct(null);
-    setItemSearch("");
-  };
+
 
   const removeItem = (index: number) => {
     setFormData(prev => ({
@@ -304,15 +292,10 @@ export function CreateRepairModal({
     );
   }, [assignableItems, itemSearch]);
 
-  const handleClose = () => {
-    if (!isSubmitting) {
-      resetForm();
-      onOpenChange(false);
-    }
-  };
+
 
   return (
-    <Sheet open={open} onOpenChange={handleClose}>
+    <Sheet open={open} onOpenChange={(open) => !isSubmitting && onOpenChange(open)}>
       <SheetContent className="sm:max-w-lg md:max-w-xl lg:max-w-2xl flex flex-col h-full">
         <SheetHeader className="flex-shrink-0">
           <SheetTitle className="flex items-center space-x-2">
@@ -367,7 +350,10 @@ export function CreateRepairModal({
             <CardHeader>
               <CardTitle className="text-lg">Add Products to Repair Report</CardTitle>
               <CardDescription>
-                Search and select products to add to this repair report
+                {isSystemAdmin() 
+                  ? "Search and select products from all company inventory to add to this repair report"
+                  : "Search and select products from your dispatched items to add to this repair report"
+                }
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -376,12 +362,10 @@ export function CreateRepairModal({
                 <div className="space-y-2">
                   <Label>Search Products</Label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Search className="h-4 w-4 text-gray-400" />
-                    </div>
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                     <Input
                       type="text"
-                      placeholder="Search for products to add..."
+                      placeholder="Search products by name..."
                       value={itemSearch}
                       onChange={(e) => setItemSearch(e.target.value)}
                       className="pl-10"
@@ -389,80 +373,98 @@ export function CreateRepairModal({
                   </div>
                 </div>
                 
-                {/* Product Selection */}
+                {/* Product Results - Show when searching */}
                 {itemSearch && (
-                  <div className="space-y-2">
-                    <Label>Available Products</Label>
-                    <div className="max-h-48 overflow-y-auto border rounded-md">
-                      {filteredItems.length > 0 ? (
-                        <div className="space-y-1 p-2">
-                          {filteredItems.map((item) => {
-                            const availableQty = item.received_quantity - (item.returned_quantity || 0);
-                            const isAlreadyAdded = formData.items.some(repairItem => repairItem.assignable_item_id === item.id);
-                            
-                            return (
-                              <div
-                                key={item.id}
-                                className={cn(
-                                  "p-3 rounded-lg border cursor-pointer transition-colors",
-                                  selectedProduct?.id === item.id
-                                    ? "bg-blue-50 border-blue-200"
-                                    : "hover:bg-gray-50 border-gray-200",
-                                  isAlreadyAdded && "opacity-50 cursor-not-allowed"
-                                )}
-                                onClick={() => !isAlreadyAdded && setSelectedProduct(item)}
-                              >
-                                <div className="flex items-center justify-between">
-                                  <div className="flex-1">
-                                    <div className="font-medium">
-                                      {item.product_name}
-                                      {item.variant_name && ` - ${item.variant_name}`}
+                  <div className="max-h-64 overflow-y-auto border rounded-lg">
+                    {loadingItems ? (
+                      <div className="p-4 text-center text-gray-500">
+                        <Loader2 className="h-5 w-5 animate-spin mx-auto mb-2" />
+                        Loading products...
+                      </div>
+                    ) : filteredItems.length === 0 ? (
+                      <div className="p-4 text-center text-gray-500">
+                        No products found matching "{itemSearch}"
+                      </div>
+                    ) : (
+                      <div className="divide-y">
+                        {filteredItems.map((item) => {
+                          const availableQty = item.received_quantity - (item.returned_quantity || 0);
+                          const isAlreadyAdded = formData.items.some(repairItem => repairItem.assignable_item_id === item.id);
+                          
+                          return (
+                            <div key={item.id} className="p-4">
+                              <div className="flex items-center justify-between">
+                                <div className="flex-1">
+                                  <div className="flex items-center space-x-3">
+                                    <div>
+                                      <h4 className="font-medium">
+                                        {item.product?.name || item.product_name || item.product_id}
+                                        {(item.variant?.name || item.variant_name || item.product_variant) && (
+                                          <span className="text-gray-500"> - {item.variant?.name || item.variant_name || item.product_variant}</span>
+                                        )}
+                                      </h4>
+                                      <p className="text-sm text-gray-500">
+                                        {isSystemAdmin() 
+                                          ? `SKU: ${item.sku || item.product?.sku || 'N/A'} • Stock: ${availableQty}`
+                                          : `Dispatch: ${item.dispatch_number} • Available: ${availableQty}`
+                                        }
+                                      </p>
                                     </div>
-                                    <div className="text-xs text-muted-foreground mt-1">
-                                      Dispatch: {item.dispatch_number}
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center space-x-2">
-                                    <Badge variant="secondary">
-                                      Available: {availableQty}
-                                    </Badge>
+                                    {availableQty <= 0 && (
+                                      <Badge variant="destructive" className="text-xs">
+                                        Unavailable
+                                      </Badge>
+                                    )}
                                     {isAlreadyAdded && (
-                                      <Badge variant="destructive">Added</Badge>
+                                      <Badge variant="secondary" className="text-xs">
+                                        Already Added
+                                      </Badge>
                                     )}
                                   </div>
                                 </div>
+                                <Button
+                                  size="sm"
+                                  onClick={() => {
+                                    if (isAlreadyAdded) {
+                                      toast({
+                                        title: "Item already added",
+                                        description: "This product is already in the repair list.",
+                                        variant: "destructive",
+                                      });
+                                      return;
+                                    }
+                                    setFormData(prev => ({
+                                      ...prev,
+                                      items: [
+                                        ...prev.items,
+                                        {
+                                          assignable_item_id: item.id,
+                                          product_id: item.product_id,
+                                          product_variant: item.variant_id || undefined,
+                                          quantity: 1,
+                                          notes: "",
+                                          is_repairable: true,
+                                          assignableItem: item
+                                        }
+                                      ]
+                                    }));
+                                    toast({
+                                      title: "Item Added",
+                                      description: `${item.product?.name || item.product_name} added to repair report`,
+                                    });
+                                  }}
+                                  disabled={availableQty <= 0 || isAlreadyAdded}
+                                  className="bg-[#E30040] hover:bg-[#E30040]/90"
+                                >
+                                  <Plus className="h-4 w-4 mr-1" />
+                                  Add
+                                </Button>
                               </div>
-                            );
-                          })}
-                        </div>
-                      ) : (
-                        <div className="p-4 text-center text-gray-500">
-                          No products found matching your search
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-                
-                {/* Add Selected Product Button */}
-                {selectedProduct && (
-                  <div className="flex items-center justify-between p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <div>
-                      <div className="font-medium">
-                        {selectedProduct.product_name}
-                        {selectedProduct.variant_name && ` - ${selectedProduct.variant_name}`}
+                            </div>
+                          );
+                        })}
                       </div>
-                      <div className="text-sm text-gray-600">
-                        Dispatch: {selectedProduct.dispatch_number} • Available: {selectedProduct.received_quantity - (selectedProduct.returned_quantity || 0)}
-                      </div>
-                    </div>
-                    <Button
-                      onClick={addSelectedProduct}
-                      className="bg-[#E30040] hover:bg-[#E30040]/90"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add to Repair
-                    </Button>
+                    )}
                   </div>
                 )}
               </div>
@@ -524,7 +526,10 @@ export function CreateRepairModal({
                                 {(selectedItem?.variant?.name || selectedItem?.variant_name || selectedItem?.product_variant) && ` - ${selectedItem?.variant?.name || selectedItem?.variant_name || selectedItem?.product_variant}`}
                               </div>
                               <div className="text-sm text-gray-600 mt-1">
-                                Dispatch: {selectedItem?.dispatch_number} • Available: {availableQuantity}
+                                {isSystemAdmin() 
+                                  ? `SKU: ${selectedItem?.sku || selectedItem?.product?.sku || 'N/A'} • Available: ${availableQuantity}`
+                                  : `Dispatch: ${selectedItem?.dispatch_number} • Available: ${availableQuantity}`
+                                }
                               </div>
                             </div>
                           </div>

@@ -1,5 +1,5 @@
 import apiCall from "./api";
-import { type User } from "./users";
+import { type UserData as User } from "./users";
 
 // Product interface for embedded product data
 export interface Product {
@@ -141,16 +141,17 @@ export interface RepairResponse {
 
 export interface AssignableItem {
   id: string;
-  dispatch_id: string;
+  dispatch_id: string | null;
   product_id: string;
   variant_id: string | null;
   quantity: number;
   received_quantity: number;
+  stock_quantity?: number; // For admin items (inventory products)
   notes: string | null;
   created_at: string;
   updated_at: string;
-  is_returnable: boolean;
-  is_returned: boolean;
+  is_returnable: boolean | string;
+  is_returned: boolean | string;
   return_date: string | null;
   returned_quantity: number | null;
   return_notes: string | null;
@@ -161,6 +162,19 @@ export interface AssignableItem {
   to_entity: string;
   product_name: string;
   variant_name: string | null;
+  sku?: string | null;
+  // For admin items, includes embedded product/variant data
+  product?: {
+    name: string;
+    sku?: string;
+    unit_of_measurement?: string;
+  };
+  variant?: {
+    name: string;
+    sku?: string;
+    price?: number;
+  };
+  product_variant?: string;
 }
 
 // List Repairs with filtering options
@@ -303,8 +317,9 @@ export async function deleteRepair(repairId: string): Promise<{ status: string; 
 }
 
 // Get User's Assignable Items for Repair Reporting
+// Note: Backend automatically returns all products for system admins, user-specific dispatch items for regular users
 export async function getAssignableItemsForRepair(): Promise<{ status: string; message: string; items: AssignableItem[] }> {
-  const response = await apiCall<{ status: string; message: string; items: AssignableItem[] }>("/whs/breakages/my-assignable-items", "GET", undefined, true);
+  const response = await apiCall<{ status: string; message: string; items: AssignableItem[] }>("/whs/repairs/my-assignable-items", "GET", undefined, true);
   return response;
 }
 
