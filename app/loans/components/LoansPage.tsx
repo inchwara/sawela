@@ -35,8 +35,17 @@ export default function LoansPage() {
     setLoading(true);
     try {
       const response: DispatchResponse = await listDispatches();
-      // Option A: only returnable dispatches live here
-      const returnable = response.dispatches.data.filter(d => d.is_returnable);
+      // Include dispatches that are returnable at the dispatch level OR have at least one returnable item
+      // Exclude dispatches where ALL returnable items have been fully returned
+      const returnable = response.dispatches.data.filter(d => {
+        const hasReturnableItems = d.is_returnable || d.dispatch_items?.some(item => item.is_returnable);
+        if (!hasReturnableItems) return false;
+        const returnableItems = d.dispatch_items?.filter(item => item.is_returnable) || [];
+        const allFullyReturned = returnableItems.length > 0 && returnableItems.every(
+          item => item.is_returned && (item.returned_quantity || 0) >= item.quantity
+        );
+        return !allFullyReturned;
+      });
       setLoans(returnable);
     } catch (error) {
       console.error("Error fetching loans:", error);
