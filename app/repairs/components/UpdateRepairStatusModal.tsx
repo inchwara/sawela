@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { 
   Settings, 
   CheckCircle, 
@@ -82,7 +82,7 @@ export function UpdateRepairStatusModal({
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
+  ;
 
   useEffect(() => {
     if (open && repair) {
@@ -140,20 +140,13 @@ export function UpdateRepairStatusModal({
 
       await updateRepairItemsStatus(repair.id, payload);
       
-      toast({
-        title: "Success",
-        description: "Repair item statuses updated successfully.",
-      });
+      toast.success("Repair item statuses updated successfully.");
       
       onSuccess();
       onOpenChange(false);
     } catch (error) {
       console.error("Error updating repair item statuses:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update repair item statuses. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to update repair item statuses. Please try again.");
     } finally {
       setLoading(false);
     }

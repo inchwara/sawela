@@ -21,7 +21,7 @@ import {
   TableHeader, 
   TableRow 
 } from "@/components/ui/table"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { 
   FileText, 
   Download, 
@@ -174,11 +174,7 @@ export default function AdminReportsPage() {
 
       setReportData(reportData)
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to load report data",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to load report data")
     } finally {
       setLoading(false)
     }
@@ -186,10 +182,7 @@ export default function AdminReportsPage() {
 
   const exportReport = async () => {
     // This would typically generate and download a PDF or CSV report
-    toast({
-      title: "Export Started",
-      description: "Report export will be sent to your email",
-    })
+    toast.success("Report export will be sent to your email")
   }
 
   const calculateGrowthPercentage = (current: number, previous: number) => {

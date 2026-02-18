@@ -12,7 +12,7 @@ import {
   TableHeader, 
   TableRow 
 } from "@/components/ui/table"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { 
   Loader2, 
   DollarSign, 
@@ -138,11 +138,7 @@ export function AdminDashboardClient() {
       setRecentActivities(activities.slice(0, 10))
 
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to load dashboard data",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to load dashboard data")
     } finally {
       setLoading(false)
     }

@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Loader2, AlertTriangle } from "lucide-react";
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { deleteProduct, type Product } from "@/lib/products";
 
 interface DeleteProductConfirmationDialogProps {
@@ -30,7 +30,7 @@ export function DeleteProductConfirmationDialog({
   onSuccess,
 }: DeleteProductConfirmationDialogProps) {
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
+  ;
 
   const handleDelete = async () => {
     if (!product) return;
@@ -39,20 +39,13 @@ export function DeleteProductConfirmationDialog({
     try {
       await deleteProduct(product.id);
       
-      toast({
-        title: "Success",
-        description: `Product "${product.name}" has been deleted successfully.`,
-      });
+      toast.success(`Product "${product.name}" has been deleted successfully.`);
 
       onSuccess();
       onOpenChange(false);
     } catch (error: any) {
       console.error('Delete error:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete product",
-        variant: "destructive",
-      });
+      toast.error(error.message || "Failed to delete product");
     } finally {
       setLoading(false);
     }

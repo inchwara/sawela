@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { getProductById, type Product, type ProductSummary } from "@/lib/products"
 import * as XLSX from "xlsx"
 import { PermissionGuard } from "@/components/PermissionGuard"
@@ -191,8 +191,6 @@ export function ProductTable({
   const [isLoadingProductDetails, setIsLoadingProductDetails] = useState(false)
   const router = useRouter()
   const { hasPermission } = usePermissions()
-  const { toast } = useToast()
-
   // Handler to fetch complete product details including packaging
   const handleViewProductDetails = async (product: Product) => {
     setIsDetailsSheetOpen(true)
@@ -204,19 +202,11 @@ export function ProductTable({
       if (result.status === "success" && result.data) {
         setSelectedProduct(result.data) // Update with complete data including packaging
       } else {
-        toast({
-          title: "Error",
-          description: result.message || "Failed to load complete product details",
-          variant: "destructive",
-        })
+        toast.error(result.message || "Failed to load complete product details")
       }
     } catch (error) {
       console.error("Error loading product details:", error)
-      toast({
-        title: "Error",
-        description: "An error occurred while loading product details",
-        variant: "destructive",
-      })
+      toast.error("An error occurred while loading product details")
     } finally {
       setIsLoadingProductDetails(false)
     }
@@ -280,10 +270,7 @@ export function ProductTable({
     setProductToDelete(null)
     setIsDeleteDialogOpen(false)
     onProductUpdated()
-    toast({
-      title: "Success",
-      description: "Product deleted successfully",
-    })
+    toast.success("Product deleted successfully")
   }
 
   // Handle export

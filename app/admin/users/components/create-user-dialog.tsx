@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { Loader2, Plus, Shield } from "lucide-react"
 import { 
   getCompanies,
@@ -79,11 +79,7 @@ export function CreateUserDialog({ open, onOpenChange, onUserCreated }: CreateUs
       setCompanies(companiesData.data || [])
       setRoles(rolesData || [])
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to load initial data",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to load initial data")
     } finally {
       setLoading(false)
     }
@@ -111,11 +107,7 @@ export function CreateUserDialog({ open, onOpenChange, onUserCreated }: CreateUs
 
   const handleCreateRole = async () => {
     if (!newRole.name.trim() || !newRole.description.trim() || !newRole.company_id) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields for the role",
-        variant: "destructive",
-      })
+      toast.error("Please fill in all required fields for the role")
       return
     }
 
@@ -130,10 +122,7 @@ export function CreateUserDialog({ open, onOpenChange, onUserCreated }: CreateUs
 
       const createdRole = await createRole(payload)
       
-      toast({
-        title: "Success",
-        description: "Role created successfully",
-      })
+      toast.success("Role created successfully")
       
       // Add the new role to the roles list
       setRoles(prev => [...prev, createdRole])
@@ -151,11 +140,7 @@ export function CreateUserDialog({ open, onOpenChange, onUserCreated }: CreateUs
         company_id: formData.company_id
       })
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create role",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to create role")
     } finally {
       setIsCreatingRole(false)
     }
@@ -170,11 +155,7 @@ export function CreateUserDialog({ open, onOpenChange, onUserCreated }: CreateUs
         !formData.password.trim() || 
         !formData.company_id || 
         !formData.role_id) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-        variant: "destructive",
-      })
+      toast.error("Please fill in all required fields")
       return
     }
 
@@ -196,10 +177,7 @@ export function CreateUserDialog({ open, onOpenChange, onUserCreated }: CreateUs
 
       await createUser(formDataObj)
       
-      toast({
-        title: "Success",
-        description: "User created successfully",
-      })
+      toast.success("User created successfully")
       
       // Reset form
       setFormData({
@@ -216,11 +194,7 @@ export function CreateUserDialog({ open, onOpenChange, onUserCreated }: CreateUs
       onOpenChange(false)
       onUserCreated()
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create user",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to create user")
     } finally {
       setLoading(false)
     }

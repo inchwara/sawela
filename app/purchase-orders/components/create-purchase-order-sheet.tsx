@@ -13,7 +13,7 @@ import { createPurchaseOrder, CreatePurchaseOrderPayload, PurchaseOrderItem } fr
 import { getSuppliers, Supplier } from "@/lib/suppliers"
 import { getProducts, Product as BaseProduct } from "@/lib/products"
 import { getStores } from "@/lib/stores"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { CreateSupplierModal } from "@/components/modals/create-supplier-modal"
 
@@ -29,7 +29,6 @@ interface ProductWithVariants extends Omit<BaseProduct, 'variants'> {
 }
 
 export function CreatePurchaseOrderSheet({ open, onOpenChange, onPurchaseOrderCreated }: CreatePurchaseOrderSheetProps) {
-  const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   // Remove order_number, currency_code, discount from formData
   const [formData, setFormData] = useState<CreatePurchaseOrderPayload>({
@@ -81,11 +80,7 @@ export function CreatePurchaseOrderSheet({ open, onOpenChange, onPurchaseOrderCr
       const data = await getSuppliers()
       setSuppliers(data)
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load suppliers. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Failed to load suppliers. Please try again.")
     } finally {
       setLoadingSuppliers(false)
     }
@@ -96,10 +91,7 @@ export function CreatePurchaseOrderSheet({ open, onOpenChange, onPurchaseOrderCr
     setSuppliers(prev => [...prev, supplier])
     // Set the new supplier as selected
     handleInputChange("supplier_id", supplier.id)
-    toast({
-      title: "Success",
-      description: `Supplier "${supplier.name}" has been added and selected.`
-    })
+    toast.success(`Supplier "${supplier.name}" has been added and selected.`)
   }
 
   const fetchProducts = async () => {
@@ -108,11 +100,7 @@ export function CreatePurchaseOrderSheet({ open, onOpenChange, onPurchaseOrderCr
       const { data } = await getProducts(1, 10000, { status: "active" }) // Fetch all active products
       setProducts(data)
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load products. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Failed to load products. Please try again.")
     } finally {
       setLoadingProducts(false)
     }
@@ -124,11 +112,7 @@ export function CreatePurchaseOrderSheet({ open, onOpenChange, onPurchaseOrderCr
       setStores(data)
       setStoreId("") // Do not prefill
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load stores.",
-        variant: "destructive",
-      })
+      toast.error("Failed to load stores.")
     }
   }
 
@@ -151,10 +135,7 @@ export function CreatePurchaseOrderSheet({ open, onOpenChange, onPurchaseOrderCr
         })),
       }
       await createPurchaseOrder(payload)
-      toast({
-        title: "Success",
-        description: "Purchase order created successfully."
-      })
+      toast.success("Purchase order created successfully.")
       onPurchaseOrderCreated()
       onOpenChange(false)
       setFormData({
@@ -167,11 +148,7 @@ export function CreatePurchaseOrderSheet({ open, onOpenChange, onPurchaseOrderCr
       })
       setComments("")
     } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to create purchase order",
-        variant: "destructive"
-      })
+      toast.error(error instanceof Error ? error.message : "Failed to create purchase order")
     } finally {
       setIsLoading(false)
     }
@@ -194,11 +171,7 @@ export function CreatePurchaseOrderSheet({ open, onOpenChange, onPurchaseOrderCr
   const handleAddItem = () => {
     // Prevent adding if required fields are missing
     if (!newItem.product_id || (variantOptions.length > 0 && !newItem.variant_id) || !newItem.quantity || !newItem.unit_price || newItem.quantity <= 0 || newItem.unit_price <= 0) {
-      toast({
-        title: "Error",
-        description: "Please select a product, variant (if required), and enter a valid quantity and price.",
-        variant: "destructive"
-      })
+      toast.error("Please select a product, variant (if required), and enter a valid quantity and price.")
       return
     }
     setFormData(prev => {

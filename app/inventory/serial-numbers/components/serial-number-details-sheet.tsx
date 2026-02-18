@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator"
 import { AlertTriangle, Package, Calendar, User, Tag, DollarSign, Barcode } from "lucide-react"
 import { getSerialNumberDetails } from "@/lib/serial-numbers"
 import type { SerialNumber } from "@/types/serial-numbers"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 
 interface SerialNumberDetailsSheetProps {
   serialId: string
@@ -26,8 +26,6 @@ export function SerialNumberDetailsSheet({
   const [serialNumber, setSerialNumber] = useState<SerialNumber | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const { toast } = useToast()
-
   // Fetch serial number details when sheet opens
   useEffect(() => {
     if (open && serialId) {
@@ -44,11 +42,7 @@ export function SerialNumberDetailsSheet({
       setSerialNumber(data)
     } catch (err: any) {
       setError(err.message || "Failed to fetch serial number details")
-      toast({
-        title: "Error",
-        description: err.message || "Failed to fetch serial number details",
-        variant: "destructive",
-      })
+      toast.error(err.message || "Failed to fetch serial number details")
     } finally {
       setIsLoading(false)
     }

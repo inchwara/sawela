@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import {
   getPurchasesByStatus,
   downloadReportAsCsv,
@@ -83,7 +83,7 @@ const columns: ColumnDef<PurchaseByStatusItem>[] = [
 ];
 
 export default function PurchaseByStatusReport() {
-  const { toast } = useToast();
+  ;
   const [loading, setLoading] = React.useState(true);
   const [exportLoading, setExportLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -109,11 +109,7 @@ export default function PurchaseByStatusReport() {
       }
     } catch (err: any) {
       setError(err.message || "Failed to load report");
-      toast({
-        title: "Error",
-        description: err.message || "Failed to load report",
-        variant: "destructive",
-      });
+      toast.error(err.message || "Failed to load report");
     } finally {
       setLoading(false);
     }
@@ -128,16 +124,9 @@ export default function PurchaseByStatusReport() {
     setExportLoading(true);
     try {
       await downloadReportAsCsv("/purchase/by-status", filters, "po_by_status.csv");
-      toast({
-        title: "Export successful",
-        description: "The report has been downloaded as CSV",
-      });
+      toast.success("The report has been downloaded as CSV");
     } catch (err: any) {
-      toast({
-        title: "Export failed",
-        description: err.message || "Failed to export report",
-        variant: "destructive",
-      });
+      toast.error(err.message || "Failed to export report");
     } finally {
       setExportLoading(false);
     }

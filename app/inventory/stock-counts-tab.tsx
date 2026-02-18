@@ -6,14 +6,13 @@ import { getStockCounts, getStockCountSummary } from "@/lib/stock-counts"
 import { useDataCache } from "@/lib/data-cache"
 import { Button } from "@/components/ui/button"
 import { RefreshCw } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
 import type { StockCount } from "@/app/types"
 import { StockCountsSkeleton } from "./stock-counts/stock-counts-skeleton" // Import the skeleton
 
 export function StockCountsTab() {
-  const { toast } = useToast()
   const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null)
 
   // Use data cache for stock counts
@@ -32,11 +31,7 @@ export function StockCountsTab() {
         setLastRefreshTime(new Date())
       },
       onError: (error) => {
-        toast({
-          title: "Error loading stock counts",
-          description: error.message || "Failed to load stock counts",
-          variant: "destructive",
-        })
+        toast.error(error.message || "Failed to load stock counts")
       },
     },
   )

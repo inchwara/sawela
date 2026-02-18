@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Loader2, AlertTriangle } from "lucide-react";
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { deleteBreakage, type Breakage } from "@/lib/breakages";
 
 interface DeleteBreakageConfirmationDialogProps {
@@ -30,7 +30,7 @@ export function DeleteBreakageConfirmationDialog({
   breakage 
 }: DeleteBreakageConfirmationDialogProps) {
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
+  ;
 
   const handleDelete = async () => {
     if (!breakage) return;
@@ -39,20 +39,13 @@ export function DeleteBreakageConfirmationDialog({
     try {
       await deleteBreakage(breakage.id);
       
-      toast({
-        title: "Success",
-        description: `Breakage ${breakage.breakage_number} has been deleted successfully.`,
-      });
+      toast.success(`Breakage ${breakage.breakage_number} has been deleted successfully.`);
       
       onSuccess();
       onOpenChange(false);
     } catch (error: any) {
       console.error('Delete error:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete breakage",
-        variant: "destructive",
-      });
+      toast.error(error.message || "Failed to delete breakage");
     } finally {
       setLoading(false);
     }

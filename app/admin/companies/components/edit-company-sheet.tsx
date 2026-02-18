@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Loader2 } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { updateCompany } from "../actions"
 import type { Database } from "@/lib/database.types"
 
@@ -25,8 +25,6 @@ interface EditCompanySheetProps {
 
 export function EditCompanySheet({ company, isOpen, onOpenChange, onCompanyUpdated }: EditCompanySheetProps) {
   const [saving, setSaving] = useState(false)
-  const { toast } = useToast()
-
   const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setSaving(true)
@@ -42,25 +40,14 @@ export function EditCompanySheet({ company, isOpen, onOpenChange, onCompanyUpdat
       }
       const result = await updateCompany(company.id, companyData)
       if (result.success) {
-        toast({
-          title: "Success",
-          description: result.message,
-        })
+        toast.success(result.message)
         onCompanyUpdated() // Refresh the list of companies
         onOpenChange(false) // Close the sheet
       } else {
-        toast({
-          title: "Error",
-          description: result.message,
-          variant: "destructive",
-        })
+        toast.error(result.message)
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "An unexpected error occurred.",
-        variant: "destructive",
-      })
+      toast.error(error.message || "An unexpected error occurred.")
     } finally {
       setSaving(false)
     }

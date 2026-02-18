@@ -6,7 +6,7 @@ import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2, Edit, Trash2, PlusCircle, CreditCard, Check, RefreshCw } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { useAuth } from "@/lib/auth-context"
 import { hasPermission } from "@/lib/rbac"
 import type { Company } from "@/app/types"
@@ -37,7 +37,6 @@ export default function AdminSubscriptionsPage() {
   const [loading, setLoading] = useState(true)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
   const [editingSubscription, setEditingSubscription] = useState<SubscriptionWithCompany | null>(null)
-  const { toast } = useToast()
   const { userProfile } = useAuth()
 
   const canManageSubscriptionsAndPayments = hasPermission(
@@ -80,11 +79,7 @@ export default function AdminSubscriptionsPage() {
       
       setSubscriptions(allSubscriptions)
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to load subscription data.",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to load subscription data.")
     } finally {
       setLoading(false)
     }
@@ -101,19 +96,11 @@ export default function AdminSubscriptionsPage() {
     }
     try {
       // TODO: Implement delete subscription in admin library
-      toast({
-        title: "Info",
-        description: "Delete subscription functionality not yet implemented",
-        variant: "default",
-      })
+      toast.success("Delete subscription functionality not yet implemented")
       // await deleteSubscription(subscriptionId)
       // await loadSubscriptions()
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "An unexpected error occurred.",
-        variant: "destructive",
-      })
+      toast.error(error.message || "An unexpected error occurred.")
     }
   }
 

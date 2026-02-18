@@ -41,7 +41,7 @@ import { AddSerialNumberSheet } from "@/app/inventory/serial-numbers/components/
 import { EditSerialNumberSheet } from "@/app/inventory/serial-numbers/components/edit-serial-number-sheet";
 import { AssignBatchSheet } from "@/app/inventory/serial-numbers/components/assign-batch-sheet";
 import { deleteSerialNumber } from "@/lib/serial-numbers";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface SerialNumberTableProps {
   serialNumbers: SerialNumber[];
@@ -82,7 +82,7 @@ export function SerialNumberTable({
   onCreateNew,
   onAddSerialNumber,
 }: SerialNumberTableProps) {
-  const { toast } = useToast();
+  ;
   const [selectedSerialNumberId, setSelectedSerialNumberId] = useState<string | null>(null);
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
@@ -111,17 +111,10 @@ export function SerialNumberTable({
   const handleDeleteSerialNumber = async (serialNumber: SerialNumber) => {
     try {
       await deleteSerialNumber(serialNumber.id);
-      toast({
-        title: "Success",
-        description: "Serial number deleted successfully",
-      });
+      toast.success("Serial number deleted successfully");
       onDeleteSerialNumber(serialNumber);
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete serial number",
-        variant: "destructive",
-      });
+      toast.error(error.message || "Failed to delete serial number");
     }
   };
 

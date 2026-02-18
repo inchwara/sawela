@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { getStores, Store } from "@/lib/stores";
 import {
   getBreakageSummary,
@@ -95,7 +95,7 @@ const columns: ColumnDef<BreakageSummaryItem>[] = [
 ];
 
 export default function BreakageSummaryReport() {
-  const { toast } = useToast();
+  ;
   const [loading, setLoading] = React.useState(true);
   const [exportLoading, setExportLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -121,7 +121,7 @@ export default function BreakageSummaryReport() {
       }
     } catch (err: any) {
       setError(err.message || "Failed to load report");
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast.error(err.message);
     } finally {
       setLoading(false);
     }
@@ -133,9 +133,9 @@ export default function BreakageSummaryReport() {
     setExportLoading(true);
     try {
       await downloadReportAsCsv("/breakage/summary", filters, "breakage_summary.csv");
-      toast({ title: "Export successful", description: "Report downloaded" });
+      toast.success("Report downloaded");
     } catch (err: any) {
-      toast({ title: "Export failed", description: err.message, variant: "destructive" });
+      toast.error(err.message);
     } finally {
       setExportLoading(false);
     }

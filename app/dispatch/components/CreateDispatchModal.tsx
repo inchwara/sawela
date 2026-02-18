@@ -21,7 +21,7 @@ import {
   SheetTitle,
   SheetFooter,
 } from "@/components/ui/sheet";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { 
   Package, 
   Building2, 
@@ -91,7 +91,7 @@ export function CreateDispatchModal({ open, onOpenChange, onSuccess }: CreateDis
   const [users, setUsers] = useState<UserData[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const { toast } = useToast();
+  ;
 
   const [formData, setFormData] = useState<FormData>({
     from_store_id: "",
@@ -143,11 +143,7 @@ export function CreateDispatchModal({ open, onOpenChange, onSuccess }: CreateDis
       
     } catch (error) {
       console.error("Error loading data:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load data. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to load data. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -207,20 +203,13 @@ export function CreateDispatchModal({ open, onOpenChange, onSuccess }: CreateDis
 
       await createDispatch(payload);
       
-      toast({
-        title: "Success",
-        description: "Dispatch created successfully",
-      });
+      toast.success("Dispatch created successfully");
       
       onSuccess();
       onOpenChange(false);
     } catch (error) {
       console.error("Error creating dispatch:", error);
-      toast({
-        title: "Error",
-        description: "Failed to create dispatch. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to create dispatch. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -230,11 +219,7 @@ export function CreateDispatchModal({ open, onOpenChange, onSuccess }: CreateDis
     const availableStock = variant ? variant.stock_quantity : product.stock_quantity;
     
     if (availableStock <= 0) {
-      toast({
-        title: "Out of Stock",
-        description: `${product.name}${variant ? ` (${variant.name})` : ""} is out of stock`,
-        variant: "destructive",
-      });
+      toast.error(`${product.name}${variant ? ` (${variant.name})` : ''} is out of stock.`);
       return;
     }
 
@@ -250,11 +235,7 @@ export function CreateDispatchModal({ open, onOpenChange, onSuccess }: CreateDis
       const newQuantity = existingItem.quantity + 1;
       
       if (newQuantity > availableStock) {
-        toast({
-          title: "Insufficient Stock",
-          description: `Only ${availableStock} units available for ${product.name}${variant ? ` (${variant.name})` : ""}`,
-          variant: "destructive",
-        });
+        toast.error(`Only ${availableStock} units available for ${product.name}${variant ? ` (${variant.name})` : ''}.`);
         return;
       }
 
@@ -267,10 +248,7 @@ export function CreateDispatchModal({ open, onOpenChange, onSuccess }: CreateDis
         )
       }));
 
-      toast({
-        title: "Quantity Updated",
-        description: `${product.name}${variant ? ` (${variant.name})` : ""} quantity increased to ${newQuantity}`,
-      });
+      toast.success(`${product.name}${variant ? ` (${variant.name})` : ''} quantity updated.`);
     } else {
       // Add new item
       const newItem: DispatchItem = {
@@ -289,10 +267,7 @@ export function CreateDispatchModal({ open, onOpenChange, onSuccess }: CreateDis
         items: [...prev.items, newItem]
       }));
 
-      toast({
-        title: "Item Added",
-        description: `${product.name}${variant ? ` (${variant.name})` : ""} added with quantity 1`,
-      });
+      toast.success(`${product.name}${variant ? ` (${variant.name})` : ''} added to dispatch.`);
     }
   };
 

@@ -35,7 +35,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { getPurchaseOrders, deletePurchaseOrder, PurchaseOrder } from "@/lib/purchaseorders"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { PurchaseOrderDetailsSheet } from "./purchase-order-details-sheet"
 import { EditPurchaseOrderSheet } from "./components/edit-purchase-order-sheet"
 import { ReceiptPurchaseOrderSheet } from "./components/receipt-purchase-order-sheet"
@@ -51,7 +51,6 @@ interface PurchaseOrdersTableProps {
 }
 
 export function PurchaseOrdersTable({ onDataChanged }: PurchaseOrdersTableProps) {
-  const { toast } = useToast()
   const [orders, setOrders] = useState<PurchaseOrder[]>([])
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
@@ -82,11 +81,7 @@ export function PurchaseOrdersTable({ onDataChanged }: PurchaseOrdersTableProps)
       const data = await getPurchaseOrders({ status: statusFilter !== 'all' ? statusFilter : undefined })
       setOrders(data)
     } catch (err) {
-      toast({
-        title: "Error",
-        description: err instanceof Error ? err.message : 'Failed to fetch purchase orders',
-        variant: "destructive"
-      })
+      toast.error(err instanceof Error ? err.message : 'Failed to fetch purchase orders')
     } finally {
       setIsLoading(false)
     }
@@ -175,18 +170,11 @@ export function PurchaseOrdersTable({ onDataChanged }: PurchaseOrdersTableProps)
     if (confirm(`Are you sure you want to delete purchase order ${order.order_number}?`)) {
       try {
         await deletePurchaseOrder(order.id)
-        toast({
-          title: "Success",
-          description: "Purchase order deleted successfully."
-        })
+        toast.success("Purchase order deleted successfully.")
         fetchOrders()
         if (onDataChanged) onDataChanged()
       } catch (error) {
-        toast({
-          title: "Error",
-          description: error instanceof Error ? error.message : "Failed to delete purchase order",
-          variant: "destructive"
-        })
+        toast.error(error instanceof Error ? error.message : "Failed to delete purchase order")
       }
     }
   }

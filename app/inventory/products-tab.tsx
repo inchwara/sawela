@@ -6,14 +6,13 @@ import { ProductTable } from "./products/product-table"
 import { useDataCache } from "@/lib/data-cache"
 import { Button } from "@/components/ui/button"
 import { RefreshCw } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
 
 type ProductsTabContentProps = {}
 
 export function ProductsTab({}: ProductsTabContentProps) {
-  const { toast } = useToast()
   const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
@@ -44,11 +43,7 @@ export function ProductsTab({}: ProductsTabContentProps) {
         setLastRefreshTime(new Date())
       },
       onError: (error) => {
-        toast({
-          title: "Error loading products",
-          description: error.message || "Failed to load products",
-          variant: "destructive",
-        })
+        toast.error(error.message || "Failed to load products")
       },
     },
   )

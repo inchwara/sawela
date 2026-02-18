@@ -22,7 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { 
   Package, 
   Building2, 
@@ -84,7 +84,7 @@ export function CreateDispatchFromBreakageModal({
   const [usersLoading, setUsersLoading] = useState(false);
   const [stores, setStores] = useState<Store[]>([]);
   const [users, setUsers] = useState<UserType[]>([]);
-  const { toast } = useToast();
+  ;
   const { user } = useAuth();
 
   const [formData, setFormData] = useState<FormData>({
@@ -106,11 +106,7 @@ export function CreateDispatchFromBreakageModal({
         const replacementItems = breakage.items.filter(item => item.replacement_requested);
         
         if (replacementItems.length === 0) {
-          toast({
-            title: "No Replacement Items",
-            description: "This breakage report has no items that require replacement.",
-            variant: "destructive",
-          });
+          toast.error("This breakage report has no items that require replacement.");
           onOpenChange(false);
           return;
         }
@@ -166,11 +162,7 @@ export function CreateDispatchFromBreakageModal({
       setStores(response || []);
     } catch (error) {
       console.error("Error loading stores:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load stores. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to load stores. Please try again.");
     } finally {
       setStoresLoading(false);
     }
@@ -183,11 +175,7 @@ export function CreateDispatchFromBreakageModal({
       setUsers(response || []);
     } catch (error) {
       console.error("Error loading users:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load users. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to load users. Please try again.");
     } finally {
       setUsersLoading(false);
     }
@@ -246,10 +234,7 @@ export function CreateDispatchFromBreakageModal({
         // Update breakage status to 'dispatch_initiated'
         await updateBreakageStatus(breakage.id, 'dispatch_initiated');
         
-        toast({
-          title: "Success",
-          description: `Replacement dispatch created successfully for breakage ${breakage.breakage_number}`,
-        });
+        toast.success(`Replacement dispatch created successfully for breakage ${breakage.breakage_number}`);
         
         onSuccess();
         onOpenChange(false);
@@ -280,17 +265,9 @@ export function CreateDispatchFromBreakageModal({
         
         setErrors(newErrors);
         
-        toast({
-          title: "Validation Error",
-          description: "Please check the highlighted fields for errors.",
-          variant: "destructive",
-        });
+        toast.error("Please check the highlighted fields for errors.");
       } else {
-        toast({
-          title: "Error",
-          description: error instanceof Error ? error.message : "Failed to create dispatch. Please try again.",
-          variant: "destructive",
-        });
+        toast.error(error instanceof Error ? error.message : "Failed to create dispatch. Please try again.");
       }
     } finally {
       setLoading(false);

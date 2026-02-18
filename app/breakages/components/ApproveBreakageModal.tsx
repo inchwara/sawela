@@ -16,7 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { 
   CheckCircle2, 
   XCircle,
@@ -69,7 +69,7 @@ export function ApproveBreakageModal({
   breakage 
 }: ApproveBreakageModalProps) {
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
+  ;
 
   const [formData, setFormData] = useState<FormData>({
     decision: "",
@@ -126,20 +126,13 @@ export function ApproveBreakageModal({
 
       await approveBreakage(breakage.id, payload);
       
-      toast({
-        title: "Success",
-        description: `Breakage ${formData.decision === "approved" ? "approved" : "rejected"} successfully.`,
-      });
+      toast.success(`Breakage ${formData.decision === "approved" ? "approved" : "rejected"} successfully.`);
       
       onSuccess();
       onOpenChange(false);
     } catch (error) {
       console.error("Error processing approval:", error);
-      toast({
-        title: "Error",
-        description: "Failed to process approval. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to process approval. Please try again.");
     } finally {
       setLoading(false);
     }

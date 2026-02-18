@@ -5,7 +5,7 @@ import { CardDescription } from "@/components/ui/card"
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2, DollarSign, Check, RefreshCw } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { fetchAllPayments } from "./actions"
 import { useAuth } from "@/lib/auth-context"
 import { hasPermission } from "@/lib/rbac"
@@ -21,7 +21,6 @@ type PaymentData = Database["public"]["Tables"]["payments"]["Row"] & {
 export default function AdminPaymentsPage() {
   const [payments, setPayments] = useState<PaymentData[]>([])
   const [loading, setLoading] = useState(true)
-  const { toast } = useToast()
   const { userProfile } = useAuth()
 
   const canManageSubscriptionsAndPayments = hasPermission(userProfile, "can_manage_subscriptions_and_payments")
@@ -36,11 +35,7 @@ export default function AdminPaymentsPage() {
       const data = await fetchAllPayments()
       setPayments(data)
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load payment data.",
-        variant: "destructive",
-      })
+      toast.error("Failed to load payment data.")
     } finally {
       setLoading(false)
     }

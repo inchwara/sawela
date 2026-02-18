@@ -17,7 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { 
   UserCheck,
   Loader2,
@@ -52,7 +52,7 @@ export function AssignRepairModal({
   const [assignments, setAssignments] = useState<ItemAssignment[]>([]);
   const [defaultAssignee, setDefaultAssignee] = useState<string>("");
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
+  ;
 
   // Helper function to check if an item is assigned
   const isItemAssigned = (item: any) => {
@@ -81,11 +81,7 @@ export function AssignRepairModal({
       setUsers(usersData);
     } catch (error) {
       console.error("Error fetching users:", error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch users. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to fetch users. Please try again.");
     } finally {
       setUsersLoading(false);
     }
@@ -128,21 +124,13 @@ export function AssignRepairModal({
     // Validate that all selected items have assignees
     const selectedAssignments = assignments.filter(a => a.selected);
     if (selectedAssignments.length === 0) {
-      toast({
-        title: "Error",
-        description: "Please select at least one item to assign.",
-        variant: "destructive",
-      });
+      toast.error("Please select at least one item to assign.");
       return;
     }
 
     const invalidAssignments = selectedAssignments.filter(a => !a.assigned_to);
     if (invalidAssignments.length > 0) {
-      toast({
-        title: "Error",
-        description: "Please assign all selected items to users.",
-        variant: "destructive",
-      });
+      toast.error("Please assign all selected items to users.");
       return;
     }
 
@@ -157,20 +145,13 @@ export function AssignRepairModal({
 
       await assignRepairItems(repair.id, payload);
       
-      toast({
-        title: "Success",
-        description: `${selectedAssignments.length} repair item(s) assigned successfully.`,
-      });
+      toast.success(`${selectedAssignments.length} repair item(s) assigned successfully.`);
       
       onSuccess();
       onOpenChange(false);
     } catch (error) {
       console.error("Error assigning repair items:", error);
-      toast({
-        title: "Error",
-        description: "Failed to assign repair items. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to assign repair items. Please try again.");
     } finally {
       setLoading(false);
     }

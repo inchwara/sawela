@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Loader2, Edit } from "lucide-react"
 import { updateSupplier, Supplier, UpdateSupplierPayload } from "@/lib/suppliers"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 
 interface EditSupplierSheetProps {
   open: boolean
@@ -22,7 +22,6 @@ interface EditSupplierSheetProps {
 }
 
 export function EditSupplierSheet({ open, onOpenChange, supplier, onSupplierUpdated }: EditSupplierSheetProps) {
-  const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState<UpdateSupplierPayload>({})
 
@@ -55,18 +54,11 @@ export function EditSupplierSheet({ open, onOpenChange, supplier, onSupplierUpda
 
     try {
       await updateSupplier(supplier.id, formData)
-      toast({
-        title: "Success",
-        description: "Supplier updated successfully."
-      })
+      toast.success("Supplier updated successfully.")
       onSupplierUpdated()
       onOpenChange(false)
     } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update supplier",
-        variant: "destructive"
-      })
+      toast.error(error instanceof Error ? error.message : "Failed to update supplier")
     } finally {
       setIsLoading(false)
     }

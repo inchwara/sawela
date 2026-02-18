@@ -31,7 +31,7 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { 
   Plus, 
   Search, 
@@ -122,11 +122,7 @@ export default function RolesPage() {
       setPermissions(Array.isArray(permissionsData.permissions) ? permissionsData.permissions : [])
       setPermissionCategories(Array.isArray(permissionsData.categories) ? permissionsData.categories : [])
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to load data",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to load data")
     } finally {
       setLoading(false)
     }
@@ -143,11 +139,7 @@ export default function RolesPage() {
 
   const handleCreateRole = async () => {
     if (!formData.name.trim() || !formData.description.trim() || !formData.company_id) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-        variant: "destructive",
-      })
+      toast.error("Please fill in all required fields")
       return
     }
 
@@ -162,20 +154,13 @@ export default function RolesPage() {
 
       await createRole(payload)
       
-      toast({
-        title: "Success",
-        description: "Role created successfully",
-      })
+      toast.success("Role created successfully")
       
       setIsCreateDialogOpen(false)
       resetForm()
       loadData()
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create role",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to create role")
     } finally {
       setIsSubmitting(false)
     }
@@ -183,11 +168,7 @@ export default function RolesPage() {
 
   const handleUpdateRole = async () => {
     if (!selectedRole || !formData.name.trim() || !formData.description.trim()) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-        variant: "destructive",
-      })
+      toast.error("Please fill in all required fields")
       return
     }
 
@@ -208,21 +189,14 @@ export default function RolesPage() {
 
       await updateRole(selectedRole.id, payload)
       
-      toast({
-        title: "Success",
-        description: "Role updated successfully",
-      })
+      toast.success("Role updated successfully")
       
       setIsEditDialogOpen(false)
       setSelectedRole(null)
       resetForm()
       loadData()
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update role",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to update role")
     } finally {
       setIsSubmitting(false)
     }
@@ -235,20 +209,13 @@ export default function RolesPage() {
       setIsSubmitting(true)
       await deleteRole(selectedRole.id)
       
-      toast({
-        title: "Success",
-        description: "Role deleted successfully",
-      })
+      toast.success("Role deleted successfully")
       
       setIsDeleteDialogOpen(false)
       setSelectedRole(null)
       loadData()
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete role",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to delete role")
     } finally {
       setIsSubmitting(false)
     }

@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Loader2, AlertTriangle } from "lucide-react";
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { deleteRequisition, type Requisition } from "@/lib/requisitions";
 
 interface DeleteRequisitionConfirmationDialogProps {
@@ -30,7 +30,7 @@ export function DeleteRequisitionConfirmationDialog({
   onSuccess,
 }: DeleteRequisitionConfirmationDialogProps) {
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
+  ;
 
   const handleDelete = async () => {
     if (!requisition) return;
@@ -39,20 +39,13 @@ export function DeleteRequisitionConfirmationDialog({
     try {
       await deleteRequisition(requisition.id);
       
-      toast({
-        title: "Success",
-        description: `Requisition ${requisition.requisition_number} has been deleted successfully.`,
-      });
+      toast.success(`Requisition ${requisition.requisition_number} has been deleted successfully.`);
 
       onSuccess();
       onOpenChange(false);
     } catch (error: any) {
       console.error('Delete error:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete requisition",
-        variant: "destructive",
-      });
+      toast.error(error.message || "Failed to delete requisition");
     } finally {
       setLoading(false);
     }

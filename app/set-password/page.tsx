@@ -7,15 +7,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { Loader2, Lock, Eye, EyeOff } from "lucide-react"
 import { setPassword } from "@/lib/setuppassword"
 
 export default function SetPasswordPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { toast } = useToast()
-
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -33,11 +31,7 @@ export default function SetPasswordPage() {
   useEffect(() => {
     // Don't redirect immediately - wait for params to be available
     if (validationAttempts >= 3) {
-      toast({
-        title: "Invalid Link",
-        description: "Password setup link is invalid or expired.",
-        variant: "destructive",
-      })
+      toast.error("Password setup link is invalid or expired.")
       router.push("/sign-in")
       return
     }
@@ -59,11 +53,7 @@ export default function SetPasswordPage() {
       return () => clearTimeout(timer)
     } else {
       // After retry, if still no params, redirect
-      toast({
-        title: "Invalid Link",
-        description: "Password setup link is invalid or expired. Missing token or user ID.",
-        variant: "destructive",
-      })
+      toast.error("Password setup link is invalid or expired. Missing token or user ID.")
       router.push("/sign-in")
     }
   }, [searchParams, validationAttempts])
@@ -104,11 +94,7 @@ export default function SetPasswordPage() {
     }
 
     if (!token || !userId) {
-      toast({
-        title: "Error",
-        description: "Invalid password setup link.",
-        variant: "destructive",
-      })
+      toast.error("Invalid password setup link.")
       return
     }
 
@@ -125,27 +111,16 @@ export default function SetPasswordPage() {
       )
 
       if (response.status === "success") {
-        toast({
-          title: "Password Set Successfully! 🎉",
-          description: "Your password has been set. You can now sign in with your new password.",
-        })
+        toast.success("Your password has been set. You can now sign in with your new password.")
         // Redirect after a short delay to ensure toast is visible
         setTimeout(() => {
           router.push("/sign-in")
         }, 1500)
       } else {
-        toast({
-          title: "Failed to Set Password",
-          description: response.message || "An error occurred while setting your password. Please try again.",
-          variant: "destructive",
-        })
+        toast.error(response.message || "An error occurred while setting your password. Please try again.")
       }
     } catch (error: any) {
-      toast({
-        title: "Failed to Set Password",
-        description: error.message || "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      })
+      toast.error(error.message || "An unexpected error occurred. Please try again.")
     } finally {
       setIsLoading(false)
     }

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import {
   X,
   Calendar,
@@ -35,7 +35,7 @@ interface StockCountDetailsModalProps {
 }
 
 export function StockCountDetailsModal({ isOpen, onClose, stockCountId }: StockCountDetailsModalProps) {
-  const { toast } = useToast()
+  
   const [isVisible, setIsVisible] = useState(false)
   const [details, setDetails] = useState<StockCountDetails | null>(null)
   const [loading, setLoading] = useState(false)
@@ -173,11 +173,7 @@ export function StockCountDetailsModal({ isOpen, onClose, stockCountId }: StockC
       setDetails(mockDetails)
     } catch (err) {
       setError("Failed to load stock count details")
-      toast({
-        title: "Error",
-        description: "Failed to load stock count details",
-        variant: "destructive",
-      })
+      toast.error("Failed to load stock count details")
     } finally {
       setLoading(false)
     }

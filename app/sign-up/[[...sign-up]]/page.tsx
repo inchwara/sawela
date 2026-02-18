@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { useAuth } from "@/lib/auth-context"
 import { Loader2, ArrowLeft, ArrowRight, CheckCircle, User, Building2, Mail } from "lucide-react"
 
@@ -30,7 +30,6 @@ interface FormData {
 
 export default function SignUpPage() {
   const router = useRouter()
-  const { toast } = useToast()
   const { signUp } = useAuth()
 
   const [currentStep, setCurrentStep] = useState<Step>(1)
@@ -154,19 +153,12 @@ export default function SignUpPage() {
 
       if (error) {
         console.error("SignUpPage: Signup failed from useAuth:", error)
-        toast({
-          title: "Signup failed",
-          description: error.message || "Something went wrong. Please try again.",
-          variant: "destructive",
-        })
+        toast.error(error.message || "Something went wrong. Please try again.")
         return
       }
 
       console.log("SignUpPage: Signup successful!", data)
-      toast({
-        title: "Welcome aboard! 🎉",
-        description: "Your account has been created successfully.",
-      })
+      toast.success("Your account has been created successfully.")
 
       // Small delay for better UX
       console.log("SignUpPage: Redirecting to dashboard in 1 second...")
@@ -175,11 +167,7 @@ export default function SignUpPage() {
       }, 1000)
     } catch (error: any) {
       console.error("SignUpPage: Unexpected error during handleSubmit:", error)
-      toast({
-        title: "Signup failed",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("An unexpected error occurred. Please try again.")
     } finally {
       setIsLoading(false)
       console.log("SignUpPage: Setting isLoading to false.")

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { DataTable } from "@/components/ui/data-table"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { Loader2, Trash2, Check, X, MoreHorizontal } from "lucide-react"
 import type { ColumnDef } from "@tanstack/react-table"
 import {
@@ -21,8 +21,6 @@ type Company = Database["public"]["Tables"]["companies"]["Row"]
 export function CompaniesClient() {
   const [companies, setCompanies] = useState<Company[]>([])
   const [loading, setLoading] = useState(true)
-  const { toast } = useToast()
-
   useEffect(() => {
     loadCompanies()
   }, [])
@@ -33,11 +31,7 @@ export function CompaniesClient() {
       const data = await fetchAllCompanies()
       setCompanies(data)
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load company data.",
-        variant: "destructive",
-      })
+      toast.error("Failed to load company data.")
     } finally {
       setLoading(false)
     }
@@ -51,24 +45,13 @@ export function CompaniesClient() {
     try {
       const result = await deleteCompany(companyId)
       if (result.success) {
-        toast({
-          title: "Success",
-          description: result.message,
-        })
+        toast.success(result.message)
         await loadCompanies()
       } else {
-        toast({
-          title: "Error",
-          description: result.message,
-          variant: "destructive",
-        })
+        toast.error(result.message)
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "An unexpected error occurred.",
-        variant: "destructive",
-      })
+      toast.error(error.message || "An unexpected error occurred.")
     }
   }
 

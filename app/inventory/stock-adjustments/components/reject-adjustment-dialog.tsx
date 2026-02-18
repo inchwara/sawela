@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Loader2 } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { rejectStockAdjustmentAction } from "../actions"
 import type { StockAdjustment } from "@/lib/stock-adjustments"
 
@@ -30,17 +30,12 @@ export function RejectAdjustmentDialog({
   adjustment,
   onSuccess,
 }: RejectAdjustmentDialogProps) {
-  const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [rejectionReason, setRejectionReason] = useState("")
 
   const handleReject = async () => {
     if (!rejectionReason.trim()) {
-      toast({
-        title: "Error",
-        description: "Please provide a reason for rejection",
-        variant: "destructive",
-      })
+      toast.error("Please provide a reason for rejection")
       return
     }
 
@@ -50,10 +45,7 @@ export function RejectAdjustmentDialog({
       const result = await rejectStockAdjustmentAction(adjustment.id, rejectionReason)
 
       if (result.success) {
-        toast({
-          title: "Success",
-          description: "Stock adjustment rejected successfully",
-        })
+        toast.success("Stock adjustment rejected successfully")
         onOpenChange(false)
         setRejectionReason("")
         onSuccess()
@@ -61,11 +53,7 @@ export function RejectAdjustmentDialog({
         throw new Error(result.message || "Failed to reject adjustment")
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to reject adjustment",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to reject adjustment")
     } finally {
       setIsSubmitting(false)
     }

@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ClipboardList, CheckCircle, Clock, AlertCircle, XCircle } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import { 
   AlertDialog,
@@ -59,7 +59,6 @@ export function StockCountsTable({
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(20)
-  const { toast } = useToast()
   const [isCreateStockCountSheetOpen, setIsCreateStockCountSheetOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [approveDialogOpen, setApproveDialogOpen] = useState(false)
@@ -172,10 +171,7 @@ export function StockCountsTable({
     a.download = `stock-counts-${new Date().toISOString().split("T")[0]}.csv`
     a.click()
 
-    toast({
-      title: "Export successful",
-      description: `Exported ${countsToExport.length} stock counts to CSV`,
-    })
+    toast.success(`Exported ${countsToExport.length} stock counts to CSV`)
   }
 
   const clearFilters = () => {
@@ -246,20 +242,13 @@ export function StockCountsTable({
       // Remove from local state
       setStockCounts((prev) => prev.filter(c => c.id !== selectedStockCountId))
       
-      toast({
-        title: "Success",
-        description: "Stock count deleted successfully",
-      })
+      toast.success("Stock count deleted successfully")
       
       setDeleteDialogOpen(false)
       setSelectedStockCountId(null)
       onStockCountCreated({} as StockCount) // Trigger parent refresh
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete stock count",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to delete stock count")
     } finally {
       setIsDeleting(false)
     }
@@ -274,20 +263,13 @@ export function StockCountsTable({
         approved_at: new Date().toISOString(),
       })
       
-      toast({
-        title: "Success",
-        description: "Stock count approved successfully",
-      })
+      toast.success("Stock count approved successfully")
       
       setApproveDialogOpen(false)
       setSelectedStockCountId(null)
       onStockCountCreated({} as StockCount) // Trigger parent refresh
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to approve stock count",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to approve stock count")
     } finally {
       setIsApproving(false)
     }

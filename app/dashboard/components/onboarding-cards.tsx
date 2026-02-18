@@ -17,7 +17,7 @@ import {
   Building2,
   ShoppingCart
 } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { getCachedStores } from "@/lib/stores"
 import { getProducts } from "@/lib/products"
 import { useAuth } from "@/lib/auth-context"
@@ -41,7 +41,6 @@ interface OnboardingStep {
 
 export function OnboardingCards({ onGoToDashboard }: OnboardingCardsProps) {
   const router = useRouter()
-  const { toast } = useToast()
   const { updateFirstTimeStatus, refreshUserProfile, companyId } = useAuth()
   const [stores, setStores] = useState<any[]>([])
   const [products, setProducts] = useState<any[]>([])
@@ -76,10 +75,7 @@ export function OnboardingCards({ onGoToDashboard }: OnboardingCardsProps) {
     if (companyId) {
       forceRefreshStores(companyId)
     }
-    toast({
-      title: "Store Created!",
-      description: "Your store has been created successfully. Now let's add some products!",
-    })
+    toast.success("Your store has been created successfully. Now let's add some products!")
   }
 
   const handleProductCreated = async () => {
@@ -89,10 +85,7 @@ export function OnboardingCards({ onGoToDashboard }: OnboardingCardsProps) {
     // Update the user's is_first_time status to false since they've created a product
     await updateFirstTimeStatus(false)
     
-    toast({
-      title: "Product Added!",
-      description: "Your product has been added successfully. You're all set!",
-    })
+    toast.success("Your product has been added successfully. You're all set!")
   }
 
   const onboardingSteps: OnboardingStep[] = [

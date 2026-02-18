@@ -19,7 +19,7 @@ import {
   CheckCircle2,
   Loader2
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { createRequisition } from "@/lib/requisitions";
 import { getProducts, type Product as LibProduct } from "@/lib/products";
 import { fetchUsers, type UserData as User } from "@/lib/users";
@@ -62,7 +62,7 @@ export function CreateRequisitionModal({ open, onOpenChange, onSuccess }: Create
   const [products, setProducts] = useState<LibProduct[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const { toast } = useToast();
+  ;
 
   const [formData, setFormData] = useState<FormData>({
     approver_id: "",
@@ -104,11 +104,7 @@ export function CreateRequisitionModal({ open, onOpenChange, onSuccess }: Create
       setUsers(usersData);
     } catch (error) {
       console.error('Error fetching data:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch data. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to fetch data. Please try again.");
     }
   };
 
@@ -204,20 +200,13 @@ export function CreateRequisitionModal({ open, onOpenChange, onSuccess }: Create
       setApiResponse(response);
       
       if (response.status === 'success') {
-        toast({
-          title: "Success",
-          description: response.message || "Requisition created successfully.",
-        });
+        toast.success(response.message || "Requisition created successfully.");
         onSuccess();
       }
     } catch (error) {
       console.error('Create requisition failed:', error);
       setApiResponse({ error: error instanceof Error ? error.message : 'Unknown error' });
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to create requisition",
-        variant: "destructive",
-      });
+      toast.error(error instanceof Error ? error.message : "Failed to create requisition");
     } finally {
       setLoading(false);
     }

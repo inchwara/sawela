@@ -36,7 +36,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { useAuth } from "@/lib/auth-context"
 import { 
   getRoles, 
@@ -93,7 +93,6 @@ export function RolesManagementTable() {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [rowsPerPage, setRowsPerPage] = useState(10)
-  const { toast } = useToast()
   const { userProfile } = useAuth()
 
   const canManageRoles = true // Simplified for now
@@ -132,11 +131,7 @@ export function RolesManagementTable() {
       setRoles(transformedRoles)
       setTotalPages(Math.ceil(transformedRoles.length / rowsPerPage) || 1)
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to load role data.",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to load role data.")
     } finally {
       setLoading(false)
     }
@@ -194,10 +189,7 @@ export function RolesManagementTable() {
           description: roleData.description,
           permissions: currentPermissions
         })
-        toast({
-          title: "Success",
-          description: "Role updated successfully.",
-        })
+        toast.success("Role updated successfully.")
       } else {
         // Create new role
         result = await createRole({
@@ -206,10 +198,7 @@ export function RolesManagementTable() {
           company_id: companyId,
           permission_ids: permissionIds
         })
-        toast({
-          title: "Success",
-          description: "Role created successfully.",
-        })
+        toast.success("Role created successfully.")
       }
 
       setIsModalOpen(false)
@@ -217,11 +206,7 @@ export function RolesManagementTable() {
       setCurrentPermissions({})
       await loadRoles() // Reload data after successful operation
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "An unexpected error occurred.",
-        variant: "destructive",
-      })
+      toast.error(error.message || "An unexpected error occurred.")
     } finally {
       setSaving(false)
     }
@@ -233,17 +218,10 @@ export function RolesManagementTable() {
     }
     try {
       await deleteRole(role.id)
-      toast({
-        title: "Success",
-        description: "Role deleted successfully.",
-      })
+      toast.success("Role deleted successfully.")
       await loadRoles()
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "An unexpected error occurred.",
-        variant: "destructive",
-      })
+      toast.error(error.message || "An unexpected error occurred.")
     }
   }
 
@@ -442,10 +420,7 @@ export function RolesManagementTable() {
                         key={role.id} 
                         className="hover:bg-gray-50 cursor-pointer"
                         onClick={() => {
-                          toast({
-                            title: "View Role",
-                            description: `Viewing details for ${role.name}`,
-                          })
+                          toast.success(`Viewing details for ${role.name}`)
                         }}
                       >
                         <TableCell className="font-medium">
@@ -496,10 +471,7 @@ export function RolesManagementTable() {
                           <ActionsDropdown
                             role={role}
                             onView={() => {
-                              toast({
-                                title: "View Role",
-                                description: `Viewing details for ${role.name}`,
-                              })
+                              toast.success(`Viewing details for ${role.name}`)
                             }}
                             onEdit={() => openEditModal(role)}
                             onDelete={() => handleDeleteRole(role)}

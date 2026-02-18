@@ -18,7 +18,7 @@ import {
   CommandList,
 } from "@/components/ui/command"
 import { Badge } from "@/components/ui/badge"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { Loader2, Check, X } from "lucide-react"
 import { 
   getPermissions,
@@ -69,11 +69,7 @@ export function AssignPermissionsDialog({ user, open, onOpenChange, onPermission
       setPermissions(Array.isArray(data.permissions) ? data.permissions : [])
       setCategories(Array.isArray(data.categories) ? data.categories : [])
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to load permissions",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to load permissions")
     } finally {
       setLoading(false)
     }
@@ -94,19 +90,12 @@ export function AssignPermissionsDialog({ user, open, onOpenChange, onPermission
       setAssigning(true)
       await assignPermissionsToRole(user.id, selectedPermissions)
       
-      toast({
-        title: "Success",
-        description: "Permissions assigned successfully",
-      })
+      toast.success("Permissions assigned successfully")
       
       onOpenChange(false)
       onPermissionsAssigned()
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to assign permissions",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to assign permissions")
     } finally {
       setAssigning(false)
     }

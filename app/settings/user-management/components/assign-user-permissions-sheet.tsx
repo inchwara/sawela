@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/sheet"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
 import { 
   Accordion,
@@ -44,8 +44,6 @@ interface AssignUserPermissionsSheetProps {
 export function AssignUserPermissionsSheet({ user, open, onOpenChange, onPermissionsAssigned }: AssignUserPermissionsSheetProps) {
   const [saving, setSaving] = useState(false)
   const [currentPermissions, setCurrentPermissions] = useState<Permissions>({} as Permissions)
-  const { toast } = useToast()
-
   // Initialize permissions when user changes
   useEffect(() => {
     if (user && open) {
@@ -106,25 +104,14 @@ export function AssignUserPermissionsSheet({ user, open, onOpenChange, onPermiss
       const result = await assignUserPermissions(user.id, enabledPermissions)
       
       if (result.success) {
-        toast({
-          title: "Success",
-          description: "User permissions updated successfully.",
-        })
+        toast.success("User permissions updated successfully.")
         onOpenChange(false)
         onPermissionsAssigned()
       } else {
-        toast({
-          title: "Error",
-          description: result.message,
-          variant: "destructive",
-        })
+        toast.error(result.message)
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "An unexpected error occurred.",
-        variant: "destructive",
-      })
+      toast.error(error.message || "An unexpected error occurred.")
     } finally {
       setSaving(false)
     }

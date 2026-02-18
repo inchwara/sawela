@@ -16,7 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { 
   CheckCircle2, 
   XCircle,
@@ -82,7 +82,7 @@ export function ApproveRepairModal({
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
+  ;
 
   useEffect(() => {
     if (!open) {
@@ -127,20 +127,13 @@ export function ApproveRepairModal({
 
       await approveRepair(repair.id, payload);
       
-      toast({
-        title: "Success",
-        description: `Repair ${formData.decision === "approved" ? "approved" : "rejected"} successfully.`,
-      });
+      toast.success(`Repair ${formData.decision === "approved" ? "approved" : "rejected"} successfully.`);
       
       onSuccess();
       onOpenChange(false);
     } catch (error) {
       console.error("Error processing approval:", error);
-      toast({
-        title: "Error",
-        description: "Failed to process approval. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to process approval. Please try again.");
     } finally {
       setLoading(false);
     }

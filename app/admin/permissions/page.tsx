@@ -31,7 +31,7 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { 
   Plus, 
   Search, 
@@ -84,11 +84,7 @@ export default function PermissionsPage() {
       if (canViewPermissions) {
         loadPermissions()
       } else {
-        toast({
-          title: "Access Denied",
-          description: "You don't have permission to view the permissions page.",
-          variant: "destructive"
-        })
+        toast.error("You don't have permission to view the permissions page.")
       }
     }
   }, [user, hasPermission])
@@ -111,11 +107,7 @@ export default function PermissionsPage() {
       setCategories(categoriesArray)
     } catch (error: any) {
       console.error('Error loading permissions:', error)
-      toast({
-        title: "Error",
-        description: error.message || "Failed to load permissions",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to load permissions")
     } finally {
       setLoading(false)
     }
@@ -132,21 +124,13 @@ export default function PermissionsPage() {
 
   const handleCreatePermission = async () => {
     if (!hasPermission('create_permission')) {
-      toast({
-        title: "Permission Denied",
-        description: "You don't have permission to create new permissions.",
-        variant: "destructive"
-      })
+      toast.error("You don't have permission to create new permissions.")
       return
     }
     
     // Only require name and category for creation, key and description are optional
     if (!formData.name.trim() || !formData.category.trim()) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields (Name and Category)",
-        variant: "destructive",
-      })
+      toast.error("Please fill in all required fields (Name and Category)")
       return
     }
 
@@ -163,20 +147,13 @@ export default function PermissionsPage() {
 
       await createPermission(payload)
       
-      toast({
-        title: "Success",
-        description: "Permission created successfully",
-      })
+      toast.success("Permission created successfully")
       
       setIsCreateDialogOpen(false)
       resetForm()
       loadPermissions()
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create permission",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to create permission")
     } finally {
       setIsSubmitting(false)
     }
@@ -184,20 +161,12 @@ export default function PermissionsPage() {
 
   const handleUpdatePermission = async () => {
     if (!hasPermission('update_permission')) {
-      toast({
-        title: "Permission Denied",
-        description: "You don't have permission to update permissions.",
-        variant: "destructive"
-      })
+      toast.error("You don't have permission to update permissions.")
       return
     }
     
     if (!selectedPermission || !formData.name.trim() || !formData.category.trim()) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields (Name and Category)",
-        variant: "destructive",
-      })
+      toast.error("Please fill in all required fields (Name and Category)")
       return
     }
 
@@ -214,21 +183,14 @@ export default function PermissionsPage() {
 
       await updatePermission(selectedPermission.id, payload)
       
-      toast({
-        title: "Success",
-        description: "Permission updated successfully",
-      })
+      toast.success("Permission updated successfully")
       
       setIsEditDialogOpen(false)
       setSelectedPermission(null)
       resetForm()
       loadPermissions()
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update permission",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to update permission")
     } finally {
       setIsSubmitting(false)
     }
@@ -236,11 +198,7 @@ export default function PermissionsPage() {
 
   const handleDeletePermission = async () => {
     if (!hasPermission('delete_permission')) {
-      toast({
-        title: "Permission Denied",
-        description: "You don't have permission to delete permissions.",
-        variant: "destructive"
-      })
+      toast.error("You don't have permission to delete permissions.")
       return
     }
     
@@ -250,20 +208,13 @@ export default function PermissionsPage() {
       setIsSubmitting(true)
       await deletePermission(selectedPermission.id)
       
-      toast({
-        title: "Success",
-        description: "Permission deleted successfully",
-      })
+      toast.success("Permission deleted successfully")
       
       setIsDeleteDialogOpen(false)
       setSelectedPermission(null)
       loadPermissions()
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete permission",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to delete permission")
     } finally {
       setIsSubmitting(false)
     }

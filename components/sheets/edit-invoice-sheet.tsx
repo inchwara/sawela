@@ -18,7 +18,7 @@ import { z } from "zod"
 import { fetchInvoiceById, updateInvoice, Invoice, CreateInvoiceRequest } from "@/lib/invoices"
 import { getCustomers, createCustomer } from "@/lib/customers"
 import { getProducts } from "@/lib/products"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { formatCurrency } from "@/lib/utils"
 import { useAuth } from "@/lib/auth-context"
 import { useRouter } from "next/navigation"
@@ -83,7 +83,7 @@ export function EditInvoiceSheet({ open, onClose, invoiceId, onSuccess }: EditIn
   const [newCustomerName, setNewCustomerName] = useState("")
   const [newCustomerEmail, setNewCustomerEmail] = useState("")
   const [newCustomerPhone, setNewCustomerPhone] = useState("")
-  const { toast } = useToast()
+  
   const { companyId, isLoading: authLoading, user } = useAuth()
   const router = useRouter()
 
@@ -138,11 +138,7 @@ export function EditInvoiceSheet({ open, onClose, invoiceId, onSuccess }: EditIn
       
       // Check if invoice can be edited (only draft invoices)
       if (invoiceData.status !== 'draft') {
-        toast({
-          title: "Cannot Edit Invoice",
-          description: "Only draft invoices can be edited. This invoice has already been sent.",
-          variant: "destructive",
-        })
+        toast.error("Only draft invoices can be edited. This invoice has already been sent.")
         onClose()
         return
       }
@@ -186,11 +182,7 @@ export function EditInvoiceSheet({ open, onClose, invoiceId, onSuccess }: EditIn
         errorMessage = error.message
       }
       
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      })
+      toast.error(errorMessage)
       onClose()
     } finally {
       setIsLoading(false)
@@ -252,11 +244,7 @@ export function EditInvoiceSheet({ open, onClose, invoiceId, onSuccess }: EditIn
 
   const handleCreateCustomer = async () => {
     if (!newCustomerName.trim()) {
-      toast({
-        title: "Error",
-        description: "Customer name is required",
-        variant: "destructive",
-      })
+      toast.error("Customer name is required")
       return
     }
 
@@ -292,16 +280,9 @@ export function EditInvoiceSheet({ open, onClose, invoiceId, onSuccess }: EditIn
       setNewCustomerEmail("")
       setNewCustomerPhone("")
       
-      toast({
-        title: "Success",
-        description: "Customer created successfully",
-      })
+      toast.success("Customer created successfully")
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create customer",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to create customer")
     } finally {
       setIsLoading(false)
     }
@@ -334,11 +315,7 @@ export function EditInvoiceSheet({ open, onClose, invoiceId, onSuccess }: EditIn
 
   const onSubmit: SubmitHandler<InvoiceFormData> = async (data) => {
     if (!invoice) {
-      toast({
-        title: "Error",
-        description: "No invoice data available for update",
-        variant: "destructive",
-      })
+      toast.error("No invoice data available for update")
       return
     }
     
@@ -390,10 +367,7 @@ export function EditInvoiceSheet({ open, onClose, invoiceId, onSuccess }: EditIn
       
       const updatedInvoice = await updateInvoice(invoice.id, updateData)
       
-      toast({
-        title: "Success",
-        description: "Invoice updated successfully",
-      })
+      toast.success("Invoice updated successfully")
       
       // Trigger cache invalidation for invoices using event system
       if (typeof window !== 'undefined') {
@@ -410,22 +384,14 @@ export function EditInvoiceSheet({ open, onClose, invoiceId, onSuccess }: EditIn
       onClose()
       router.push(`/sales/invoices/${invoice.id}`)
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update invoice",
-        variant: "destructive",  
-      })
+      toast.error(error.message || "Failed to update invoice")
     } finally {
       setIsSaving(false)
     }
   }
 
   const onInvalidSubmit = (errors: any) => {
-    toast({
-      title: "Validation Error",
-      description: "Please fix the form errors before submitting",
-      variant: "destructive",
-    })
+    toast.error("Please fix the form errors before submitting")
   }
 
   // Guard against rendering when user is not authenticated

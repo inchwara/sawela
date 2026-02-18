@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { createProductCategory, type ProductCategory } from "@/lib/product-categories"
 import { Loader2 } from "lucide-react"
 
@@ -18,7 +18,7 @@ interface CreateCategoryModalProps {
 }
 
 export function CreateCategoryModal({ open, onOpenChange, onCategoryCreated }: CreateCategoryModalProps) {
-  const { toast } = useToast()
+  
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState({
     name: "",
@@ -38,11 +38,7 @@ export function CreateCategoryModal({ open, onOpenChange, onCategoryCreated }: C
     e.preventDefault()
     
     if (!formData.name.trim()) {
-      toast({
-        title: "Validation Error",
-        description: "Category name is required",
-        variant: "destructive"
-      })
+      toast.error("Category name is required")
       return
     }
 
@@ -57,10 +53,7 @@ export function CreateCategoryModal({ open, onOpenChange, onCategoryCreated }: C
       })
       
       if (result.success && result.category) {
-        toast({
-          title: "Success",
-          description: "Category created successfully"
-        })
+        toast.success("Category created successfully")
         
         // Reset form
         setFormData({
@@ -74,18 +67,10 @@ export function CreateCategoryModal({ open, onOpenChange, onCategoryCreated }: C
         onCategoryCreated(result.category)
         onOpenChange(false)
       } else {
-        toast({
-          title: "Error",
-          description: result.message || "Failed to create category",
-          variant: "destructive"
-        })
+        toast.error(result.message || "Failed to create category")
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create category",
-        variant: "destructive"
-      })
+      toast.error(error.message || "Failed to create category")
     } finally {
       setIsSubmitting(false)
     }

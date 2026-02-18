@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { DollarSign, Check, FileText, Loader2 } from "lucide-react"
 import { PricingTable } from "./components/pricing-table"
 import { CreatePricingButton } from "./components/create-pricing-button"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { getSubscriptionPlans, type SubscriptionPlan } from "@/lib/admin"
 
 export default function AdminPricingPage() {
@@ -26,11 +26,7 @@ export default function AdminPricingPage() {
     } catch (err: any) {
       const errorMessage = err.message || "Failed to load pricing plans"
       setError(errorMessage)
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      })
+      toast.error(errorMessage)
     } finally {
       setLoading(false)
     }

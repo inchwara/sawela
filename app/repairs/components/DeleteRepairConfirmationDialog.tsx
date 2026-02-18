@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Loader2, AlertTriangle } from "lucide-react";
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { deleteRepair, type Repair } from "@/lib/repairs";
 
 interface DeleteRepairConfirmationDialogProps {
@@ -30,7 +30,7 @@ export function DeleteRepairConfirmationDialog({
   repair 
 }: DeleteRepairConfirmationDialogProps) {
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
+  ;
 
   const handleDelete = async () => {
     if (!repair) return;
@@ -39,20 +39,13 @@ export function DeleteRepairConfirmationDialog({
     try {
       await deleteRepair(repair.id);
       
-      toast({
-        title: "Success",
-        description: `Repair ${repair.repair_number} has been deleted successfully.`,
-      });
+      toast.success(`Repair ${repair.repair_number} has been deleted successfully.`);
       
       onSuccess();
       onOpenChange(false);
     } catch (error: any) {
       console.error('Delete error:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete repair",
-        variant: "destructive",
-      });
+      toast.error(error.message || "Failed to delete repair");
     } finally {
       setLoading(false);
     }

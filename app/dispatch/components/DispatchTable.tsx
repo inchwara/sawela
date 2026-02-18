@@ -40,42 +40,24 @@ export function DispatchTable({
   
   const getDispatchStatus = (dispatch: Dispatch) => {
     const items = dispatch.dispatch_items || [];
-    
     if (items.length === 0) return "Empty";
-    
-    // Check if any items have been returned
-    const hasReturnedItems = items.some(item => item.is_returned);
-    const allReturned = items.every(item => item.is_returned);
-    
-    // If all items are returned, status is "Returned"
-    if (allReturned) return "Returned";
-    
-    // If some items are returned but not all, check overall progress
     const allReceived = items.every(item => item.received_quantity >= item.quantity);
-    if (allReceived && hasReturnedItems) return "Partial Returns";
     if (allReceived) return "Received";
-    
     const partiallyReceived = items.some(item => item.received_quantity > 0);
-    if (partiallyReceived && hasReturnedItems) return "Partial w/ Returns";
     if (partiallyReceived) return "Partial";
-    
     return "Pending";
   };
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, { className: string; text: string }> = {
-      "Pending": { className: "bg-yellow-100 text-yellow-800", text: "Pending" },
-      "Partial": { className: "bg-blue-100 text-blue-800", text: "Partial" },
-      "Partial w/ Returns": { className: "bg-orange-100 text-orange-800", text: "Partial w/ Returns" },
-      "Received": { className: "bg-green-100 text-green-800", text: "Received" },
-      "Partial Returns": { className: "bg-purple-100 text-purple-800", text: "Partial Returns" },
-      "Returned": { className: "bg-purple-100 text-purple-800", text: "Returned" },
-      "Empty": { className: "bg-gray-100 text-gray-800", text: "Empty" },
+      "Pending":  { className: "bg-yellow-100 text-yellow-800 border-yellow-200", text: "Pending" },
+      "Partial":  { className: "bg-blue-100 text-blue-800 border-blue-200",       text: "Partial" },
+      "Received": { className: "bg-green-100 text-green-800 border-green-200",    text: "Received" },
+      "Empty":    { className: "bg-gray-100 text-gray-600 border-gray-200",       text: "Empty" },
     };
-    
     const variant = variants[status] || variants["Pending"];
     return (
-      <Badge variant="secondary" className={variant.className}>
+      <Badge variant="outline" className={variant.className}>
         {variant.text}
       </Badge>
     );

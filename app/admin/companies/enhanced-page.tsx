@@ -38,7 +38,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { 
   Plus, 
   Search, 
@@ -122,11 +122,7 @@ export default function AdminCompaniesPage() {
     } catch (error: any) {
       console.error('Error loading subscription plans:', error)
       setSubscriptionPlans([]) // Ensure we always have an array
-      toast({
-        title: "Error",
-        description: error.message || "Failed to load subscription plans",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to load subscription plans")
     }
   }
 
@@ -152,11 +148,7 @@ export default function AdminCompaniesPage() {
       })
     } catch (error: any) {
       console.error('Error loading companies:', error)
-      toast({
-        title: "Error",
-        description: error.message || "Failed to load companies",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to load companies")
     } finally {
       setLoading(false)
     }
@@ -168,21 +160,13 @@ export default function AdminCompaniesPage() {
       setSelectedCompanyDetails(details)
       setIsDetailsDialogOpen(true)
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to load company details",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to load company details")
     }
   }
 
   const handleCreateCompany = async () => {
     if (!formData.name.trim() || !formData.email.trim()) {
-      toast({
-        title: "Error",
-        description: "Name and email are required",
-        variant: "destructive",
-      })
+      toast.error("Name and email are required")
       return
     }
 
@@ -198,20 +182,13 @@ export default function AdminCompaniesPage() {
 
       await createCompany(payload)
       
-      toast({
-        title: "Success",
-        description: "Company created successfully",
-      })
+      toast.success("Company created successfully")
       
       setIsCreateDialogOpen(false)
       resetForm()
       loadCompanies()
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create company",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to create company")
     } finally {
       setIsSubmitting(false)
     }
@@ -219,11 +196,7 @@ export default function AdminCompaniesPage() {
 
   const handleUpdateCompany = async () => {
     if (!selectedCompany || !formData.name.trim() || !formData.email.trim()) {
-      toast({
-        title: "Error",
-        description: "Name and email are required",
-        variant: "destructive",
-      })
+      toast.error("Name and email are required")
       return
     }
 
@@ -238,21 +211,14 @@ export default function AdminCompaniesPage() {
 
       await updateCompany(selectedCompany.id, payload)
       
-      toast({
-        title: "Success",
-        description: "Company updated successfully",
-      })
+      toast.success("Company updated successfully")
       
       setIsEditDialogOpen(false)
       setSelectedCompany(null)
       resetForm()
       loadCompanies()
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update company",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to update company")
     } finally {
       setIsSubmitting(false)
     }
@@ -265,20 +231,13 @@ export default function AdminCompaniesPage() {
       setIsSubmitting(true)
       await deleteCompany(selectedCompany.id)
       
-      toast({
-        title: "Success",
-        description: "Company deleted successfully",
-      })
+      toast.success("Company deleted successfully")
       
       setIsDeleteDialogOpen(false)
       setSelectedCompany(null)
       loadCompanies()
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete company",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to delete company")
     } finally {
       setIsSubmitting(false)
     }
@@ -289,18 +248,11 @@ export default function AdminCompaniesPage() {
       const isActive = newStatus === 'active';
       await toggleCompanyStatus(company.id, isActive, `Company ${newStatus} by admin`);
       
-      toast({
-        title: "Success",
-        description: `Company ${newStatus === 'active' ? 'activated' : newStatus} successfully`,
-      })
+      toast.success(`Company ${newStatus === 'active' ? 'activated' : newStatus} successfully`)
       
       loadCompanies()
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update company status",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to update company status")
     }
   }
 

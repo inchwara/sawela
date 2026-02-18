@@ -20,7 +20,7 @@ import { Plus, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { Upload, ImageIcon, Star } from "lucide-react";
 import { updateProduct } from "@/lib/products";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface EditProductModalProps {
   isOpen: boolean;
@@ -119,7 +119,7 @@ export function EditProductModal({ isOpen, onClose, product, onSuccess }: EditPr
   // Shipping classes
   const shippingClasses = ["standard", "express", "overnight", "free", "heavy", "fragile"]
 
-  const { toast } = useToast();
+  ;
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -152,11 +152,7 @@ export function EditProductModal({ isOpen, onClose, product, onSuccess }: EditPr
       setCategories(data)
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : "Failed to load categories"
-      toast({
-        title: "Error loading categories",
-        description: errorMessage,
-        variant: "destructive",
-      })
+      toast.error(errorMessage)
     } finally {
       setIsLoadingCategories(false)
     }
@@ -169,11 +165,7 @@ export function EditProductModal({ isOpen, onClose, product, onSuccess }: EditPr
       setSuppliers(data)
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : "Failed to load suppliers"
-      toast({
-        title: "Error loading suppliers",
-        description: errorMessage,
-        variant: "destructive",
-      })
+      toast.error(errorMessage)
     } finally {
       setIsLoadingSuppliers(false)
     }
@@ -280,10 +272,7 @@ export function EditProductModal({ isOpen, onClose, product, onSuccess }: EditPr
         is_active: newCategoryActive,
       })
 
-      toast({
-        title: "Success",
-        description: "Category created successfully",
-      })
+      toast.success("Category created successfully")
 
       // Reset form
       setNewCategoryName("")
@@ -296,11 +285,7 @@ export function EditProductModal({ isOpen, onClose, product, onSuccess }: EditPr
       loadCategories()
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : "Failed to create category"
-      toast({
-        title: "Error creating category",
-        description: errorMessage,
-        variant: "destructive",
-      })
+      toast.error(errorMessage)
     } finally {
       setIsCreatingCategory(false)
     }
@@ -320,10 +305,7 @@ export function EditProductModal({ isOpen, onClose, product, onSuccess }: EditPr
 
       setSuppliers((prev) => [supplier, ...prev])
       setSupplier(supplier.id)
-      toast({ 
-        title: "Supplier Created", 
-        description: "New supplier added successfully." 
-      })
+      toast.success("New supplier added successfully.")
       setIsSupplierModalOpen(false)
       setNewSupplierName("")
       setNewSupplierEmail("")
@@ -331,11 +313,7 @@ export function EditProductModal({ isOpen, onClose, product, onSuccess }: EditPr
       setNewSupplierAddress("")
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : "Failed to create supplier"
-      toast({
-        title: "Error creating supplier",
-        description: errorMessage,
-        variant: "destructive",
-      })
+      toast.error(errorMessage)
     } finally {
       setIsCreatingSupplier(false)
     }
@@ -645,10 +623,7 @@ export function EditProductModal({ isOpen, onClose, product, onSuccess }: EditPr
 
       const response = await updateProduct(product.id, payload);
 
-      toast({
-        title: "Product Updated",
-        description: "Product has been updated successfully",
-      });
+      toast.success("Product has been updated successfully");
 
       if (onSuccess) {
         onSuccess();
@@ -656,11 +631,7 @@ export function EditProductModal({ isOpen, onClose, product, onSuccess }: EditPr
       onClose();
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : "Failed to update product"
-      toast({
-        title: "Error updating product",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

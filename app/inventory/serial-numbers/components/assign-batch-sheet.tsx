@@ -5,7 +5,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { assignBatchToSerialNumber } from "@/lib/serial-numbers"
 import type { SerialNumber } from "@/types/serial-numbers"
 import { usePermissions } from "@/hooks/use-permissions"
@@ -20,7 +20,6 @@ interface AssignBatchSheetProps {
 export function AssignBatchSheet({ serialNumber, open, onOpenChange, onBatchAssigned }: AssignBatchSheetProps) {
   const [batchId, setBatchId] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const { toast } = useToast()
   const { hasPermission } = usePermissions()
 
   // Initialize batch ID when serial number changes
@@ -37,19 +36,12 @@ export function AssignBatchSheet({ serialNumber, open, onOpenChange, onBatchAssi
     try {
       await assignBatchToSerialNumber(serialNumber.id, batchId)
       
-      toast({
-        title: "Success",
-        description: "Batch assigned to serial number successfully",
-      })
+      toast.success("Batch assigned to serial number successfully")
       
       onBatchAssigned()
       onOpenChange(false)
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to assign batch to serial number",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to assign batch to serial number")
     } finally {
       setIsLoading(false)
     }

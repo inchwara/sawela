@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { useAuth } from "@/lib/auth-context"
 import { Loader2, Building2, Save, Upload } from "lucide-react"
 
@@ -36,7 +36,6 @@ export function CompanySettings() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [formData, setFormData] = useState<Partial<Company>>({})
-  const { toast } = useToast()
   const { userProfile, isLoading: authLoading } = useAuth()
 
   useEffect(() => {
@@ -93,11 +92,7 @@ export function CompanySettings() {
         })
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load company information.",
-        variant: "destructive",
-      })
+      toast.error("Failed to load company information.")
     } finally {
       setLoading(false)
     }
@@ -115,11 +110,7 @@ export function CompanySettings() {
       setSaving(true)
 
       if (!formData.name?.trim()) {
-        toast({
-          title: "Validation Error",
-          description: "Company name is required.",
-          variant: "destructive",
-        })
+        toast.error("Company name is required.")
         return
       }
 
@@ -136,19 +127,12 @@ export function CompanySettings() {
         setCompany(data)
       }
 
-      toast({
-        title: "Success",
-        description: company?.id ? "Company information updated successfully." : "Company created successfully.",
-      })
+      toast.success(company?.id ? "Company information updated successfully." : "Company created successfully.")
 
       // Refresh data
       await fetchCompany()
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to save company information. Please try again.",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to save company information. Please try again.")
     } finally {
       setSaving(false)
     }

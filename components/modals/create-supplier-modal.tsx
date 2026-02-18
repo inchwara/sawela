@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { createSupplier, CreateSupplierPayload, Supplier } from "@/lib/suppliers"
 import { Loader2, Building2, CreditCard, FileText } from "lucide-react"
 
@@ -20,7 +20,7 @@ interface CreateSupplierModalProps {
 }
 
 export function CreateSupplierModal({ open, onOpenChange, onSupplierCreated }: CreateSupplierModalProps) {
-  const { toast } = useToast()
+  
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [activeTab, setActiveTab] = useState("basic")
   const [formData, setFormData] = useState<CreateSupplierPayload>({
@@ -73,11 +73,7 @@ export function CreateSupplierModal({ open, onOpenChange, onSupplierCreated }: C
     e.preventDefault()
     
     if (!formData.name.trim()) {
-      toast({
-        title: "Validation Error",
-        description: "Supplier name is required",
-        variant: "destructive"
-      })
+      toast.error("Supplier name is required")
       return
     }
 
@@ -86,10 +82,7 @@ export function CreateSupplierModal({ open, onOpenChange, onSupplierCreated }: C
     try {
       const supplier = await createSupplier(formData)
       
-      toast({
-        title: "Success",
-        description: "Supplier created successfully"
-      })
+      toast.success("Supplier created successfully")
       
       // Reset form
       resetForm()
@@ -98,11 +91,7 @@ export function CreateSupplierModal({ open, onOpenChange, onSupplierCreated }: C
       onSupplierCreated(supplier)
       onOpenChange(false)
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create supplier",
-        variant: "destructive"
-      })
+      toast.error(error.message || "Failed to create supplier")
     } finally {
       setIsSubmitting(false)
     }

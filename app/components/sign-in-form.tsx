@@ -8,13 +8,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { useAuth } from "@/lib/auth-context"
 import { Loader2, Mail, Lock, Eye, EyeOff } from "lucide-react"
 
 export default function SignInForm() {
   const router = useRouter()
-  const { toast } = useToast()
   const { signIn, resetPassword } = useAuth()
 
   const [isLoading, setIsLoading] = useState(false)
@@ -65,26 +64,15 @@ export default function SignInForm() {
       const { data, error } = await signIn(formData.email, formData.password)
 
       if (error) {
-        toast({
-          title: "Sign in failed",
-          description: error.message || "Invalid email or password",
-          variant: "destructive",
-        })
+        toast.error(error.message || "Invalid email or password")
         return
       }
 
-      toast({
-        title: "Welcome back! 👋",
-        description: "You've been signed in successfully.",
-      })
+      toast.success("You've been signed in successfully.")
 
       router.push("/dashboard")
     } catch (error: any) {
-      toast({
-        title: "Sign in failed",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("An unexpected error occurred. Please try again.")
     } finally {
       setIsLoading(false)
     }
@@ -92,20 +80,12 @@ export default function SignInForm() {
 
   const handleForgotPassword = async () => {
     if (!formData.email.trim()) {
-      toast({
-        title: "Email required",
-        description: "Please enter your email address first.",
-        variant: "destructive",
-      })
+      toast.error("Please enter your email address first.")
       return
     }
 
     if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      toast({
-        title: "Invalid email",
-        description: "Please enter a valid email address.",
-        variant: "destructive",
-      })
+      toast.error("Please enter a valid email address.")
       return
     }
 
@@ -115,24 +95,13 @@ export default function SignInForm() {
       const { error } = await resetPassword(formData.email)
 
       if (error) {
-        toast({
-          title: "Reset failed",
-          description: error.message || "Failed to send reset email",
-          variant: "destructive",
-        })
+        toast.error(error.message || "Failed to send reset email")
         return
       }
 
-      toast({
-        title: "Reset email sent! 📧",
-        description: "Check your inbox for password reset instructions.",
-      })
+      toast.success("Check your inbox for password reset instructions.")
     } catch (error: any) {
-      toast({
-        title: "Reset failed",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("An unexpected error occurred. Please try again.")
     } finally {
       setIsResetting(false)
     }

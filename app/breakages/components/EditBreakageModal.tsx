@@ -18,7 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { 
   AlertTriangle, 
   Plus,
@@ -120,7 +120,7 @@ export function EditBreakageModal({
   const [assignableItems, setAssignableItems] = useState<AssignableItem[]>([]);
   const [itemSearch, setItemSearch] = useState("");
   const [selectedProduct, setSelectedProduct] = useState<AssignableItem | null>(null);
-  const { toast } = useToast();
+  ;
 
   const [formData, setFormData] = useState<FormData>({
     notes: "",
@@ -174,11 +174,7 @@ export function EditBreakageModal({
       setAssignableItems(availableItems);
     } catch (error) {
       console.error("Error loading assignable items:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load assignable items. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to load assignable items. Please try again.");
     } finally {
       setAssignableItemsLoading(false);
     }
@@ -241,20 +237,13 @@ export function EditBreakageModal({
 
       await updateBreakage(breakage.id, payload);
       
-      toast({
-        title: "Success",
-        description: "Breakage report updated successfully.",
-      });
+      toast.success("Breakage report updated successfully.");
       
       onSuccess();
       onOpenChange(false);
     } catch (error) {
       console.error("Error updating breakage:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update breakage report. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to update breakage report. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -266,11 +255,7 @@ export function EditBreakageModal({
     // Check if product is already added
     const existingItem = formData.items.find(item => item.assignable_item_id === selectedProduct.id);
     if (existingItem) {
-      toast({
-        title: "Item already added",
-        description: "This product is already in the breakage list.",
-        variant: "destructive",
-      });
+      toast.error("This product is already in the breakage list.");
       return;
     }
     

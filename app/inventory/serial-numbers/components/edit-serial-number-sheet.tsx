@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { updateSerialNumber } from "@/lib/serial-numbers"
 import type { SerialNumber } from "@/types/serial-numbers"
 import { usePermissions } from "@/hooks/use-permissions"
@@ -30,7 +30,6 @@ export function EditSerialNumberSheet({ serialNumber, open, onOpenChange, onSeri
     notes: "",
   })
   const [isLoading, setIsLoading] = useState(false)
-  const { toast } = useToast()
   const { hasPermission } = usePermissions()
 
   // Initialize form data when serial number changes
@@ -70,19 +69,12 @@ export function EditSerialNumberSheet({ serialNumber, open, onOpenChange, onSeri
         notes: formData.notes || undefined,
       })
       
-      toast({
-        title: "Success",
-        description: "Serial number updated successfully",
-      })
+      toast.success("Serial number updated successfully")
       
       onSerialNumberUpdated()
       onOpenChange(false)
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update serial number",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to update serial number")
     } finally {
       setIsLoading(false)
     }

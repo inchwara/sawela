@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2, Search, Info } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { getProducts } from "@/lib/products"
 import { createStockCount } from "@/lib/stock-counts"
 import { getUsers } from "@/lib/users"
@@ -28,7 +28,6 @@ interface CreateStockCountSheetProps {
 }
 
 export function CreateStockCountSheet({ isOpen, onOpenChange, onStockCountCreated }: CreateStockCountSheetProps) {
-  const { toast } = useToast()
   const [saving, setSaving] = useState(false)
   const [products, setProducts] = useState<Product[]>([])
   const [users, setUsers] = useState<UserData[]>([])
@@ -58,11 +57,7 @@ export function CreateStockCountSheet({ isOpen, onOpenChange, onStockCountCreate
         const { data: productsList } = await getProducts(1, 10000)
         setProducts(productsList || [])
       } catch (error: any) {
-        toast({
-          title: "Error",
-          description: "Failed to load products for selection. " + (error.message || "Please try again."),
-          variant: "destructive",
-        })
+        toast.error("Failed to load products for selection. ")
       } finally {
         setLoadingProducts(false)
       }
@@ -74,11 +69,7 @@ export function CreateStockCountSheet({ isOpen, onOpenChange, onStockCountCreate
         const usersList = await getUsers()
         setUsers(usersList || [])
       } catch (error: any) {
-        toast({
-          title: "Error",
-          description: "Failed to load users. " + (error.message || "Please try again."),
-          variant: "destructive",
-        })
+        toast.error("Failed to load users. ")
       } finally {
         setLoadingUsers(false)
       }
@@ -90,11 +81,7 @@ export function CreateStockCountSheet({ isOpen, onOpenChange, onStockCountCreate
         const storesList = await getStores()
         setStores(storesList || [])
       } catch (error: any) {
-        toast({
-          title: "Error",
-          description: "Failed to load stores. " + (error.message || "Please try again."),
-          variant: "destructive",
-        })
+        toast.error("Failed to load stores. ")
       } finally {
         setLoadingStores(false)
       }
@@ -168,22 +155,14 @@ export function CreateStockCountSheet({ isOpen, onOpenChange, onStockCountCreate
 
     // Basic validation
     if (!name || !store_id) {
-      toast({
-        title: "Validation Error",
-        description: "Please fill in all required fields (Name and Store).",
-        variant: "destructive",
-      })
+      toast.error("Please fill in all required fields (Name and Store).")
       setSaving(false)
       return
     }
 
     const selectedStore = stores.find(s => s.id === store_id)
     if (!selectedStore) {
-      toast({
-        title: "Validation Error",
-        description: "Please select a valid store.",
-        variant: "destructive",
-      })
+      toast.error("Please select a valid store.")
       setSaving(false)
       return
     }
@@ -195,11 +174,7 @@ export function CreateStockCountSheet({ isOpen, onOpenChange, onStockCountCreate
         : selectedProducts.length > 0
         
       if (!hasItems) {
-        toast({
-          title: "Validation Error",
-          description: "Cycle count in progress requires at least one product. Please select products or a category.",
-          variant: "destructive",
-        })
+        toast.error("Cycle count in progress requires at least one product. Please select products or a category.")
         setSaving(false)
         return
       }
@@ -261,10 +236,7 @@ export function CreateStockCountSheet({ isOpen, onOpenChange, onStockCountCreate
       if (!newStockCount) throw new Error("Failed to create stock count")
 
       const itemCount = payload.items?.length || (count_type === "full_count" && status === "in_progress" ? "auto-populated" : 0)
-      toast({
-        title: "Success",
-        description: `Stock count created successfully${payload.items ? ` with ${payload.items.length} products` : count_type === "full_count" && status === "in_progress" ? " (products will be auto-populated)" : "!"}`,
-      })
+      toast.success(`Stock count "${name}" created successfully with ${itemCount} items.`)
       onStockCountCreated(newStockCount)
       onOpenChange(false)
       
@@ -284,11 +256,7 @@ export function CreateStockCountSheet({ isOpen, onOpenChange, onStockCountCreate
       setSearchTerm("")
     } catch (error: any) {
       console.error("Stock count creation error:", error)
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create stock count.",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to create stock count.")
     } finally {
       setSaving(false)
     }

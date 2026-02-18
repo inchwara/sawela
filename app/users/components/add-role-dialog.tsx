@@ -13,7 +13,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
 import { 
   createRole,
@@ -33,8 +33,6 @@ export function AddRoleDialog({ open, onOpenChange, onSuccess, companyId }: AddR
     description: ""
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const { toast } = useToast()
-
   const resetForm = () => {
     setFormData({
       name: "",
@@ -51,11 +49,7 @@ export function AddRoleDialog({ open, onOpenChange, onSuccess, companyId }: AddR
 
   const handleSubmit = async () => {
     if (!formData.name.trim() || !formData.description.trim()) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-        variant: "destructive",
-      })
+      toast.error("Please fill in all required fields")
       return
     }
 
@@ -70,19 +64,12 @@ export function AddRoleDialog({ open, onOpenChange, onSuccess, companyId }: AddR
 
       await createRole(payload)
       
-      toast({
-        title: "Success",
-        description: "Role created successfully",
-      })
+      toast.success("Role created successfully")
       
       onSuccess()
       handleOpenChange(false)
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create role",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to create role")
     } finally {
       setIsSubmitting(false)
     }

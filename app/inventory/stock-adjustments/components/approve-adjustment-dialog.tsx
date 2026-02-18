@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { Loader2 } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { approveStockAdjustmentAction, applyStockAdjustmentAction } from "../actions"
 import type { StockAdjustment } from "@/lib/stock-adjustments"
 
@@ -28,7 +28,6 @@ export function ApproveAdjustmentDialog({
   adjustment,
   onSuccess,
 }: ApproveAdjustmentDialogProps) {
-  const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [applyImmediately, setApplyImmediately] = useState(false)
 
@@ -51,20 +50,11 @@ export function ApproveAdjustmentDialog({
         }
       }
 
-      toast({
-        title: "Success",
-        description: applyImmediately 
-          ? "Stock adjustment approved and applied successfully" 
-          : "Stock adjustment approved successfully",
-      })
+      toast.success(applyImmediately)
       onOpenChange(false)
       onSuccess()
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to approve adjustment",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to approve adjustment")
     } finally {
       setIsSubmitting(false)
     }

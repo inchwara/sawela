@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { Loader2 } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { createGlobalUser, updateGlobalUser, fetchAllCompaniesForUserCreation, fetchRolesForCompany } from "../actions"
 import type { Database } from "@/lib/database.types"
 import type { Role } from "@/types/rbac"
@@ -34,8 +34,6 @@ export function EditUserSheet({ user, isOpen, onOpenChange, onUserUpdated }: Edi
   const [companies, setCompanies] = useState<CompanyOption[]>([])
   const [roles, setRoles] = useState<RoleOption[]>([])
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>(user?.company_id || "")
-  const { toast } = useToast()
-
   useEffect(() => {
     const loadInitialData = async () => {
       try {
@@ -53,11 +51,7 @@ export function EditUserSheet({ user, isOpen, onOpenChange, onUserUpdated }: Edi
           setRoles(fetchedRoles)
         }
       } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to load necessary data for user form.",
-          variant: "destructive",
-        })
+        toast.error("Failed to load necessary data for user form.")
       }
     }
     if (isOpen) {
@@ -72,11 +66,7 @@ export function EditUserSheet({ user, isOpen, onOpenChange, onUserUpdated }: Edi
           const fetchedRoles = await fetchRolesForCompany(selectedCompanyId)
           setRoles(fetchedRoles)
         } catch (error) {
-          toast({
-            title: "Error",
-            description: "Failed to load roles for the selected company.",
-            variant: "destructive",
-          })
+          toast.error("Failed to load roles for the selected company.")
         }
       } else {
         setRoles([])
@@ -99,25 +89,14 @@ export function EditUserSheet({ user, isOpen, onOpenChange, onUserUpdated }: Edi
       }
 
       if (result.success) {
-        toast({
-          title: "Success",
-          description: result.message,
-        })
+        toast.success(result.message)
         onUserUpdated() // Refresh the list of users
         onOpenChange(false) // Close the sheet
       } else {
-        toast({
-          title: "Error",
-          description: result.message,
-          variant: "destructive",
-        })
+        toast.error(result.message)
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "An unexpected error occurred.",
-        variant: "destructive",
-      })
+      toast.error(error.message || "An unexpected error occurred.")
     } finally {
       setSaving(false)
     }

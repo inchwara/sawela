@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Package } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { createProductSerialNumbers } from "@/lib/serial-numbers"
 import { getProducts } from "@/lib/products"
 import { getBatches } from "@/lib/batches"
@@ -43,7 +43,6 @@ export function AddSerialNumberSheet({ open, onOpenChange, onSerialNumberAdded }
   const [stores, setStores] = useState<Store[]>([])
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([])
   const [productSearch, setProductSearch] = useState("")
-  const { toast } = useToast()
   const { hasPermission } = usePermissions()
 
   // Load dropdown data when sheet opens
@@ -80,11 +79,7 @@ export function AddSerialNumberSheet({ open, onOpenChange, onSerialNumberAdded }
         }))
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to load dropdown data",
-        variant: "destructive",
-      })
+      toast.error("Failed to load dropdown data")
     } finally {
       setIsDataLoading(false)
     }
@@ -95,11 +90,7 @@ export function AddSerialNumberSheet({ open, onOpenChange, onSerialNumberAdded }
       const batchesData = await getBatches({ product_id: productId })
       setBatches(batchesData.data)
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to load batches",
-        variant: "destructive",
-      })
+      toast.error("Failed to load batches")
     }
   }
 
@@ -118,20 +109,12 @@ export function AddSerialNumberSheet({ open, onOpenChange, onSerialNumberAdded }
     e.preventDefault()
     
     if (!formData.product_id) {
-      toast({
-        title: "Error",
-        description: "Please select a product",
-        variant: "destructive",
-      })
+      toast.error("Please select a product")
       return
     }
     
     if (!formData.serial_numbers.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter at least one serial number",
-        variant: "destructive",
-      })
+      toast.error("Please enter at least one serial number")
       return
     }
     
@@ -152,10 +135,7 @@ export function AddSerialNumberSheet({ open, onOpenChange, onSerialNumberAdded }
         notes: formData.notes || undefined,
       })
       
-      toast({
-        title: "Success",
-        description: `${serialNumbers.length} serial number(s) created successfully`,
-      })
+      toast.success(`${serialNumbers.length} serial number(s) created successfully`)
       
       // Reset form
       setFormData({
@@ -170,11 +150,7 @@ export function AddSerialNumberSheet({ open, onOpenChange, onSerialNumberAdded }
       onSerialNumberAdded()
       onOpenChange(false)
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create serial numbers",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to create serial numbers")
     } finally {
       setIsLoading(false)
     }

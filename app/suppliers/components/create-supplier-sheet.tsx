@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Loader2, Plus } from "lucide-react"
 import { createSupplier, CreateSupplierPayload } from "@/lib/suppliers"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 
 interface CreateSupplierSheetProps {
   open: boolean
@@ -21,7 +21,6 @@ interface CreateSupplierSheetProps {
 }
 
 export function CreateSupplierSheet({ open, onOpenChange, onSupplierCreated }: CreateSupplierSheetProps) {
-  const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState<CreateSupplierPayload>({
     name: "",
@@ -47,10 +46,7 @@ export function CreateSupplierSheet({ open, onOpenChange, onSupplierCreated }: C
 
     try {
       await createSupplier(formData)
-      toast({
-        title: "Success",
-        description: "Supplier created successfully."
-      })
+      toast.success("Supplier created successfully.")
       onSupplierCreated()
       onOpenChange(false)
       // Reset form
@@ -72,11 +68,7 @@ export function CreateSupplierSheet({ open, onOpenChange, onSupplierCreated }: C
         tax_information: "",
       })
     } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to create supplier",
-        variant: "destructive"
-      })
+      toast.error(error instanceof Error ? error.message : "Failed to create supplier")
     } finally {
       setIsLoading(false)
     }

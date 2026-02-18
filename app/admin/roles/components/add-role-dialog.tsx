@@ -21,7 +21,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { Loader2, ChevronDown, ChevronRight } from "lucide-react"
 import { 
   getPermissions,
@@ -78,11 +78,7 @@ export function AddRoleDialog({ open, onOpenChange, onSuccess, companies }: AddR
       }
       setExpandedCategories(initialExpanded)
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to load permissions",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to load permissions")
     } finally {
       setLoading(false)
     }
@@ -150,11 +146,7 @@ export function AddRoleDialog({ open, onOpenChange, onSuccess, companies }: AddR
 
   const handleSubmit = async () => {
     if (!formData.name.trim() || !formData.description.trim() || !formData.company_id) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-        variant: "destructive",
-      })
+      toast.error("Please fill in all required fields")
       return
     }
 
@@ -169,19 +161,12 @@ export function AddRoleDialog({ open, onOpenChange, onSuccess, companies }: AddR
 
       await createRole(payload)
       
-      toast({
-        title: "Success",
-        description: "Role created successfully",
-      })
+      toast.success("Role created successfully")
       
       onSuccess()
       handleOpenChange(false)
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create role",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to create role")
     } finally {
       setIsSubmitting(false)
     }

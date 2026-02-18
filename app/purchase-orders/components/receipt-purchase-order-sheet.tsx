@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Loader2, Package } from "lucide-react"
 import { receiptPurchaseOrder, PurchaseOrder, PurchaseOrderItem } from "@/lib/purchaseorders"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { getSuppliers, Supplier } from "@/lib/suppliers"
 import { getStores, Store } from "@/lib/stores"
 import { getProducts, Product as ProductType } from "@/lib/products"
@@ -32,7 +32,6 @@ interface ReceiptItem {
 }
 
 export function ReceiptPurchaseOrderSheet({ open, onOpenChange, order, onPurchaseOrderReceipted }: ReceiptPurchaseOrderSheetProps) {
-  const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [receiptItems, setReceiptItems] = useState<ReceiptItem[]>([])
 
@@ -60,18 +59,11 @@ export function ReceiptPurchaseOrderSheet({ open, onOpenChange, order, onPurchas
           received_quantity: item.received_quantity
         }))
       })
-      toast({
-        title: "Success",
-        description: "Purchase order receipted successfully."
-      })
+      toast.success("Purchase order receipted successfully.")
       onPurchaseOrderReceipted()
       onOpenChange(false)
     } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to receipt purchase order",
-        variant: "destructive"
-      })
+      toast.error(error instanceof Error ? error.message : "Failed to receipt purchase order")
     } finally {
       setIsLoading(false)
     }

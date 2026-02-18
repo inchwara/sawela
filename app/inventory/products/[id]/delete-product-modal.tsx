@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { AlertTriangle, X, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { deleteProduct } from "@/lib/products"
@@ -23,7 +23,6 @@ interface DeleteProductModalProps {
 }
 
 export function DeleteProductModal({ isOpen, onClose, onSuccess, product }: DeleteProductModalProps) {
-  const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [confirmationText, setConfirmationText] = useState("")
 
@@ -32,11 +31,7 @@ export function DeleteProductModal({ isOpen, onClose, onSuccess, product }: Dele
 
   const handleDelete = async () => {
     if (!isConfirmed) {
-      toast({
-        title: "Confirmation Required",
-        description: `Please type "${expectedText}" to confirm deletion`,
-        variant: "destructive",
-      })
+      toast.error(`Please type "${expectedText}" to confirm deletion`)
       return
     }
 
@@ -46,25 +41,14 @@ export function DeleteProductModal({ isOpen, onClose, onSuccess, product }: Dele
       const result = await deleteProduct(product.id)
 
       if (result) {
-        toast({
-          title: "Success",
-          description: "Product deleted successfully",
-        })
+        toast.success("Product deleted successfully")
         onSuccess()
         onClose()
       } else {
-        toast({
-          title: "Error",
-          description: "Failed to delete product",
-          variant: "destructive",
-        })
+        toast.error("Failed to delete product")
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete product",
-        variant: "destructive",
-      })
+      toast.error("Failed to delete product")
     } finally {
       setIsLoading(false)
     }

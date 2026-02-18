@@ -169,6 +169,14 @@ export async function createDispatch(payload: {
   notes?: string;
   return_date?: string;
   requisition_id?: string;
+  items?: Array<{
+    product_id: string;
+    variant_id?: string;
+    quantity: number;
+    is_returnable: boolean;
+    return_date?: string;
+    notes?: string;
+  }>;
 }): Promise<{ status: string; message: string; dispatch: Dispatch }> {
   const response = await apiCall<{ status: string; message: string; dispatch: Dispatch }>("/whs/dispatches", "POST", payload, true);
   return response;

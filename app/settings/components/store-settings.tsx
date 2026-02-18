@@ -20,7 +20,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { useAuth } from "@/lib/auth-context"
 import { getStores, forceRefreshStores, type Store as StoreType } from "@/lib/stores"
 import apiCall from "@/lib/api"
@@ -33,7 +33,6 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>
 
 export function StoreSettings() {
-  const { toast } = useToast()
   const { companyId } = useAuth()
   const [stores, setStores] = useState<StoreType[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -56,11 +55,7 @@ export function StoreSettings() {
       const storeList = await getStores()
       setStores(storeList)
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to load stores",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to load stores")
     } finally {
       setIsLoading(false)
     }
@@ -90,11 +85,7 @@ export function StoreSettings() {
 
   const onSubmit = async (values: FormValues) => {
     if (!companyId) {
-      toast({
-        title: "Error",
-        description: "Company ID is missing.",
-        variant: "destructive",
-      })
+      toast.error("Company ID is missing.")
       return
     }
 
@@ -108,10 +99,7 @@ export function StoreSettings() {
           description: values.description?.trim() || null,
         })
 
-        toast({
-          title: "Success",
-          description: "Store updated successfully!",
-        })
+        toast.success("Store updated successfully!")
       } else {
         // Create new store
         await apiCall(`/stores`, "POST", {
@@ -119,10 +107,7 @@ export function StoreSettings() {
           description: values.description?.trim() || null,
         })
 
-        toast({
-          title: "Success",
-          description: "Store created successfully!",
-        })
+        toast.success("Store created successfully!")
       }
 
       // Refresh stores list
@@ -131,11 +116,7 @@ export function StoreSettings() {
       setIsDialogOpen(false)
       form.reset()
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to save store.",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to save store.")
     } finally {
       setIsSubmitting(false)
     }
@@ -147,10 +128,7 @@ export function StoreSettings() {
     try {
       await apiCall(`/stores/${deleteConfirmStore.id}`, "DELETE")
       
-      toast({
-        title: "Success",
-        description: "Store deleted successfully!",
-      })
+      toast.success("Store deleted successfully!")
 
       // Refresh stores list
       if (companyId) {
@@ -159,11 +137,7 @@ export function StoreSettings() {
       await loadStores()
       setDeleteConfirmStore(null)
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete store.",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to delete store.")
     }
   }
 

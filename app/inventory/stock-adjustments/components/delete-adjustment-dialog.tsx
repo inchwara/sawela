@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { Loader2 } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { deleteStockAdjustmentAction } from "../actions"
 import type { StockAdjustment } from "@/lib/stock-adjustments"
 
@@ -28,7 +28,6 @@ export function DeleteAdjustmentDialog({
   adjustment,
   onSuccess,
 }: DeleteAdjustmentDialogProps) {
-  const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleDelete = async () => {
@@ -38,21 +37,14 @@ export function DeleteAdjustmentDialog({
       const result = await deleteStockAdjustmentAction(adjustment.id)
 
       if (result.success) {
-        toast({
-          title: "Success",
-          description: "Stock adjustment deleted successfully",
-        })
+        toast.success("Stock adjustment deleted successfully")
         onOpenChange(false)
         onSuccess()
       } else {
         throw new Error(result.message || "Failed to delete adjustment")
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete adjustment",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to delete adjustment")
     } finally {
       setIsSubmitting(false)
     }

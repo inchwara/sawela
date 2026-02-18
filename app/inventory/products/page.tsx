@@ -6,7 +6,7 @@ import { ProductTable } from "./product-table"
 import { useState, useEffect } from "react"
 import { getProducts, calculateProductSummary, type Product } from "@/lib/products"
 import { PermissionGuard } from "@/components/PermissionGuard"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
 
 export default function ProductsPage() {
@@ -15,8 +15,6 @@ export default function ProductsPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(20)
   const [pagination, setPagination] = useState<{ current_page: number, per_page: number, total: number, last_page: number } | undefined>(undefined)
-  const { toast } = useToast()
-
   // Fetch products on mount (load all for client-side search)
   useEffect(() => {
     fetchProducts()
@@ -38,11 +36,7 @@ export default function ProductsPage() {
     } catch (error: any) {
       console.error("Error fetching products:", error)
       setProducts([])
-      toast({
-        title: "Error",
-        description: error.message || "Failed to load products. Please try again.",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to load products. Please try again.")
     } finally {
       setLoading(false)
     }

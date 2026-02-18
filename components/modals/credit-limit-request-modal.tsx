@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { X, Upload, FileText } from "lucide-react"
 import { requestCreditLimitUpdate, type CreditLimitUpdateRequest } from "@/lib/customer-accounts"
 
@@ -43,7 +43,7 @@ export const CreditLimitRequestModal: React.FC<CreditLimitRequestModalProps> = (
   const [errors, setErrors] = useState<ValidationErrors>({})
   const [isLoading, setIsLoading] = useState(false)
   const [supportingFiles, setSupportingFiles] = useState<File[]>([])
-  const { toast } = useToast()
+  
 
   const validateForm = (): boolean => {
     const newErrors: ValidationErrors = {}
@@ -100,10 +100,7 @@ export const CreditLimitRequestModal: React.FC<CreditLimitRequestModalProps> = (
 
       await requestCreditLimitUpdate(customerAccountId, requestData)
 
-      toast({
-        title: "Success",
-        description: "Credit limit update request submitted successfully. Awaiting approval.",
-      })
+      toast.success("Credit limit update request submitted successfully. Awaiting approval.")
 
       // Reset form
       setFormData({
@@ -116,11 +113,7 @@ export const CreditLimitRequestModal: React.FC<CreditLimitRequestModalProps> = (
       onSuccess?.()
       onClose()
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to submit credit limit request",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to submit credit limit request")
     } finally {
       setIsLoading(false)
     }

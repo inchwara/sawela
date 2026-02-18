@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Loader2 } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { createSubscription, updateSubscription } from "../actions"
 import { fetchAllCompaniesForUserCreation } from "../../users/actions"
 import type { CompanySubscription } from "@/lib/admin"
@@ -32,19 +32,13 @@ export function EditSubscriptionSheet({
 }: EditSubscriptionSheetProps) {
   const [saving, setSaving] = useState(false)
   const [companies, setCompanies] = useState<CompanyOption[]>([])
-  const { toast } = useToast()
-
   useEffect(() => {
     const loadCompanies = async () => {
       try {
         const fetchedCompanies = await fetchAllCompaniesForUserCreation()
         setCompanies(fetchedCompanies)
       } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to load companies for subscription form.",
-          variant: "destructive",
-        })
+        toast.error("Failed to load companies for subscription form.")
       }
     }
     if (isOpen) {
@@ -66,25 +60,14 @@ export function EditSubscriptionSheet({
       }
 
       if (result?.message) {
-        toast({
-          title: "Success",
-          description: result.message,
-        })
+        toast.success(result.message)
         onSubscriptionUpdated()
         onOpenChange(false)
       } else {
-        toast({
-          title: "Error",
-          description: "An unexpected error occurred.",
-          variant: "destructive",
-        })
+        toast.error("An unexpected error occurred.")
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "An unexpected error occurred.",
-        variant: "destructive",
-      })
+      toast.error(error.message || "An unexpected error occurred.")
     } finally {
       setSaving(false)
     }

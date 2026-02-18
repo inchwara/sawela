@@ -13,7 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { Loader2, ChevronDown, ChevronRight } from "lucide-react"
 import { 
   getPermissions,
@@ -44,8 +44,6 @@ export function AssignRolePermissionsDialog({
   const [assigning, setAssigning] = useState(false)
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([])
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({})
-  const { toast } = useToast()
-  
   // Initialize selected permissions from role's current permissions
   useEffect(() => {
     if (role && open) {
@@ -63,11 +61,7 @@ export function AssignRolePermissionsDialog({
       const permissionIds = rolePermissions.map(p => p.id)
       setSelectedPermissions(permissionIds)
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to load role permissions",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to load role permissions")
       setSelectedPermissions([])
     }
   }
@@ -94,11 +88,7 @@ export function AssignRolePermissionsDialog({
       }
       setExpandedCategories(initialExpanded)
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to load permissions",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to load permissions")
     } finally {
       setLoading(false)
     }
@@ -157,19 +147,12 @@ export function AssignRolePermissionsDialog({
       setAssigning(true)
       await assignPermissionsToRole(role.id, selectedPermissions)
       
-      toast({
-        title: "Success",
-        description: "Permissions assigned successfully",
-      })
+      toast.success("Permissions assigned successfully")
       
       onPermissionsAssigned()
       onOpenChange(false)
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to assign permissions",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to assign permissions")
     } finally {
       setAssigning(false)
     }

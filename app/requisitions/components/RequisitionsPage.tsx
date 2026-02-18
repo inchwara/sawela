@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { RequisitionsSummary } from "./RequisitionsSummary";
 import { RequisitionsTable } from "./RequisitionsTable";
 import { RequisitionModal } from "./RequisitionModal";
@@ -32,7 +32,7 @@ export function RequisitionsPage() {
   const [searchDebounceTimer, setSearchDebounceTimer] = useState<NodeJS.Timeout | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const { toast } = useToast();
+  ;
   const { user } = useAuth();
 
   const fetchRequisitions = async () => {
@@ -43,11 +43,7 @@ export function RequisitionsPage() {
       setRequisitions(response.data.data);
     } catch (error) {
       console.error('Error fetching requisitions:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch requisitions. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to fetch requisitions. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -144,20 +140,14 @@ export function RequisitionsPage() {
   const handleCreateSuccess = () => {
     setCreateModalOpen(false);
     fetchRequisitions();
-    toast({
-      title: "Success",
-      description: "Requisition created successfully.",
-    });
+    toast.success("Requisition created successfully.");
   };
 
   const handleEditSuccess = () => {
     setEditModalOpen(false);
     setEditRequisition(null);
     fetchRequisitions();
-    toast({
-      title: "Success",
-      description: "Requisition updated successfully.",
-    });
+    toast.success("Requisition updated successfully.");
   };
 
   const handleDeleteSuccess = () => {

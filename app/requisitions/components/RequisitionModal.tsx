@@ -30,7 +30,7 @@ import {
 import { type Requisition } from "@/lib/requisitions";
 import { usePermissions } from "@/hooks/use-permissions";
 import { useAuth } from "@/lib/auth-context";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { EditRequisitionModal } from "./EditRequisitionModal";
 import { DeleteRequisitionConfirmationDialog } from "./DeleteRequisitionConfirmationDialog";
 import { ApproveRequisitionModal } from "./ApproveRequisitionModal";
@@ -59,7 +59,7 @@ export function RequisitionModal({
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [approveModalOpen, setApproveModalOpen] = useState(false);
-  const { toast } = useToast();
+  ;
   const { user } = useAuth();
   const { hasPermission } = usePermissions();
 

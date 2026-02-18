@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { getStores, Store } from "@/lib/stores";
 import { getRepairsSummary, downloadReportAsCsv, RepairSummaryItem, ReportFilters } from "@/lib/reports-api";
 import { ReportLayout, ReportErrorState, ReportEmptyState } from "../../components/report-layout";
@@ -74,7 +74,7 @@ const columns: ColumnDef<RepairSummaryItem>[] = [
 ];
 
 export default function RepairsSummaryReport() {
-  const { toast } = useToast();
+  ;
   const [loading, setLoading] = React.useState(true);
   const [exportLoading, setExportLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -95,7 +95,7 @@ export default function RepairsSummaryReport() {
         setData(response.data.data); setSummary(response.summary || null); setMeta(response.meta);
         setPagination({ total: response.data.total, currentPage: response.data.current_page, lastPage: response.data.last_page });
       }
-    } catch (err: any) { setError(err.message || "Failed to load report"); toast({ title: "Error", description: err.message, variant: "destructive" }); }
+    } catch (err: any) { setError(err.message || "Failed to load report"); toast.error(err.message); }
     finally { setLoading(false); }
   }, [filters, toast]);
 
@@ -103,8 +103,8 @@ export default function RepairsSummaryReport() {
 
   const handleExport = async () => {
     setExportLoading(true);
-    try { await downloadReportAsCsv("/repairs/summary", filters, "repairs_summary.csv"); toast({ title: "Export successful" }); }
-    catch (err: any) { toast({ title: "Export failed", description: err.message, variant: "destructive" }); }
+    try { await downloadReportAsCsv("/repairs/summary", filters, "repairs_summary.csv"); toast.success("Export successful"); }
+    catch (err: any) { toast.error(err.message); }
     finally { setExportLoading(false); }
   };
 

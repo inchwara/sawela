@@ -22,7 +22,7 @@ import {
   canApproveAdjustment,
   canApplyAdjustment
 } from "@/lib/stock-adjustments"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { usePermissions } from "@/hooks/use-permissions"
 import { PermissionGuard } from "@/components/PermissionGuard"
 import { format } from "date-fns"
@@ -36,7 +36,6 @@ import { applyStockAdjustmentAction, submitStockAdjustmentAction } from "../acti
 export default function StockAdjustmentDetailPage() {
   const params = useParams()
   const router = useRouter()
-  const { toast } = useToast()
   const { hasPermission } = usePermissions()
   
   const [adjustment, setAdjustment] = useState<StockAdjustment | null>(null)
@@ -65,11 +64,7 @@ export default function StockAdjustmentDetailPage() {
       setAdjustment(adjustmentData)
       setActivities(activitiesData.activities)
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to load adjustment details",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to load adjustment details")
       router.push("/inventory/stock-adjustments")
     } finally {
       setLoading(false)
@@ -83,20 +78,13 @@ export default function StockAdjustmentDetailPage() {
     try {
       const result = await applyStockAdjustmentAction(adjustment.id)
       if (result.success) {
-        toast({
-          title: "Success",
-          description: "Stock adjustment applied successfully",
-        })
+        toast.success("Stock adjustment applied successfully")
         fetchAdjustmentDetails()
       } else {
         throw new Error(result.message)
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to apply adjustment",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to apply adjustment")
     } finally {
       setIsApplying(false)
     }
@@ -109,20 +97,13 @@ export default function StockAdjustmentDetailPage() {
     try {
       const result = await submitStockAdjustmentAction(adjustment.id)
       if (result.success) {
-        toast({
-          title: "Success",
-          description: "Stock adjustment submitted for approval",
-        })
+        toast.success("Stock adjustment submitted for approval")
         fetchAdjustmentDetails()
       } else {
         throw new Error(result.message)
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to submit adjustment",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to submit adjustment")
     } finally {
       setIsSubmitting(false)
     }

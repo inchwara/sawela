@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { BreakagesSummary } from "./BreakagesSummary";
 import { BreakagesTable } from "./BreakagesTable";
 import { BreakageModal } from "./BreakageModal";
@@ -30,7 +30,7 @@ export function BreakagesPage() {
   const [searchDebounceTimer, setSearchDebounceTimer] = useState<NodeJS.Timeout | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const { toast } = useToast();
+  ;
 
   const fetchBreakages = async () => {
     setLoading(true);
@@ -39,11 +39,7 @@ export function BreakagesPage() {
       setBreakages(response.breakages.data);
     } catch (error) {
       console.error('Error fetching breakages:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch breakages. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to fetch breakages. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -133,20 +129,14 @@ export function BreakagesPage() {
   const handleCreateSuccess = () => {
     setCreateModalOpen(false);
     fetchBreakages();
-    toast({
-      title: "Success",
-      description: "Breakage reported successfully.",
-    });
+    toast.success("Breakage reported successfully.");
   };
 
   const handleEditSuccess = () => {
     setEditModalOpen(false);
     setEditBreakage(null);
     fetchBreakages();
-    toast({
-      title: "Success",
-      description: "Breakage updated successfully.",
-    });
+    toast.success("Breakage updated successfully.");
   };
 
   const handleDeleteSuccess = () => {

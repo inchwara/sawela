@@ -10,7 +10,7 @@ import { ReturnItemsModal } from "./ReturnItemsModal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Loader2, Package, Plus, RefreshCw, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
@@ -32,7 +32,7 @@ export default function DispatchPage() {
   const [searchDebounceTimer, setSearchDebounceTimer] = useState<NodeJS.Timeout | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const { toast } = useToast();
+  ;
 
   const fetchDispatches = async () => {
     setLoading(true);
@@ -42,11 +42,7 @@ export default function DispatchPage() {
       setDispatches(response.dispatches.data);
     } catch (error) {
       console.error('Error fetching dispatches:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch dispatches. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to fetch dispatches. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -67,11 +63,7 @@ export default function DispatchPage() {
 
   const handleViewDispatch = (dispatch: Dispatch) => {
     if (!dispatch || !dispatch.id) {
-      toast({
-        title: "Error",
-        description: "Invalid dispatch data. Please refresh and try again.",
-        variant: "destructive",
-      });
+      toast.error("Invalid dispatch data. Please refresh and try again.");
       return;
     }
     
@@ -177,8 +169,9 @@ export default function DispatchPage() {
     return { totalDispatches, pendingDispatches, completedDispatches, returnedDispatches };
   };
 
-  // Apply client-side filtering
+  // Apply client-side filtering — exclude returnable dispatches (those live in Loans)
   const filteredDispatches = dispatches.filter((dispatch) => {
+    if (dispatch.is_returnable) return false;
     const q = search.toLowerCase();
     return (
       dispatch.dispatch_number?.toLowerCase().includes(q) ||
@@ -188,7 +181,7 @@ export default function DispatchPage() {
       dispatch.to_user?.last_name?.toLowerCase().includes(q) ||
       dispatch.to_user?.email?.toLowerCase().includes(q) ||
       dispatch.notes?.toLowerCase().includes(q) ||
-      dispatch.dispatch_items?.some(item => 
+      dispatch.dispatch_items?.some(item =>
         item.product?.name?.toLowerCase().includes(q) ||
         item.variant?.name?.toLowerCase().includes(q)
       )

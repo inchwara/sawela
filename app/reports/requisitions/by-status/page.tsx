@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { getStores, Store } from "@/lib/stores";
 import { getRequisitionsByStatus, downloadReportAsCsv, RequisitionByStatusData, ReportFilters } from "@/lib/reports-api";
 import { ReportLayout, ReportErrorState, ReportEmptyState } from "../../components/report-layout";
@@ -40,7 +40,7 @@ const statusColumns: ColumnDef<StatusRow>[] = [
 ];
 
 export default function RequisitionByStatusReport() {
-  const { toast } = useToast();
+  ;
   const [loading, setLoading] = React.useState(true);
   const [exportLoading, setExportLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -56,7 +56,7 @@ export default function RequisitionByStatusReport() {
     try {
       const response = await getRequisitionsByStatus(filters);
       if (response.success) { setRawData(response.data || null); setMeta(response.meta); }
-    } catch (err: any) { setError(err.message || "Failed to load report"); toast({ title: "Error", description: err.message, variant: "destructive" }); }
+    } catch (err: any) { setError(err.message || "Failed to load report"); toast.error(err.message); }
     finally { setLoading(false); }
   }, [filters, toast]);
 
@@ -64,8 +64,8 @@ export default function RequisitionByStatusReport() {
 
   const handleExport = async () => {
     setExportLoading(true);
-    try { await downloadReportAsCsv("/requisitions/by-status", filters, "requisitions_by_status.csv"); toast({ title: "Export successful" }); }
-    catch (err: any) { toast({ title: "Export failed", description: err.message, variant: "destructive" }); }
+    try { await downloadReportAsCsv("/requisitions/by-status", filters, "requisitions_by_status.csv"); toast.success("Export successful"); }
+    catch (err: any) { toast.error(err.message); }
     finally { setExportLoading(false); }
   };
 

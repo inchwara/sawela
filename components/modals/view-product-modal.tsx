@@ -4,7 +4,7 @@ import { useState, useEffect, JSXElementConstructor, ReactElement, ReactNode, Re
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import {
   X,
   Edit,
@@ -38,7 +38,7 @@ interface ViewProductModalProps {
 }
 
 export function ViewProductModal({ isOpen, onClose, product, variants = [], onProductUpdated }: ViewProductModalProps) {
-  const { toast } = useToast()
+  
   const [isVisible, setIsVisible] = useState(false)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
@@ -60,20 +60,14 @@ export function ViewProductModal({ isOpen, onClose, product, variants = [], onPr
   const handleEditSuccess = () => {
     setIsEditModalOpen(false)
     onProductUpdated?.()
-    toast({
-      title: "Success",
-      description: "Product updated successfully",
-    })
+    toast.success("Product updated successfully")
   }
 
   const handleDeleteSuccess = () => {
     setIsDeleteModalOpen(false)
     onClose()
     onProductUpdated?.()
-    toast({
-      title: "Success",
-      description: "Product deleted successfully",
-    })
+    toast.success("Product deleted successfully")
   }
 
   if (!isVisible) {

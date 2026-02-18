@@ -12,7 +12,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { useAuth } from "@/lib/auth-context"
 import { forceRefreshStores } from "@/lib/stores"
 import apiCall from "@/lib/api"
@@ -73,7 +73,6 @@ interface CreateStoreSheetProps {
 }
 
 export function CreateStoreSheet({ isOpen, onOpenChange, onStoreCreated }: CreateStoreSheetProps) {
-  const { toast } = useToast()
   const { companyId, isLoading: authLoading, user, setUser, setUserProfile } = useAuth() as any // setUser/setUserProfile are available in context
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
@@ -91,11 +90,7 @@ export function CreateStoreSheet({ isOpen, onOpenChange, onStoreCreated }: Creat
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!companyId) {
-      toast({
-        title: "Error",
-        description: "Company ID is missing. Cannot create store.",
-        variant: "destructive",
-      })
+      toast.error("Company ID is missing. Cannot create store.")
       return
     }
 
@@ -139,19 +134,12 @@ export function CreateStoreSheet({ isOpen, onOpenChange, onStoreCreated }: Creat
         router.replace(window.location.pathname + window.location.search)
       }
 
-      toast({
-        title: "Success",
-        description: "Store created successfully!",
-      })
+      toast.success("Store created successfully!")
 
       form.reset()
       onStoreCreated()
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create store.",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to create store.")
     } finally {
       setIsLoading(false)
     }

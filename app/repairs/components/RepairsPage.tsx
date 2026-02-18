@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { RepairsSummary } from "./RepairsSummary";
 import { RepairsTable } from "./RepairsTable";
 import { RepairModal } from "./RepairModal";
@@ -33,7 +33,7 @@ export function RepairsPage() {
   const [searchDebounceTimer, setSearchDebounceTimer] = useState<NodeJS.Timeout | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const { toast } = useToast();
+  ;
 
   const fetchRepairs = async () => {
     setLoading(true);
@@ -42,11 +42,7 @@ export function RepairsPage() {
       setRepairs(response.data.data);
     } catch (error) {
       console.error('Error fetching repairs:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch repairs. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to fetch repairs. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -139,60 +135,42 @@ export function RepairsPage() {
   const handleCreateSuccess = () => {
     setCreateModalOpen(false);
     fetchRepairs();
-    toast({
-      title: "Success",
-      description: "Repair report created successfully.",
-    });
+    toast.success("Repair report created successfully.");
   };
 
   const handleEditSuccess = () => {
     setEditModalOpen(false);
     setEditRepair(null);
     fetchRepairs();
-    toast({
-      title: "Success",
-      description: "Repair updated successfully.",
-    });
+    toast.success("Repair updated successfully.");
   };
 
   const handleUpdateStatusSuccess = () => {
     setUpdateStatusModalOpen(false);
     setUpdateStatusRepair(null);
     fetchRepairs();
-    toast({
-      title: "Success",
-      description: "Repair status updated successfully.",
-    });
+    toast.success("Repair status updated successfully.");
   };
 
   const handleDeleteSuccess = () => {
     setDeleteModalOpen(false);
     setDeleteRepair(null);
     fetchRepairs();
-    toast({
-      title: "Success",
-      description: "Repair deleted successfully.",
-    });
+    toast.success("Repair deleted successfully.");
   };
 
   const handleApproveSuccess = () => {
     setApproveModalOpen(false);
     setApproveRepair(null);
     fetchRepairs();
-    toast({
-      title: "Success",
-      description: "Repair approval processed successfully.",
-    });
+    toast.success("Repair approval processed successfully.");
   };
 
   const handleAssignSuccess = () => {
     setAssignModalOpen(false);
     setAssignRepair(null);
     fetchRepairs();
-    toast({
-      title: "Success",
-      description: "Repair items assigned successfully.",
-    });
+    toast.success("Repair items assigned successfully.");
   };
 
   const handleRefresh = () => {

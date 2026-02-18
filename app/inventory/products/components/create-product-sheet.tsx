@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Loader2, Plus, Image as ImageIcon, Package, Trash2, X, Check, ChevronsUpDown, AlertTriangle } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { createProduct, getProducts, type PackagingUnit, type Product } from "@/lib/products"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { getProductCategories } from "@/lib/product-categories"
@@ -57,7 +57,6 @@ interface CreateProductSheetProps {
 }
 
 export function CreateProductSheet({ open, onOpenChange, onProductCreated }: CreateProductSheetProps) {
-  const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   
@@ -272,26 +271,14 @@ export function CreateProductSheet({ open, onOpenChange, onProductCreated }: Cre
       
       // Show specific error message only if all dropdowns failed
       if (errors.length === 3) {
-        toast({
-          title: "Error",
-          description: "Failed to load dropdown data after multiple attempts. Please check your connection and try again.",
-          variant: "destructive"
-        })
+        toast.error("Failed to load dropdown data after multiple attempts. Please check your connection and try again.")
       } else if (errors.length > 0) {
         // Show warning for partial failures
-        toast({
-          title: "Warning",
-          description: `Failed to load: ${errors.join(", ")}. You can still create a product.`,
-          variant: "default"
-        })
+        toast.success(`Failed to load: ${errors.join(", ")}. You can still create a product.`)
       }
     } catch (error) {
       console.error("Unexpected error loading dropdown data:", error)
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred while loading data",
-        variant: "destructive"
-      })
+      toast.error("An unexpected error occurred while loading data")
     } finally {
       setIsLoading(false)
     }
@@ -306,10 +293,7 @@ export function CreateProductSheet({ open, onOpenChange, onProductCreated }: Cre
       category: newCategory.id
     }))
     // Show success notification
-    toast({
-      title: "Category Created",
-      description: `${newCategory.name} has been added successfully`
-    })
+    toast.success(`${newCategory.name} has been added successfully`)
   }
   
   // Calculate string similarity using Levenshtein distance
@@ -856,10 +840,7 @@ export function CreateProductSheet({ open, onOpenChange, onProductCreated }: Cre
       
       if (result.success) {
         console.log('Product created successfully')
-        toast({
-          title: "Success",
-          description: "Product created successfully."
-        })
+        toast.success("Product created successfully.")
         
         // Reset form
         setFormData({
@@ -935,19 +916,11 @@ export function CreateProductSheet({ open, onOpenChange, onProductCreated }: Cre
         onOpenChange(false)
       } else {
         console.error('Product creation failed:', result.message)
-        toast({
-          title: "Error",
-          description: result.message || "Failed to create product",
-          variant: "destructive"
-        })
+        toast.error(result.message || "Failed to create product")
       }
     } catch (error: any) {
       console.error('Error in handleSubmit:', error)
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create product",
-        variant: "destructive"
-      })
+      toast.error(error.message || "Failed to create product")
     } finally {
       setIsSubmitting(false)
     }

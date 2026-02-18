@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Loader2 } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { updateStockAdjustmentAction } from "../actions"
 import type { StockAdjustment } from "@/lib/stock-adjustments"
 
@@ -24,7 +24,6 @@ export function EditStockAdjustmentSheet({
   adjustment,
   onSuccess,
 }: EditStockAdjustmentSheetProps) {
-  const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const [formData, setFormData] = useState({
@@ -52,21 +51,14 @@ export function EditStockAdjustmentSheet({
       })
 
       if (result.success) {
-        toast({
-          title: "Success",
-          description: "Stock adjustment updated successfully",
-        })
+        toast.success("Stock adjustment updated successfully")
         onOpenChange(false)
         onSuccess()
       } else {
         throw new Error(result.message || "Failed to update stock adjustment")
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update stock adjustment",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to update stock adjustment")
     } finally {
       setIsSubmitting(false)
     }

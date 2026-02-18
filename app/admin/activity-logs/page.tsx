@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/select"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { 
   Search, 
   Activity, 
@@ -96,11 +96,7 @@ export default function ActivityLogsPage() {
       setCompanies(companiesData.data || [])
       setUsers(usersData.data || [])
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to load initial data",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to load initial data")
     }
   }
 
@@ -143,11 +139,7 @@ export default function ActivityLogsPage() {
             last_page: response.pagination.last_page
         })
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to load activity logs",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to load activity logs")
     } finally {
       setLoading(false)
     }
@@ -165,10 +157,7 @@ export default function ActivityLogsPage() {
 
   const exportLogs = async () => {
     // This would typically call an API endpoint to export logs
-    toast({
-      title: "Export Started",
-      description: "Activity logs export will be sent to your email",
-    })
+    toast.success("Activity logs export will be sent to your email")
   }
 
   const getActionBadgeVariant = (action: string) => {

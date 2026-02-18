@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { deleteDispatch, type Dispatch } from "@/lib/dispatch";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -29,7 +29,7 @@ export function DeleteDispatchConfirmationDialog({
   onSuccess 
 }: DeleteDispatchConfirmationDialogProps) {
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
+  ;
 
   const handleDelete = async () => {
     if (!dispatch) return;
@@ -39,20 +39,13 @@ export function DeleteDispatchConfirmationDialog({
     try {
       const response = await deleteDispatch(dispatch.id);
 
-      toast({
-        title: "Success",
-        description: response.message || "Dispatch deleted successfully!",
-      });
+      toast.success(response.message || "Dispatch deleted successfully!");
 
       onOpenChange(false);
       onSuccess?.();
     } catch (error) {
       console.error("Error deleting dispatch:", error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to delete dispatch. Please try again.",
-        variant: "destructive",
-      });
+      toast.error(error instanceof Error ? error.message : "Failed to delete dispatch. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -68,16 +61,18 @@ export function DeleteDispatchConfirmationDialog({
             <AlertTriangle className="h-5 w-5 text-red-600" />
             <AlertDialogTitle>Delete Dispatch</AlertDialogTitle>
           </div>
-          <AlertDialogDescription>
-            Are you sure you want to delete dispatch <strong>{dispatch.dispatch_number}</strong>?
-            <br />
-            <br />
-            This action cannot be undone and will permanently remove:
-            <ul className="list-disc list-inside mt-2 space-y-1">
-              <li>{dispatch.dispatch_items?.length || 0} dispatch items</li>
-              <li>All associated notes and acknowledgment data</li>
-              <li>Complete dispatch history</li>
-            </ul>
+          <AlertDialogDescription asChild>
+            <div>
+              Are you sure you want to delete dispatch <strong>{dispatch.dispatch_number}</strong>?
+              <br />
+              <br />
+              This action cannot be undone and will permanently remove:
+              <ul className="list-disc list-inside mt-2 space-y-1">
+                <li>{dispatch.dispatch_items?.length || 0} dispatch items</li>
+                <li>All associated notes and acknowledgment data</li>
+                <li>Complete dispatch history</li>
+              </ul>
+            </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

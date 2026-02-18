@@ -27,7 +27,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { ArrowLeft, Save, CheckCircle, Search } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import {
   getStockCountDetails,
   updateStockCount,
@@ -42,7 +42,6 @@ import { format } from "date-fns"
 export default function StockCountDetailsPage() {
   const params = useParams()
   const router = useRouter()
-  const { toast } = useToast()
   const [stockCount, setStockCount] = useState<StockCount | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -62,11 +61,7 @@ export default function StockCountDetailsPage() {
       setStockCount(data)
       setItems(data?.items || [])
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to fetch stock count details",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to fetch stock count details")
       router.push("/inventory/stock-counts")
     } finally {
       setLoading(false)
@@ -108,19 +103,12 @@ export default function StockCountDetailsPage() {
 
       await updateStockCount(params.id as string, { items: updatedItems })
       
-      toast({
-        title: "Success",
-        description: "Stock count items updated successfully",
-      })
+      toast.success("Stock count items updated successfully")
       
       fetchStockCount()
     } catch (error: any) {
       console.error("Failed to update stock count:", error)
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update stock count items",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to update stock count items")
     } finally {
       setSaving(false)
     }
@@ -131,17 +119,10 @@ export default function StockCountDetailsPage() {
       await updateStockCountStatus(params.id as string, "in_progress", {
         started_at: new Date().toISOString(),
       })
-      toast({
-        title: "Success",
-        description: "Stock count started",
-      })
+      toast.success("Stock count started")
       fetchStockCount()
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to start stock count",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to start stock count")
     }
   }
 
@@ -150,18 +131,11 @@ export default function StockCountDetailsPage() {
       await updateStockCountStatus(params.id as string, "completed", {
         completed_at: new Date().toISOString(),
       })
-      toast({
-        title: "Success",
-        description: "Stock count completed",
-      })
+      toast.success("Stock count completed")
       setShowCompleteDialog(false)
       fetchStockCount()
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to complete stock count",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to complete stock count")
     }
   }
 
@@ -170,18 +144,11 @@ export default function StockCountDetailsPage() {
       await updateStockCountStatus(params.id as string, "approved", {
         approved_at: new Date().toISOString(),
       })
-      toast({
-        title: "Success",
-        description: "Stock count approved. Inventory has been updated.",
-      })
+      toast.success("Stock count approved. Inventory has been updated.")
       setShowApproveDialog(false)
       fetchStockCount()
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to approve stock count",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to approve stock count")
     }
   }
 

@@ -27,7 +27,7 @@ import {
   ImageIcon,
   Tag,
 } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { DeleteProductModal } from "./delete-product-modal"
 import { getProductById } from "@/lib/products"
 import { ProductDetailsSkeleton } from "./product-details-skeleton"
@@ -52,8 +52,6 @@ type ProductVariantUI = ProductVariant & {
 export default function ProductDetailsPage() {
   const router = useRouter()
   const { id } = useParams()
-  const { toast } = useToast()
-
   const [product, setProduct] = useState<import("@/lib/products").Product | null>(null)
   const [variants, setVariants] = useState<ProductVariantUI[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -94,19 +92,11 @@ export default function ProductDetailsPage() {
           }))
         )
       } else {
-        toast({
-          title: "Error",
-          description: productResult?.message || "Product not found",
-          variant: "destructive",
-        })
+        toast.error(productResult?.message || "Product not found")
         router.push("/inventory")
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to load product details",
-        variant: "destructive",
-      })
+      toast.error("Failed to load product details")
     } finally {
       setIsLoading(false)
     }
@@ -114,17 +104,11 @@ export default function ProductDetailsPage() {
 
   const handleEditSuccess = () => {
     loadProductData()
-    toast({
-      title: "Success",
-      description: "Product updated successfully",
-    })
+    toast.success("Product updated successfully")
   }
 
   const handleDeleteSuccess = () => {
-    toast({
-      title: "Success",
-      description: "Product deleted successfully",
-    })
+    toast.success("Product deleted successfully")
     router.push("/inventory")
   }
 

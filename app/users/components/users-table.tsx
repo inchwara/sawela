@@ -6,7 +6,7 @@ import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2, PlusCircle } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { 
   Sheet,
   SheetContent,
@@ -47,7 +47,6 @@ export function UsersTable() {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [rowsPerPage, setRowsPerPage] = useState(10)
-  const { toast } = useToast()
   const { userProfile } = useAuth()
 
   const canManageUsers = true // Simplified for now
@@ -68,11 +67,7 @@ export function UsersTable() {
       setUsers(usersData)
       setTotalPages(Math.ceil(usersData.length / rowsPerPage) || 1)
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to load users.",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to load users.")
     } finally {
       setLoading(false)
     }
@@ -103,11 +98,7 @@ export function UsersTable() {
       
       // Simple validation for required fields
       if (!firstName || !lastName) {
-        toast({
-          title: "Validation Error",
-          description: "First name and last name are required.",
-          variant: "destructive",
-        })
+        toast.error("First name and last name are required.")
         setSaving(false)
         return
       }
@@ -138,11 +129,7 @@ export function UsersTable() {
       if (!editingUser) {
         const email = formData.get("email") as string
         if (!email || email.trim() === "") {
-          toast({
-            title: "Validation Error",
-            description: "Email is required for new users.",
-            variant: "destructive",
-          })
+          toast.error("Email is required for new users.")
           setSaving(false)
           return
         }
@@ -153,28 +140,18 @@ export function UsersTable() {
       if (editingUser) {
         // Update existing user
         result = await updateUser(editingUser.id, userData)
-        toast({
-          title: "Success",
-          description: "User updated successfully.",
-        })
+        toast.success("User updated successfully.")
       } else {
         // Create new user
         result = await createUser(userData)
-        toast({
-          title: "Success",
-          description: "User created successfully.",
-        })
+        toast.success("User created successfully.")
       }
 
       setIsModalOpen(false)
       setEditingUser(null)
       await loadData() // Reload data after successful operation
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "An unexpected error occurred.",
-        variant: "destructive",
-      })
+      toast.error(error.message || "An unexpected error occurred.")
     } finally {
       setSaving(false)
     }
@@ -186,17 +163,10 @@ export function UsersTable() {
     }
     try {
       await deleteUser(user.id)
-      toast({
-        title: "Success",
-        description: "User deleted successfully.",
-      })
+      toast.success("User deleted successfully.")
       await loadData()
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "An unexpected error occurred.",
-        variant: "destructive",
-      })
+      toast.error(error.message || "An unexpected error occurred.")
     }
   }
 
@@ -241,20 +211,13 @@ export function UsersTable() {
         is_active: true
       })
       
-      toast({
-        title: "Success",
-        description: "Role created successfully.",
-      })
+      toast.success("Role created successfully.")
 
       setIsCreateRoleSheetOpen(false)
       setCurrentPermissions({})
       await loadData() // Reload data after successful operation
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "An unexpected error occurred.",
-        variant: "destructive",
-      })
+      toast.error(error.message || "An unexpected error occurred.")
     } finally {
       setCreatingRole(false)
     }
@@ -550,10 +513,7 @@ export function UsersTable() {
             loading={loading}
             onViewUser={(user) => {
               // For now, we'll just show a toast. In a real implementation, you might open a modal.
-              toast({
-                title: "View User",
-                description: `Viewing details for ${user.first_name} ${user.last_name}`,
-              })
+              toast.success(`Viewing details for ${user.first_name} ${user.last_name}`)
             }}
             onEditUser={openEditModal}
             onDeleteUser={handleDeleteUser}

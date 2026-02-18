@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { toast } from "@/components/ui/use-toast"
+import { toast } from "sonner"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { format } from "date-fns"
 import { CalendarIcon } from "lucide-react"
@@ -103,19 +103,12 @@ export function CreateQuoteModal({ open, setOpen, onQuoteCreated }: CreateQuoteM
     //   data: values,
     // })
     //   .then(() => {
-    //     toast({
-    //       title: "Quote Created",
-    //       description: "Your quote has been successfully created.",
-    //     })
+    //     toast.success("Your quote has been successfully created.")
     //     setOpen(false)
     //   })
     //   .catch((error) => {
     //     console.error("Failed to create quote:", error)
-    //     toast({
-    //       title: "Failed to create quote",
-    //       description: error?.message || "An unexpected error occurred.",
-    //       variant: "destructive",
-    //     })
+    //     toast.error(error?.message || "An unexpected error occurred.")
     //   })
     //   .finally(() => {
     //     setIsLoading(false)
@@ -123,29 +116,18 @@ export function CreateQuoteModal({ open, setOpen, onQuoteCreated }: CreateQuoteM
     try {
       createQuote(values)
         .then((newQuote) => {
-          toast({
-            title: "Quote Created",
-            description: `Quote ${newQuote.quote_number || newQuote.id} has been successfully created.`,
-          })
+          toast.success(`Quote ${newQuote.quote_number || newQuote.id} has been successfully created.`)
           onQuoteCreated?.() // Call the refresh handler passed from parent
           setOpen(false)
         })
         .catch((error: any) => {
-          toast({
-            title: "Failed to create quote",
-            description: error.message || "An unexpected error occurred.",
-            variant: "destructive",
-          })
+                toast.error(error.message || "An unexpected error occurred.")
         })
         .finally(() => {
           setIsLoading(false)
         })
     } catch (error: any) {
-      toast({
-        title: "Failed to create quote",
-        description: error.message || "An unexpected error occurred.",
-        variant: "destructive",
-      })
+      toast.error(error.message || "An unexpected error occurred.")
     } finally {
       setIsLoading(false)
     }

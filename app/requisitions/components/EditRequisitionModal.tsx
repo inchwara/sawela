@@ -19,7 +19,7 @@ import {
   CheckCircle2,
   Loader2
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { updateRequisition, type Requisition, type RequisitionItem } from "@/lib/requisitions";
 import { getProducts, type Product as LibProduct } from "@/lib/products";
 import { getUsers, type UserData as User } from "@/lib/users";
@@ -64,7 +64,7 @@ export function EditRequisitionModal({ open, onOpenChange, onSuccess, requisitio
   const [products, setProducts] = useState<LibProduct[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const { toast } = useToast();
+  ;
 
   const [formData, setFormData] = useState<FormData>({
     approver_id: "",
@@ -123,11 +123,7 @@ export function EditRequisitionModal({ open, onOpenChange, onSuccess, requisitio
       setUsers(usersData);
     } catch (error) {
       console.error('Error fetching data:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch data. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to fetch data. Please try again.");
     }
   };
 
@@ -222,20 +218,13 @@ export function EditRequisitionModal({ open, onOpenChange, onSuccess, requisitio
       
       console.log('Update response:', response);
 
-      toast({
-        title: "Success",
-        description: "Requisition updated successfully",
-      });
+      toast.success("Requisition updated successfully");
 
       onSuccess();
       onOpenChange(false);
     } catch (error: any) {
       console.error('Update error:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update requisition",
-        variant: "destructive",
-      });
+      toast.error(error.message || "Failed to update requisition");
     } finally {
       setLoading(false);
     }

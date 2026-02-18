@@ -40,7 +40,7 @@ import { CreateSupplierSheet } from "./components/create-supplier-sheet"
 import { Supplier, getSuppliers, deleteSupplier } from "@/lib/suppliers"
 import { Skeleton } from "@/components/ui/skeleton"
 import { SuppliersTableSkeleton } from "./suppliers-table-skeleton"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { usePermissions } from "@/hooks/use-permissions"
 import { PermissionGuard } from "@/components/PermissionGuard"
 
@@ -49,7 +49,6 @@ interface SuppliersTableProps {
 }
 
 export function SuppliersTable({ onDataChanged }: SuppliersTableProps) {
-  const { toast } = useToast()
   const { hasPermission } = usePermissions()
   
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
@@ -138,11 +137,7 @@ export function SuppliersTable({ onDataChanged }: SuppliersTableProps) {
       // Don't clear existing data on error if we have some
       if (suppliers.length === 0) {
         // Only show toast if we don't already have cached data
-        toast({
-          title: "Error",
-          description: err instanceof Error ? err.message : 'Failed to fetch suppliers',
-          variant: "destructive"
-        })
+        toast.error(err instanceof Error ? err.message : 'Failed to fetch suppliers')
       }
     } finally {
       setIsLoading(false)
@@ -167,10 +162,7 @@ export function SuppliersTable({ onDataChanged }: SuppliersTableProps) {
 
   const handleSupplierCreated = () => {
     fetchSuppliers()
-    toast({
-      title: "Success",
-      description: "Supplier created successfully."
-    })
+    toast.success("Supplier created successfully.")
     if (onDataChanged) onDataChanged()
   }
   
@@ -223,17 +215,10 @@ export function SuppliersTable({ onDataChanged }: SuppliersTableProps) {
     try {
       await deleteSupplier(supplierId)
       await fetchSuppliers()
-      toast({
-        title: "Success",
-        description: "Supplier deleted successfully."
-      })
+      toast.success("Supplier deleted successfully.")
       if (onDataChanged) onDataChanged()
     } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to delete supplier",
-        variant: "destructive"
-      })
+      toast.error(error instanceof Error ? error.message : "Failed to delete supplier")
     }
   }
 

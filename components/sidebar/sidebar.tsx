@@ -38,6 +38,7 @@ import {
   Route,
   Send,
   Building2,
+  HandCoins,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -107,6 +108,7 @@ function Sidebar() {
     { name: "Stock Count", href: "/inventory/stock-counts", icon: ClipboardList, permission: "can_view_inventory_menu" },
     { name: "Stock Adjustment", href: "/inventory/stock-adjustments", icon: FileEdit, permission: "can_view_inventory_menu" },
     { name: "Dispatch", href: "/dispatch", icon: Send, permission: "can_view_dispatch_menu" },
+    { name: "Loans", href: "/loans", icon: HandCoins, permission: "can_view_dispatch_menu" },
     { name: "Requisition", href: "/requisitions", icon: ClipboardList, permission: "can_view_requisitions_menu" },
     { name: "Breakage", href: "/breakages", icon: AlertTriangle, permission: "can_view_breakages_menu" },
     { name: "Repairs", href: "/repairs", icon: Wrench, permission: "can_view_repairs_menu" },

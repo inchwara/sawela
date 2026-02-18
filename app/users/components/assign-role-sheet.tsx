@@ -10,7 +10,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -58,8 +58,6 @@ export function AssignRoleSheet({ user, open, onOpenChange, onRoleAssigned }: As
   const [roles, setRoles] = useState<Role[]>([])
   const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null)
   const [openPopover, setOpenPopover] = useState(false)
-  const { toast } = useToast()
-
   // Fetch roles when the sheet opens
   useEffect(() => {
     if (open) {
@@ -78,11 +76,7 @@ export function AssignRoleSheet({ user, open, onOpenChange, onRoleAssigned }: As
       const rolesData = await getRoles()
       setRoles(rolesData)
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to load roles.",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to load roles.")
       setRoles([])
     }
   }
@@ -98,18 +92,11 @@ export function AssignRoleSheet({ user, open, onOpenChange, onRoleAssigned }: As
       // Assign role to user
       await assignRoleToUser(user.id, selectedRoleId)
       
-      toast({
-        title: "Success",
-        description: "User role updated successfully.",
-      })
+      toast.success("User role updated successfully.")
       onOpenChange(false)
       onRoleAssigned()
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "An unexpected error occurred.",
-        variant: "destructive",
-      })
+      toast.error(error.message || "An unexpected error occurred.")
     } finally {
       setSaving(false)
     }

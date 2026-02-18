@@ -21,7 +21,7 @@ import {
   ClipboardList,
   Loader2
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { approveRequisition, type Requisition } from "@/lib/requisitions";
 import { useAuth } from "@/lib/auth-context";
 import { format } from "date-fns";
@@ -42,7 +42,7 @@ export function ApproveRequisitionModal({
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [notes, setNotes] = useState("Approved");
-  const { toast } = useToast();
+  ;
 
   const handleApprove = async () => {
     if (!requisition) return;
@@ -57,31 +57,20 @@ export function ApproveRequisitionModal({
       };
 
       if (!payload.approved_by) {
-        toast({
-          title: "Error",
-          description: "Could not identify the approver. Please reload and try again.",
-          variant: "destructive",
-        });
+        toast.error("Could not identify the approver. Please reload and try again.");
         setLoading(false);
         return;
       }
       
       const response = await approveRequisition(requisition.id, payload);
 
-      toast({
-        title: "Success",
-        description: `Requisition ${requisition.requisition_number} has been approved successfully.`,
-      });
+      toast.success(`Requisition ${requisition.requisition_number} has been approved successfully.`);
 
       onSuccess();
       onOpenChange(false);
     } catch (error: any) {
       console.error('Approve error:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to approve requisition",
-        variant: "destructive",
-      });
+      toast.error(error.message || "Failed to approve requisition");
     } finally {
       setLoading(false);
     }

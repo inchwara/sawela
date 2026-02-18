@@ -27,7 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { usePermissions } from "@/hooks/use-permissions"
 import { useRouter } from "next/navigation"
 import { 
@@ -89,8 +89,6 @@ export function StockAdjustmentsTable({
   
   const router = useRouter()
   const { hasPermission } = usePermissions()
-  const { toast } = useToast()
-
   // Filter adjustments based on search and filters
   const filteredAdjustments = adjustments.filter((adjustment) => {
     const matchesSearch = searchTerm === "" || 
@@ -134,20 +132,13 @@ export function StockAdjustmentsTable({
       const { submitStockAdjustmentAction } = await import("./actions")
       const result = await submitStockAdjustmentAction(adjustment.id)
       if (result.success) {
-        toast({
-          title: "Success",
-          description: "Stock adjustment submitted for approval",
-        })
+        toast.success("Stock adjustment submitted for approval")
         onAdjustmentUpdated()
       } else {
         throw new Error(result.message)
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to submit adjustment",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to submit adjustment")
     } finally {
       setIsSubmitting(false)
     }

@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { X, RotateCcw, Loader2, Package } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -31,7 +31,7 @@ export function ReturnItemsModal({ open, onOpenChange, dispatch, onSuccess }: Re
   const [isVisible, setIsVisible] = useState(false);
   const [returnItemsData, setReturnItemsData] = useState<ReturnItemData[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const { toast } = useToast();
+  ;
 
   // Handle visibility for animation
   useEffect(() => {
@@ -94,11 +94,7 @@ export function ReturnItemsModal({ open, onOpenChange, dispatch, onSuccess }: Re
     const itemsToReturn = returnItemsData.filter(item => item.returned_quantity > 0);
     
     if (itemsToReturn.length === 0) {
-      toast({
-        title: "No Items Selected",
-        description: "Please select at least one item to return with a quantity greater than 0.",
-        variant: "destructive",
-      });
+      toast.error("Please select at least one item to return with a quantity greater than 0.");
       return;
     }
 
@@ -113,20 +109,13 @@ export function ReturnItemsModal({ open, onOpenChange, dispatch, onSuccess }: Re
         })),
       });
 
-      toast({
-        title: "Success",
-        description: response.message || "Items returned successfully!",
-      });
+      toast.success(response.message || "Items returned successfully!");
 
       onOpenChange(false);
       onSuccess?.();
     } catch (error) {
       console.error("Error returning items:", error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to return items. Please try again.",
-        variant: "destructive",
-      });
+      toast.error(error instanceof Error ? error.message : "Failed to return items. Please try again.");
     } finally {
       setLoading(false);
     }

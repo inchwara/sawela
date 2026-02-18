@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { getProducts, type Product } from "@/lib/products";
 import { getStores, type Store } from "@/lib/stores";
 import { getSuppliers, type Supplier } from "@/lib/suppliers";
@@ -113,7 +113,7 @@ export function EditProductReceiptModal({
   onSuccess,
   productReceipt,
 }: EditProductReceiptModalProps) {
-  const { toast } = useToast();
+  ;
   const [loading, setLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -244,11 +244,7 @@ export function EditProductReceiptModal({
       
       setItems(convertedItems);
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to load receipt details.",
-        variant: "destructive",
-      });
+      toast.error("Failed to load receipt details.");
       console.error('Error loading receipt:', error);
     } finally {
       setLoading(false);
@@ -261,11 +257,7 @@ export function EditProductReceiptModal({
       const storesData = await getStores();
       setStores(storesData);
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to load stores",
-        variant: "destructive",
-      });
+      toast.error("Failed to load stores");
     } finally {
       setLoadingStores(false);
     }
@@ -277,11 +269,7 @@ export function EditProductReceiptModal({
       const suppliersData = await getSuppliers();
       setSuppliers(suppliersData);
     } catch (error: any) {
-      toast({
-        title: "Error", 
-        description: "Failed to load suppliers",
-        variant: "destructive",
-      });
+      toast.error("Failed to load suppliers");
     } finally {
       setLoadingSuppliers(false);
     }
@@ -293,11 +281,7 @@ export function EditProductReceiptModal({
       const { data } = await getProducts(1, 10000); // Load all products
       setProducts(data);
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to load products",
-        variant: "destructive",
-      });
+      toast.error("Failed to load products");
     } finally {
       setLoadingProducts(false);
     }
@@ -307,11 +291,7 @@ export function EditProductReceiptModal({
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        toast({
-          title: "File too large",
-          description: "Please select a file smaller than 5MB",
-          variant: "destructive",
-        });
+        toast.error("Please select a file smaller than 5MB");
         return;
       }
       setDocument(file);
@@ -417,17 +397,10 @@ export function EditProductReceiptModal({
   const handleProductCreated = async () => {
     try {
       await loadProducts();
-      toast({
-        title: "Success! ✅",
-        description: "Product created successfully. You can now add it to the receipt.",
-      });
+      toast.success("Product created successfully. You can now add it to the receipt.");
       setShowCreateProductModal(false);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to refresh products list",
-        variant: "destructive",
-      });
+      toast.error("Failed to refresh products list");
     }
   };
 
@@ -437,67 +410,39 @@ export function EditProductReceiptModal({
 
   const validateForm = () => {
     if (!referenceNumber.trim()) {
-      toast({
-        title: "Validation Error",
-        description: "Reference number is required",
-        variant: "destructive",
-      });
+      toast.error("Reference number is required");
       return false;
     }
 
     if (!storeId) {
-      toast({
-        title: "Validation Error", 
-        description: "Please select a store",
-        variant: "destructive",
-      });
+      toast.error("Please select a store");
       return false;
     }
 
     if (items.length === 0) {
-      toast({
-        title: "Validation Error",
-        description: "Please add at least one product item",
-        variant: "destructive",
-      });
+      toast.error("Please add at least one product item");
       return false;
     }
 
     for (const item of items) {
       if (!item.product_id || item.product_id === "select-product") {
-        toast({
-          title: "Validation Error",
-          description: "All items must have a product selected",
-          variant: "destructive",
-        });
+        toast.error("All items must have a product selected");
         return false;
       }
       
       if (item.product && item.product.has_variations && item.product.variants && item.product.variants.length > 0) {
         if (!item.variant_id || item.variant_id === "select-variant") {
-          toast({
-            title: "Validation Error",
-            description: `Please select a variant for "${item.product.name}"`,
-            variant: "destructive",
-          });
+          toast.error(`Please select a variant for "${item.product.name}"`);
           return false;
         }
       }
       
       if (item.quantity <= 0) {
-        toast({
-          title: "Validation Error",
-          description: "All items must have a quantity greater than 0",
-          variant: "destructive",
-        });
+        toast.error("All items must have a quantity greater than 0");
         return false;
       }
       if (item.unit_price < 0) {
-        toast({
-          title: "Validation Error",
-          description: "Unit prices cannot be negative",
-          variant: "destructive",
-        });
+        toast.error("Unit prices cannot be negative");
         return false;
       }
     }
@@ -510,11 +455,7 @@ export function EditProductReceiptModal({
     
     // Check update permission
     if (!hasPermission("can_update_product_receipts") && !isAdmin()) {
-      toast({
-        title: "Access Denied",
-        description: "You do not have permission to update product receipts.",
-        variant: "destructive",
-      });
+      toast.error("You do not have permission to update product receipts.");
       return;
     }
 
@@ -548,19 +489,12 @@ export function EditProductReceiptModal({
 
       await updateProductReceiptFull(productReceipt.id, payload);
 
-      toast({
-        title: "Success! ✅",
-        description: "Product receipt updated successfully",
-      });
+      toast.success("Product receipt updated successfully");
 
       onOpenChange(false);
       onSuccess();
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update product receipt",
-        variant: "destructive",
-      });
+      toast.error(error.message || "Failed to update product receipt");
     } finally {
       setIsSubmitting(false);
     }

@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import * as XLSX from "xlsx"
 import { PermissionGuard } from "@/components/PermissionGuard"
 import { usePermissions } from "@/hooks/use-permissions"
@@ -172,8 +172,6 @@ export function BatchTable({
   const [selectedBatch, setSelectedBatch] = useState<{ productId: string; batchId: string } | null>(null)
   const router = useRouter()
   const { hasPermission } = usePermissions()
-  const { toast } = useToast()
-
   // Filter and sort batches
   const filteredAndSortedBatches = useMemo(() => {
     let result = [...batches]

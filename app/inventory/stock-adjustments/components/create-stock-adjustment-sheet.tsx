@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Loader2, Check, ChevronsUpDown } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { createStockAdjustmentAction } from "../actions"
 import { getProducts } from "@/lib/products"
 import { getStores } from "@/lib/stores"
@@ -30,7 +30,6 @@ export function CreateStockAdjustmentSheet({
   onOpenChange,
   onSuccess,
 }: CreateStockAdjustmentSheetProps) {
-  const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [products, setProducts] = useState<Product[]>([])
   const [stores, setStores] = useState<Store[]>([])
@@ -127,26 +126,14 @@ export function CreateStockAdjustmentSheet({
       
       // Show specific error message only if all dropdowns failed
       if (errors.length === 2) {
-        toast({
-          title: "Error",
-          description: "Failed to load form data. Please check your connection and try again.",
-          variant: "destructive",
-        })
+        toast.error("Failed to load form data. Please check your connection and try again.")
       } else if (errors.length > 0) {
         // Partial failure - show warning but allow continued use
-        toast({
-          title: "Warning",
-          description: `Could not load: ${errors.join(", ")}. Some form fields may be unavailable.`,
-          variant: "destructive",
-        })
+        toast.error(`Could not load: ${errors.join(", ")}. Some form fields may be unavailable.`)
       }
     } catch (error: any) {
       console.error("Failed to load form data:", error)
-      toast({
-        title: "Error",
-        description: error.message || "Failed to load form data",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to load form data")
     } finally {
       setLoadingData(false)
     }
@@ -174,10 +161,7 @@ export function CreateStockAdjustmentSheet({
       })
 
       if (result.success) {
-        toast({
-          title: "Success",
-          description: "Stock adjustment created successfully",
-        })
+        toast.success("Stock adjustment created successfully")
         onOpenChange(false)
         onSuccess()
         // Reset form
@@ -195,11 +179,7 @@ export function CreateStockAdjustmentSheet({
         throw new Error(result.message || "Failed to create stock adjustment")
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create stock adjustment",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to create stock adjustment")
     } finally {
       setIsSubmitting(false)
     }

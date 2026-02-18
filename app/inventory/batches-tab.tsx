@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { RefreshCw, Package, Calendar, AlertTriangle, CheckCircle, Eye } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -26,7 +26,6 @@ import {
 import { BatchDetailsSheet } from "@/app/inventory/components/batch-details-sheet"
 
 export function BatchesTab() {
-  const { toast } = useToast()
   const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -51,11 +50,7 @@ export function BatchesTab() {
       setLastRefreshTime(new Date())
     } catch (err: any) {
       setError(err.message || "Failed to fetch batches")
-      toast({
-        title: "Error",
-        description: err.message || "Failed to fetch batches",
-        variant: "destructive",
-      })
+      toast.error(err.message || "Failed to fetch batches")
     } finally {
       setLoading(false)
     }

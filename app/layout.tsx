@@ -4,7 +4,7 @@ import { Figtree } from "next/font/google"
 import "./globals.css"
 import { AuthProvider } from "@/lib/auth-context" // Ensure this path is correct
 import { AuthGuard } from "@/components/AuthGuard" // Ensure this path is correct and component exists
-import { Toaster } from "@/components/ui/toaster"
+import { Toaster } from "@/components/ui/sonner"
 import { Analytics } from "@vercel/analytics/next"
 
 const figtree = Figtree({

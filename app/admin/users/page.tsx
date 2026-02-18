@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2, PlusCircle, Users, Check, RefreshCw, Search } from "lucide-react"
 import { Input } from "@/components/ui/input"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import type { ColumnDef } from "@tanstack/react-table"
 import {
   Select,
@@ -62,11 +62,7 @@ export default function AdminUsersPage() {
       setCompanies(companiesData.data || [])
       setRoles(rolesData || [])
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to load initial data",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to load initial data")
     }
   }
 
@@ -93,11 +89,7 @@ export default function AdminUsersPage() {
       setUsers(data.data || [])
       setTotalPages(data.pagination?.last_page || 1)
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to load users",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to load users")
     } finally {
       setLoading(false)
     }
@@ -106,34 +98,21 @@ export default function AdminUsersPage() {
   // Table event handlers
   const handleViewUser = (user: AdminUser) => {
     // For now, we'll just show a toast. In a real implementation, you might open a modal.
-    toast({
-      title: "View User",
-      description: `Viewing details for ${user.first_name} ${user.last_name}`,
-    })
+    toast.success(`Viewing details for ${user.first_name} ${user.last_name}`)
   }
 
   const handleEditUser = (user: AdminUser) => {
     // For now, we'll just show a toast. In a real implementation, you might open an edit modal.
-    toast({
-      title: "Edit User",
-      description: `Editing ${user.first_name} ${user.last_name}`,
-    })
+    toast.success(`Editing ${user.first_name} ${user.last_name}`)
   }
 
   const handleDeleteUser = async (user: AdminUser) => {
     try {
       await deleteUser(user.id)
-      toast({
-        title: "Success",
-        description: `User ${user.first_name} ${user.last_name} deleted successfully`,
-      })
+      toast.success(`User ${user.first_name} ${user.last_name} deleted successfully`)
       loadUsers() // Refresh the list
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete user",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to delete user")
     }
   }
 

@@ -12,7 +12,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { 
   Package, 
   Building2, 
@@ -44,7 +44,7 @@ export default function DispatchModal({ open, onOpenChange, dispatch, onClose, o
   const [acknowledgingItems, setAcknowledgingItems] = useState<Record<string, number>>({});
   const [returningItems, setReturningItems] = useState<Record<string, { quantity: number; notes: string }>>({});
   const [currentDispatch, setCurrentDispatch] = useState<Dispatch | null>(dispatch);
-  const { toast } = useToast();
+  ;
 
   useEffect(() => {
     // Sync currentDispatch with prop
@@ -80,10 +80,7 @@ export default function DispatchModal({ open, onOpenChange, dispatch, onClose, o
         setCurrentDispatch(response.dispatch);
       }
       
-      toast({
-        title: "Success",
-        description: `Successfully acknowledged receipt of ${items.length} item(s)`,
-      });
+      toast.success(`Successfully acknowledged receipt of ${items.length} item(s)`);
       
       // Refresh the dispatch table in the background
       if (onRefresh) {
@@ -93,11 +90,7 @@ export default function DispatchModal({ open, onOpenChange, dispatch, onClose, o
       return response;
     } catch (error) {
       console.error('Acknowledgment failed:', error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to acknowledge receipt",
-        variant: "destructive",
-      });
+      toast.error(error instanceof Error ? error.message : "Failed to acknowledge receipt");
       throw error;
     } finally {
       setLoading(false);
@@ -110,10 +103,7 @@ export default function DispatchModal({ open, onOpenChange, dispatch, onClose, o
     setLoading(true);
     try {
       await markItemsReturned(currentDispatch.id, items);
-      toast({
-        title: "Success",
-        description: `Successfully marked ${items.length} item(s) as returned`,
-      });
+      toast.success(`Successfully marked ${items.length} item(s) as returned`);
       
       // Refresh the dispatch table in the background
       if (onRefresh) {
@@ -122,11 +112,7 @@ export default function DispatchModal({ open, onOpenChange, dispatch, onClose, o
       
       onClose(); // Refresh data by closing and letting parent refetch
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to mark items as returned",
-        variant: "destructive",
-      });
+      toast.error("Failed to mark items as returned");
     } finally {
       setLoading(false);
     }

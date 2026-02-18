@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Loader2, PlusCircle, Edit, Trash2, Shield } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { fetchUsers, createUser, updateUser, deleteUser } from "../actions"
 import {
   Sheet, // Changed from Dialog
@@ -50,7 +50,6 @@ export function UsersTable() {
   const [saving, setSaving] = useState(false)
   const [selectedUserForPermissions, setSelectedUserForPermissions] = useState<UserData | null>(null)
   const [isPermissionsSheetOpen, setIsPermissionsSheetOpen] = useState(false)
-  const { toast } = useToast()
   const { userProfile } = useAuth()
   const { hasPermission } = usePermissions()
 
@@ -174,11 +173,7 @@ export function UsersTable() {
       });
       setRoles(convertedRoles);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load user and role data.",
-        variant: "destructive",
-      })
+      toast.error("Failed to load user and role data.")
     } finally {
       setLoading(false)
     }
@@ -198,26 +193,15 @@ export function UsersTable() {
       }
 
       if (result.success) {
-        toast({
-          title: "Success",
-          description: result.message,
-        })
+        toast.success(result.message)
         setIsModalOpen(false)
         setEditingUser(null)
         await loadData() // Reload data after successful operation
       } else {
-        toast({
-          title: "Error",
-          description: result.message,
-          variant: "destructive",
-        })
+        toast.error(result.message)
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "An unexpected error occurred.",
-        variant: "destructive",
-      })
+      toast.error(error.message || "An unexpected error occurred.")
     } finally {
       setSaving(false)
     }
@@ -230,24 +214,13 @@ export function UsersTable() {
     try {
       const result = await deleteUser(userId)
       if (result.success) {
-        toast({
-          title: "Success",
-          description: result.message,
-        })
+        toast.success(result.message)
         await loadData()
       } else {
-        toast({
-          title: "Error",
-          description: result.message,
-          variant: "destructive",
-        })
+        toast.error(result.message)
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "An unexpected error occurred.",
-        variant: "destructive",
-      })
+      toast.error(error.message || "An unexpected error occurred.")
     }
   }
 

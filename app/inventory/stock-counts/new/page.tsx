@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label"
 import { ArrowLeft, Search, Save, ChevronLeft, ChevronRight, Barcode } from "lucide-react"
 import { products } from "@/lib/products-data"
-import { toast } from "@/components/ui/use-toast"
+import { toast } from "sonner"
 
 export default function NewStockCountPage() {
   const router = useRouter()
@@ -74,16 +74,9 @@ export default function NewStockCountPage() {
     if (scannedProduct) {
       handleQuantityChange(scannedProduct.id, (productCounts[scannedProduct.id] || 0) + 1)
       setBarcode("")
-      toast({
-        title: "Product Scanned",
-        description: `Added 1 to ${scannedProduct.name}`,
-      })
+      toast.success(`Added 1 to ${scannedProduct.name}`)
     } else {
-      toast({
-        title: "Product Not Found",
-        description: "The scanned barcode does not match any product in this store.",
-        variant: "destructive",
-      })
+      toast.error("The scanned barcode does not match any product in this store.")
     }
     if (barcodeInputRef.current) {
       barcodeInputRef.current.focus()

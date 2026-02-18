@@ -6,7 +6,7 @@ import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2, PlusCircle } from "lucide-react" // Added Check and X for status icons
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { fetchRoles, createRole, updateRole, deleteRole } from "../actions"
 import {
   Sheet,
@@ -55,7 +55,6 @@ export function RolesTable() {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [rowsPerPage, setRowsPerPage] = useState(10)
-  const { toast } = useToast()
   const { userProfile } = useAuth()
 
   const canManageRoles = true // Simplified for now
@@ -76,11 +75,7 @@ export function RolesTable() {
       setRoles(rolesData);
       setTotalPages(Math.ceil(rolesData.length / rowsPerPage) || 1);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load role data.",
-        variant: "destructive",
-      })
+      toast.error("Failed to load role data.")
     } finally {
       setLoading(false)
     }
@@ -134,27 +129,16 @@ export function RolesTable() {
       }
 
       if (result.success) {
-        toast({
-          title: "Success",
-          description: result.message,
-        })
+        toast.success(result.message)
         setIsModalOpen(false)
         setEditingRole(null)
         setCurrentPermissions({} as Permissions)
         await loadRoles() // Reload data after successful operation
       } else {
-        toast({
-          title: "Error",
-          description: result.message,
-          variant: "destructive",
-        })
+        toast.error(result.message)
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "An unexpected error occurred.",
-        variant: "destructive",
-      })
+      toast.error(error.message || "An unexpected error occurred.")
     } finally {
       setSaving(false)
     }
@@ -167,24 +151,13 @@ export function RolesTable() {
     try {
       const result = await deleteRole(role.id)
       if (result.success) {
-        toast({
-          title: "Success",
-          description: result.message,
-        })
+        toast.success(result.message)
         await loadRoles()
       } else {
-        toast({
-          title: "Error",
-          description: result.message,
-          variant: "destructive",
-        })
+        toast.error(result.message)
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "An unexpected error occurred.",
-        variant: "destructive",
-      })
+      toast.error(error.message || "An unexpected error occurred.")
     }
   }
 
@@ -379,10 +352,7 @@ export function RolesTable() {
           loading={loading}
           onViewRole={(role) => {
             // For now, we'll just show a toast. In a real implementation, you might open a modal.
-            toast({
-              title: "View Role",
-              description: `Viewing details for ${role.name}`,
-            })
+            toast.success(`Viewing details for ${role.name}`)
           }}
           onEditRole={openEditModal}
           onDeleteRole={handleDeleteRole}

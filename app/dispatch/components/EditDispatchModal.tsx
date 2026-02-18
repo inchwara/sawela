@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { X, Package, Loader2, Plus, Minus, Search, Building2, Calendar } from "lucide-react";
 import { cn, toSentenceCase } from "@/lib/utils";
 import { format } from "date-fns";
@@ -87,7 +87,7 @@ export function EditDispatchModal({ open, onOpenChange, dispatch, onSuccess }: E
     items: [],
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const { toast } = useToast();
+  ;
 
   // Handle visibility for animation
   useEffect(() => {
@@ -146,11 +146,7 @@ export function EditDispatchModal({ open, onOpenChange, dispatch, onSuccess }: E
         
       } catch (error) {
         console.error("Error fetching data:", error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch data. Please try again.",
-          variant: "destructive",
-        });
+        toast.error("Failed to fetch data. Please try again.");
       } finally {
         setLoading(false);
       }
@@ -221,20 +217,13 @@ export function EditDispatchModal({ open, onOpenChange, dispatch, onSuccess }: E
         })),
       });
 
-      toast({
-        title: "Success",
-        description: response.message || "Dispatch updated successfully!",
-      });
+      toast.success(response.message || "Dispatch updated successfully!");
 
       onOpenChange(false);
       onSuccess?.();
     } catch (error) {
       console.error("Error updating dispatch:", error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update dispatch. Please try again.",
-        variant: "destructive",
-      });
+      toast.error(error instanceof Error ? error.message : "Failed to update dispatch. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -259,11 +248,7 @@ export function EditDispatchModal({ open, onOpenChange, dispatch, onSuccess }: E
     const availableStock = variant ? variant.stock_quantity : product.stock_quantity;
     
     if (availableStock <= 0) {
-      toast({
-        title: "Out of Stock",
-        description: `${product.name}${variant ? ` (${variant.name})` : ""} is out of stock`,
-        variant: "destructive",
-      });
+      toast.error(`${product.name}${variant ? ` (${variant.name})` : ''} is out of stock.`);
       return;
     }
 

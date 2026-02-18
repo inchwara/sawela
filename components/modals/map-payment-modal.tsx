@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { toast } from "@/components/ui/use-toast"
+import { toast } from "sonner"
 import { mapPaymentToInvoice, MapPaymentRequest, PaymentMappingResponse } from "@/lib/invoices"
 import { getPayments, Payment } from "@/lib/payments"
 import { Loader2, CreditCard, Calendar, Search, X } from "lucide-react"
@@ -122,11 +122,7 @@ export function MapPaymentModal({
       setAllPayments(availablePayments)
     } catch (error: any) {
       console.error('Failed to load payments:', error)
-      toast({
-        title: "Error",
-        description: "Failed to load available payments",
-        variant: "destructive",
-      })
+      toast.error("Failed to load available payments")
       setAllPayments([])
     } finally {
       setIsLoadingPayments(false)
@@ -137,29 +133,17 @@ export function MapPaymentModal({
     e.preventDefault()
     
     if (!selectedPaymentId) {
-      toast({
-        title: "Error",
-        description: "Please select a payment to map",
-        variant: "destructive",
-      })
+      toast.error("Please select a payment to map")
       return
     }
 
     if (applyAmount <= 0) {
-      toast({
-        title: "Error",
-        description: "Apply amount must be greater than zero",
-        variant: "destructive",
-      })
+      toast.error("Apply amount must be greater than zero")
       return
     }
 
     if (applyAmount > maxApplyAmount) {
-      toast({
-        title: "Error",
-        description: `Apply amount cannot exceed ${maxApplyAmount.toFixed(2)}`,
-        variant: "destructive",
-      })
+      toast.error(`Apply amount cannot exceed ${maxApplyAmount.toFixed(2)}`)
       return
     }
 
@@ -173,10 +157,7 @@ export function MapPaymentModal({
 
       const result = await mapPaymentToInvoice(invoiceId, mappingRequest)
 
-      toast({
-        title: "Success",
-        description: "Payment mapped to invoice successfully",
-      })
+      toast.success("Payment mapped to invoice successfully")
 
       onPaymentMapped?.(result)
       onClose()
@@ -185,11 +166,7 @@ export function MapPaymentModal({
       setSelectedPaymentId("")
       setApplyAmount(0)
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to map payment",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to map payment")
     } finally {
       setIsSubmitting(false)
     }

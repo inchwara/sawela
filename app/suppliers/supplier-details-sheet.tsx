@@ -22,7 +22,7 @@ import {
   RefreshCw
 } from "lucide-react"
 import { getSupplier, deleteSupplier, Supplier } from "@/lib/suppliers"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { EditSupplierSheet } from "./components/edit-supplier-sheet"
 
 interface SupplierDetailsSheetProps {
@@ -32,7 +32,6 @@ interface SupplierDetailsSheetProps {
 }
 
 export function SupplierDetailsSheet({ supplierId, open, onOpenChange }: SupplierDetailsSheetProps) {
-  const { toast } = useToast()
   const [supplier, setSupplier] = useState<Supplier | null>(null)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -58,11 +57,7 @@ export function SupplierDetailsSheet({ supplierId, open, onOpenChange }: Supplie
       setSupplier(data)
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to fetch supplier details'))
-      toast({
-        title: "Error",
-        description: err instanceof Error ? err.message : 'Failed to fetch supplier details',
-        variant: "destructive"
-      })
+      toast.error(err instanceof Error ? err.message : 'Failed to fetch supplier details')
     } finally {
       setIsLoading(false)
     }
@@ -73,17 +68,10 @@ export function SupplierDetailsSheet({ supplierId, open, onOpenChange }: Supplie
     
     try {
       await deleteSupplier(supplier.id)
-      toast({
-        title: "Success",
-        description: "Supplier deleted successfully."
-      })
+      toast.success("Supplier deleted successfully.")
       onOpenChange(false)
     } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to delete supplier",
-        variant: "destructive"
-      })
+      toast.error(error instanceof Error ? error.message : "Failed to delete supplier")
     }
   }
 

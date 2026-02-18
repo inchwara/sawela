@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { getStores, Store } from "@/lib/stores";
 import { getRepairsByProduct, downloadReportAsCsv, RepairByProductItem, ReportFilters } from "@/lib/reports-api";
 import { ReportLayout, ReportErrorState, ReportEmptyState } from "../../components/report-layout";
@@ -41,7 +41,7 @@ const columns: ColumnDef<RepairByProductItem>[] = [
 ];
 
 export default function RepairByProductReport() {
-  const { toast } = useToast();
+  ;
   const [loading, setLoading] = React.useState(true);
   const [exportLoading, setExportLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -57,7 +57,7 @@ export default function RepairByProductReport() {
     try {
       const response = await getRepairsByProduct(filters);
       if (response.success) { setData(Array.isArray(response.data) ? response.data : []); setMeta(response.meta); }
-    } catch (err: any) { setError(err.message || "Failed to load report"); toast({ title: "Error", description: err.message, variant: "destructive" }); }
+    } catch (err: any) { setError(err.message || "Failed to load report"); toast.error(err.message); }
     finally { setLoading(false); }
   }, [filters, toast]);
 
@@ -65,8 +65,8 @@ export default function RepairByProductReport() {
 
   const handleExport = async () => {
     setExportLoading(true);
-    try { await downloadReportAsCsv("/repairs/by-product", filters, "repairs_by_product.csv"); toast({ title: "Export successful" }); }
-    catch (err: any) { toast({ title: "Export failed", description: err.message, variant: "destructive" }); }
+    try { await downloadReportAsCsv("/repairs/by-product", filters, "repairs_by_product.csv"); toast.success("Export successful"); }
+    catch (err: any) { toast.error(err.message); }
     finally { setExportLoading(false); }
   };
 

@@ -21,7 +21,7 @@ import {
   SheetTitle,
   SheetFooter,
 } from "@/components/ui/sheet";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { 
   Package, 
   Building2, 
@@ -74,7 +74,7 @@ export function CreateDispatchFromRequisitionModal({
   const [loading, setLoading] = useState(false);
   const [stores, setStores] = useState<Store[]>([]);
   const [users, setUsers] = useState<UserType[]>([]);
-  const { toast } = useToast();
+  ;
 
   const [formData, setFormData] = useState<FormData>({
     from_store_id: "",
@@ -141,11 +141,7 @@ export function CreateDispatchFromRequisitionModal({
       
     } catch (error) {
       console.error("Error loading data:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load data. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to load data. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -204,11 +200,7 @@ export function CreateDispatchFromRequisitionModal({
       }
     } catch (error: any) {
       console.error("Error creating dispatch:", error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create dispatch. Please try again.",
-        variant: "destructive",
-      });
+      toast.error(error.message || "Failed to create dispatch. Please try again.");
       return; // Stop execution if dispatch creation fails
     } finally {
       setLoading(false);
@@ -225,10 +217,7 @@ export function CreateDispatchFromRequisitionModal({
         
         // Only show success and close modal after both operations or if status update is non-critical? 
         // Better to consider the flow complete.
-        toast({
-          title: "Success",
-          description: `Dispatch created successfully for requisition ${requisition.requisition_number}`,
-        });
+        toast.success(`Dispatch created successfully for requisition ${requisition.requisition_number}`);
         
         onSuccess();
         onOpenChange(false);
@@ -236,11 +225,7 @@ export function CreateDispatchFromRequisitionModal({
     } catch (error: any) {
       console.error("Error updating requisition status:", error);
       // Dispatch was created but status update failed
-       toast({
-          title: "Warning",
-          description: "Dispatch created, but failed to update requisition status. Please refresh.",
-          variant: "destructive", // Or warning variant if available
-        });
+       toast.error("Dispatch created, but failed to update requisition status. Please refresh.");
        onSuccess(); // Still trigger refresh since dispatch was created
        onOpenChange(false);
     }

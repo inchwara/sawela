@@ -39,7 +39,7 @@ import {
   type Repair 
 } from "@/lib/repairs";
 import { fetchUsers, type UserData as UserType } from "@/lib/users";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 interface RepairItemForm {
@@ -87,7 +87,7 @@ export function EditRepairModal({
   const [usersLoading, setUsersLoading] = useState(false);
   const [itemSearch, setItemSearch] = useState("");
   const [selectedProduct, setSelectedProduct] = useState<AssignableItem | null>(null);
-  const { toast } = useToast();
+  ;
 
   const [formData, setFormData] = useState<FormData>({
     approver_id: "",
@@ -173,11 +173,7 @@ export function EditRepairModal({
       setAssignableItems(availableItems);
     } catch (error) {
       console.error('Error fetching assignable items:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load assignable items.",
-        variant: "destructive",
-      });
+      toast.error("Failed to load assignable items.");
     } finally {
       setLoadingItems(false);
     }
@@ -190,11 +186,7 @@ export function EditRepairModal({
       setUsers(response || []);
     } catch (error) {
       console.error("Error loading users:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load users. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to load users. Please try again.");
     } finally {
       setUsersLoading(false);
     }
@@ -272,20 +264,11 @@ export function EditRepairModal({
                         formData.items.some(item => !item.isExisting) ||
                         formData.approver_id !== repair.approved_by;
       
-      toast({
-        title: "Success",
-        description: hasChanges ? 
-          "Repair updated successfully with all changes including items and approver." :
-          "Repair details updated successfully.",
-      });
+      toast.success(hasChanges ? "Repair updated successfully with changes." : "Repair saved.");
       onOpenChange(false);
     } catch (error: any) {
       console.error('Error updating repair:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update repair. Please try again.",
-        variant: "destructive",
-      });
+      toast.error(error.message || "Failed to update repair. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -299,11 +282,7 @@ export function EditRepairModal({
       !item.isExisting && item.assignable_item_id === selectedProduct.id
     );
     if (existingItem) {
-      toast({
-        title: "Item already added",
-        description: "This product is already in the repair list.",
-        variant: "destructive",
-      });
+      toast.error("This product is already in the repair list.");
       return;
     }
     

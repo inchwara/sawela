@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { X, Plus, Upload, Trash2, Star, ImageIcon, PlusCircle, Search, Check, ChevronsUpDown, Loader2, AlertTriangle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
@@ -53,7 +53,7 @@ interface ValidationErrors {
 }
 
 export function CreateProductModal({ isOpen, onClose, onSuccess }: CreateProductModalProps) {
-  const { toast } = useToast()
+  
   const [isLoading, setIsLoading] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
   const [currentTab, setCurrentTab] = useState("basic")
@@ -164,11 +164,7 @@ export function CreateProductModal({ isOpen, onClose, onSuccess }: CreateProduct
       }
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : "Failed to load stores"
-      toast({
-        title: "Error loading stores",
-        description: errorMessage,
-        variant: "destructive",
-      })
+      toast.error(errorMessage)
     } finally {
       setIsLoadingStores(false)
     }
@@ -181,11 +177,7 @@ export function CreateProductModal({ isOpen, onClose, onSuccess }: CreateProduct
       setCategories(data)
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : "Failed to load categories"
-      toast({
-        title: "Error loading categories",
-        description: errorMessage,
-        variant: "destructive",
-      })
+      toast.error(errorMessage)
     } finally {
       setIsLoadingCategories(false)
     }
@@ -198,11 +190,7 @@ export function CreateProductModal({ isOpen, onClose, onSuccess }: CreateProduct
       setSuppliers(data)
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : "Failed to load suppliers"
-      toast({
-        title: "Error loading suppliers",
-        description: errorMessage,
-        variant: "destructive",
-      })
+      toast.error(errorMessage)
     } finally {
       setIsLoadingSuppliers(false)
     }
@@ -334,17 +322,9 @@ export function CreateProductModal({ isOpen, onClose, onSuccess }: CreateProduct
       setCurrentTab(newTab)
       setErrors({})
     } else if (newTabIndex > currentIndex + 1) {
-      toast({
-        title: "Complete Previous Steps",
-        description: "Please complete the current step before proceeding to later steps",
-        variant: "destructive",
-      })
+      toast.error("Please complete the current step before proceeding to later steps")
     } else {
-      toast({
-        title: "Validation Error",
-        description: "Please fill in all required fields before proceeding",
-        variant: "destructive",
-      })
+      toast.error("Please fill in all required fields before proceeding")
     }
   }
 
@@ -463,23 +443,12 @@ export function CreateProductModal({ isOpen, onClose, onSuccess }: CreateProduct
               return newImages
             })
             
-            toast({
-              title: "Image Uploaded",
-              description: `Image compressed from ${originalSizeKB}KB to ${compressedSizeKB}KB`,
-            })
+            toast.success(`Image compressed from ${originalSizeKB}KB to ${compressedSizeKB}KB`)
           } catch (error) {
-            toast({
-              title: "Upload Error",
-              description: "Failed to process image",
-              variant: "destructive",
-            })
+            toast.error("Failed to process image")
           }
         } else {
-          toast({
-            title: "Invalid File",
-            description: "Please upload only image files",
-            variant: "destructive",
-          })
+          toast.error("Please upload only image files")
         }
       }
       event.target.value = ""
@@ -522,23 +491,12 @@ export function CreateProductModal({ isOpen, onClose, onSuccess }: CreateProduct
               return newImages
             })
             
-            toast({
-              title: "Image Uploaded",
-              description: `Image compressed from ${originalSizeKB}KB to ${compressedSizeKB}KB`,
-            })
+            toast.success(`Image compressed from ${originalSizeKB}KB to ${compressedSizeKB}KB`)
           } catch (error) {
-            toast({
-              title: "Upload Error",
-              description: "Failed to process image",
-              variant: "destructive",
-            })
+            toast.error("Failed to process image")
           }
         } else {
-          toast({
-            title: "Invalid File",
-            description: "Please upload only image files",
-            variant: "destructive",
-          })
+          toast.error("Please upload only image files")
         }
       }
     }
@@ -558,10 +516,7 @@ export function CreateProductModal({ isOpen, onClose, onSuccess }: CreateProduct
 
   const handleSetPrimaryImage = (index: number) => {
     setPrimaryImageIndex(index)
-    toast({
-      title: "Primary Image Set",
-      description: `Image ${index + 1} is now the primary image`,
-    })
+    toast.success(`Image ${index + 1} is now the primary image`)
   }
 
   // Rest of the component remains the same...
@@ -708,23 +663,12 @@ export function CreateProductModal({ isOpen, onClose, onSuccess }: CreateProduct
               prev.map((v) => (v.id === variantId ? { ...v, images: [...v.images, compressedImage] } : v)),
             )
             
-            toast({
-              title: "Variant Image Uploaded",
-              description: `Image compressed from ${originalSizeKB}KB to ${compressedSizeKB}KB`,
-            })
+            toast.success(`Image compressed from ${originalSizeKB}KB to ${compressedSizeKB}KB`)
           } catch (error) {
-            toast({
-              title: "Upload Error",
-              description: "Failed to process variant image",
-              variant: "destructive",
-            })
+            toast.error("Failed to process variant image")
           }
         } else {
-          toast({
-            title: "Invalid File",
-            description: "Please upload only image files",
-            variant: "destructive",
-          })
+          toast.error("Please upload only image files")
         }
       }
       event.target.value = ""
@@ -741,11 +685,7 @@ export function CreateProductModal({ isOpen, onClose, onSuccess }: CreateProduct
     const allTabsValid = ["basic", "pricing", "inventory", "variations"].every((tab) => validateCurrentTab(tab))
 
     if (!allTabsValid) {
-      toast({
-        title: "Validation Error",
-        description: "Please fill in all required fields",
-        variant: "destructive",
-      })
+      toast.error("Please fill in all required fields")
       return
     }
 
@@ -753,11 +693,7 @@ export function CreateProductModal({ isOpen, onClose, onSuccess }: CreateProduct
 
     try {
       if (!selectedStoreId) {
-        toast({
-          title: "Validation Error", 
-          description: "Please select a store for this product",
-          variant: "destructive",
-        })
+        toast.error("Please select a store for this product")
         setIsLoading(false)
         return
       }
@@ -816,10 +752,7 @@ export function CreateProductModal({ isOpen, onClose, onSuccess }: CreateProduct
       const result = await createProduct(productData)
 
       if (result.success) {
-        toast({
-          title: "Success",
-          description: result.message || "Product created successfully.",
-        })
+        toast.success(result.message || "Product created successfully.")
 
         resetForm()
         onClose()
@@ -828,19 +761,11 @@ export function CreateProductModal({ isOpen, onClose, onSuccess }: CreateProduct
           onSuccess?.()
         }, 100)
       } else {
-        toast({
-          title: "Error",
-          description: result.message || "Failed to create product.",
-          variant: "destructive",
-        })
+        toast.error(result.message || "Failed to create product.")
       }
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : "Failed to create product. Please try again."
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      })
+      toast.error(errorMessage)
     } finally {
       setIsLoading(false)
     }
@@ -889,11 +814,7 @@ export function CreateProductModal({ isOpen, onClose, onSuccess }: CreateProduct
         setErrors({})
       }
     } else {
-      toast({
-        title: "Validation Error",
-        description: "Please fill in all required fields before proceeding",
-        variant: "destructive",
-      })
+      toast.error("Please fill in all required fields before proceeding")
     }
   }
 
@@ -917,18 +838,18 @@ export function CreateProductModal({ isOpen, onClose, onSuccess }: CreateProduct
       if (result.success && result.category) {
         setCategories((prev) => [result.category!, ...prev])
         setCategory(result.category.id)
-        toast({ title: "Category Created", description: result.message || "New category added." })
+        toast.success(result.message || "New category added.")
         setIsCategoryModalOpen(false)
         setNewCategoryName("")
         setNewCategoryDescription("")
         setNewCategoryColor("#6B7280")
         setNewCategoryActive(true)
       } else {
-        toast({ title: "Error", description: result.message || "Failed to create category", variant: "destructive" })
+        toast.error(result.message || "Failed to create category")
       }
     } catch (e: unknown) {
       const errorMessage = e instanceof Error ? e.message : "Failed to create category"
-      toast({ title: "Error", description: errorMessage, variant: "destructive" })
+      toast.error(errorMessage)
     } finally {
       setIsCreatingCategory(false)
     }

@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Separator } from "@/components/ui/separator"
 import { ReceiptText, Edit, Trash2, Loader2, Package, RotateCcw } from "lucide-react"
 import { getPurchaseOrder, PurchaseOrder } from "@/lib/purchaseorders"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { getSuppliers, Supplier } from "@/lib/suppliers"
 import { getStores, Store, getStoreById } from "@/lib/stores"
 import { getProducts, Product as ProductType, getProductById } from "@/lib/products"
@@ -25,7 +25,6 @@ interface PurchaseOrderDetailsSheetProps {
 }
 
 export function PurchaseOrderDetailsSheet({ orderId, open, onOpenChange, onReceiptClick, onReturnClick, onEditClick }: PurchaseOrderDetailsSheetProps) {
-  const { toast } = useToast()
   const [order, setOrder] = useState<PurchaseOrder | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
@@ -49,11 +48,7 @@ export function PurchaseOrderDetailsSheet({ orderId, open, onOpenChange, onRecei
       setOrder(data)
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to fetch purchase order details'))
-      toast({
-        title: "Error",
-        description: err instanceof Error ? err.message : 'Failed to fetch purchase order details',
-        variant: "destructive"
-      })
+      toast.error(err instanceof Error ? err.message : 'Failed to fetch purchase order details')
     } finally {
       setIsLoading(false)
     }

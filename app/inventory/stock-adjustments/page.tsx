@@ -19,7 +19,7 @@ import {
   formatCurrency
 } from "@/lib/stock-adjustments"
 import { PermissionGuard } from "@/components/PermissionGuard"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
 
 export default function StockAdjustmentsPage() {
@@ -34,8 +34,6 @@ export default function StockAdjustmentsPage() {
     total: number
     last_page: number
   } | undefined>(undefined)
-  const { toast } = useToast()
-
   // Fetch adjustments on mount and when pagination changes
   useEffect(() => {
     fetchAdjustments()
@@ -66,11 +64,7 @@ export default function StockAdjustmentsPage() {
     } catch (error: any) {
       console.error("Error fetching stock adjustments:", error)
       setAdjustments([])
-      toast({
-        title: "Error",
-        description: error.message || "Failed to load stock adjustments. Please try again.",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to load stock adjustments. Please try again.")
     } finally {
       setLoading(false)
     }

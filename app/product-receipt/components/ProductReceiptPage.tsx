@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import ProductReceiptTable from "./ProductReceiptTable";
 import ProductReceiptSummary from "./ProductReceiptSummary";
 import { CreateProductReceiptModal } from "./CreateProductReceiptModal";
@@ -35,7 +35,7 @@ export function ProductReceiptPage() {
   const [editProductReceipt, setEditProductReceipt] = useState<ProductReceipt | null>(null);
   const [deleteProductReceipt, setDeleteProductReceipt] = useState<ProductReceipt | null>(null);
 
-  const { toast } = useToast();
+  ;
   const { hasPermission, isAdmin } = usePermissions();
 
   // Track last fetch time for stale-time management
@@ -60,11 +60,7 @@ export function ProductReceiptPage() {
     } catch (e: any) {
       console.error("Error fetching product receipts:", e);
       setProductReceipts([]);
-      toast({
-        title: "Error",
-        description: e.message || "Failed to load product receipts. Please try again.",
-        variant: "destructive",
-      });
+      toast.error(e.message || "Failed to load product receipts. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -98,10 +94,7 @@ export function ProductReceiptPage() {
     await fetchProductReceipts(true);
     // Invalidate summary cache to trigger refresh
     invalidateCacheKey("product_receipt_summary");
-    toast({
-      title: "Refreshed",
-      description: "Product receipts data has been updated.",
-    });
+    toast.success("Product receipts data has been updated.");
   }, [fetchProductReceipts, toast]);
 
   // Initial fetch on mount
@@ -192,10 +185,7 @@ export function ProductReceiptPage() {
     fetchProductReceipts(true);
     // Invalidate summary cache to trigger refresh
     invalidateCacheKey("product_receipt_summary");
-    toast({
-      title: "Success",
-      description: "Product receipt created successfully.",
-    });
+    toast.success("Product receipt created successfully.");
   };
 
   const handleEditSuccess = () => {
@@ -205,10 +195,7 @@ export function ProductReceiptPage() {
     fetchProductReceipts(true);
     // Invalidate summary cache to trigger refresh
     invalidateCacheKey("product_receipt_summary");
-    toast({
-      title: "Success",
-      description: "Product receipt updated successfully.",
-    });
+    toast.success("Product receipt updated successfully.");
   };
 
   const handleDeleteSuccess = () => {
@@ -218,10 +205,7 @@ export function ProductReceiptPage() {
     fetchProductReceipts(true);
     // Invalidate summary cache to trigger refresh
     invalidateCacheKey("product_receipt_summary");
-    toast({
-      title: "Success",
-      description: "Product receipt deleted successfully.",
-    });
+    toast.success("Product receipt deleted successfully.");
   };
 
   const handleCloseViewModal = () => {

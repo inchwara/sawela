@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { getStores, Store } from "@/lib/stores";
 import {
   ReportFilters,
@@ -166,7 +166,7 @@ const columns: ColumnDef<ProductItem>[] = [
 ];
 
 export default function ProductSummaryReport() {
-  const { toast } = useToast();
+  ;
   const [loading, setLoading] = React.useState(false);
   const [reportGenerated, setReportGenerated] = React.useState(false);
   const [exportLoading, setExportLoading] = React.useState(false);
@@ -270,11 +270,7 @@ export default function ProductSummaryReport() {
       }
     } catch (err: any) {
       setError(err.message || "Failed to load report");
-      toast({
-        title: "Error",
-        description: err.message || "Failed to load report",
-        variant: "destructive",
-      });
+      toast.error(err.message || "Failed to load report");
     } finally {
       setLoading(false);
     }
@@ -350,16 +346,9 @@ export default function ProductSummaryReport() {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      toast({
-        title: "Export successful",
-        description: `Exported ${data.length} products to CSV`,
-      });
+      toast.success(`Exported ${data.length} products to CSV`);
     } catch (err: any) {
-      toast({
-        title: "Export failed",
-        description: err.message || "Failed to export report",
-        variant: "destructive",
-      });
+      toast.error(err.message || "Failed to export report");
     } finally {
       setExportLoading(false);
     }

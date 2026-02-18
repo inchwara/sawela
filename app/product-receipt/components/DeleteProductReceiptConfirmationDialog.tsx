@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Loader2, AlertTriangle } from "lucide-react";
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { deleteProductReceipt, type ProductReceipt } from "@/lib/productreceipt";
 import { usePermissions } from "@/hooks/use-permissions";
 
@@ -31,7 +31,7 @@ export function DeleteProductReceiptConfirmationDialog({
   onSuccess,
 }: DeleteProductReceiptConfirmationDialogProps) {
   const [isDeleting, setIsDeleting] = useState(false);
-  const { toast } = useToast();
+  ;
   
   const { hasPermission, isAdmin } = usePermissions();
 
@@ -40,11 +40,7 @@ export function DeleteProductReceiptConfirmationDialog({
     
     // Check delete permission
     if (!hasPermission("can_delete_product_receipts") && !isAdmin()) {
-      toast({
-        title: "Access Denied",
-        description: "You do not have permission to delete product receipts.",
-        variant: "destructive",
-      });
+      toast.error("You do not have permission to delete product receipts.");
       return;
     }
 
@@ -52,20 +48,13 @@ export function DeleteProductReceiptConfirmationDialog({
     try {
       await deleteProductReceipt(productReceipt.id);
       
-      toast({
-        title: "Success",
-        description: `Product receipt ${productReceipt.product_receipt_number || productReceipt.reference_number} has been deleted successfully.`,
-      });
+      toast.success(`Product receipt ${productReceipt.product_receipt_number || productReceipt.reference_number} has been deleted successfully.`);
       
       onSuccess();
       onOpenChange(false);
     } catch (error: any) {
       console.error('Delete error:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete product receipt",
-        variant: "destructive",
-      });
+      toast.error(error.message || "Failed to delete product receipt");
     } finally {
       setIsDeleting(false);
     }

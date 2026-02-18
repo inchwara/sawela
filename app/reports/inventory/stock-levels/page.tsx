@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { getStores, Store } from "@/lib/stores";
 import {
   getStockLevels,
@@ -198,7 +198,7 @@ const GROUP_BY_OPTIONS: { value: string; label: string }[] = [
 ];
 
 export default function StockLevelsReport() {
-  const { toast } = useToast();
+  ;
   const [loading, setLoading] = React.useState(true);
   const [exportLoading, setExportLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -243,11 +243,7 @@ export default function StockLevelsReport() {
       }
     } catch (err: any) {
       setError(err.message || "Failed to load report");
-      toast({
-        title: "Error",
-        description: err.message || "Failed to load report",
-        variant: "destructive",
-      });
+      toast.error(err.message || "Failed to load report");
     } finally {
       setLoading(false);
     }
@@ -266,16 +262,9 @@ export default function StockLevelsReport() {
         exportFilters.group_by = groupBy as GroupBy;
       }
       await downloadReportAsCsv("/inventory/stock-levels", exportFilters, "stock_levels.csv");
-      toast({
-        title: "Export successful",
-        description: "The report has been downloaded as CSV",
-      });
+      toast.success("The report has been downloaded as CSV");
     } catch (err: any) {
-      toast({
-        title: "Export failed",
-        description: err.message || "Failed to export report",
-        variant: "destructive",
-      });
+      toast.error(err.message || "Failed to export report");
     } finally {
       setExportLoading(false);
     }

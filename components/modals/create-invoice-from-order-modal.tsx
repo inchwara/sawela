@@ -14,7 +14,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { createInvoiceFromOrder, CreateInvoiceFromOrderRequest } from "@/lib/invoices"
 import { fetchOrders, fetchOrderById, Order, OrderDetail } from "@/lib/orders"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { formatCurrency, formatDate } from "@/lib/utils"
 
 const invoiceFromOrderSchema = z.object({
@@ -37,7 +37,7 @@ export function CreateInvoiceFromOrderModal({ open, onClose, onSuccess }: Create
   const [orders, setOrders] = useState<Order[]>([])
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const { toast } = useToast()
+  
 
   const form = useForm<InvoiceFromOrderFormData>({
     resolver: zodResolver(invoiceFromOrderSchema),
@@ -83,18 +83,10 @@ export function CreateInvoiceFromOrderModal({ open, onClose, onSuccess }: Create
       setOrders(availableOrders)
       
       if (availableOrders.length === 0) {
-        toast({
-          title: "No Available Orders",
-          description: "No completed or confirmed orders are available for invoicing.",
-          variant: "destructive",
-        })
+        toast.error("No completed or confirmed orders are available for invoicing.")
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load orders",
-        variant: "destructive",
-      })
+      toast.error("Failed to load orders")
     }
   }
 
@@ -112,32 +104,20 @@ export function CreateInvoiceFromOrderModal({ open, onClose, onSuccess }: Create
   const onSubmit: SubmitHandler<InvoiceFromOrderFormData> = async (data) => {
     // Prevent submission if no valid order is selected
     if (!data.order_id || data.order_id === 'no-orders') {
-      toast({
-        title: "Error",
-        description: "Please select a valid order to create an invoice",
-        variant: "destructive",
-      })
+      toast.error("Please select a valid order to create an invoice")
       return
     }
 
     // Validate that the selected order exists and has required data
     const selectedOrderData = orders.find(o => o.id === data.order_id)
     if (!selectedOrderData) {
-      toast({
-        title: "Error",
-        description: "Selected order not found. Please refresh and try again.",
-        variant: "destructive",
-      })
+      toast.error("Selected order not found. Please refresh and try again.")
       return
     }
 
     // Check if order has customer information
     if (!selectedOrderData.customer_id && !selectedOrderData.customer) {
-      toast({
-        title: "Error",
-        description: "Selected order is missing customer information required for invoice creation.",
-        variant: "destructive",
-      })
+      toast.error("Selected order is missing customer information required for invoice creation.")
       return
     }
 
@@ -155,10 +135,7 @@ export function CreateInvoiceFromOrderModal({ open, onClose, onSuccess }: Create
 
       const result = await createInvoiceFromOrder(data.order_id, invoiceData)
       
-      toast({
-        title: "Success",
-        description: "Invoice created from order successfully",
-      })
+      toast.success("Invoice created from order successfully")
       
       // Dispatch event for automatic cache refresh
       if (typeof window !== 'undefined') {
@@ -181,11 +158,7 @@ export function CreateInvoiceFromOrderModal({ open, onClose, onSuccess }: Create
       }
       
       // Show the API error message directly
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      })
+      toast.error(errorMessage)
     } finally {
       setIsLoading(false)
     }

@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { toast } from "@/components/ui/use-toast"
+import { toast } from "sonner"
 import { recordInvoicePayment, RecordPaymentRequest, PaymentRecordResponse } from "@/lib/invoices"
 import { Loader2 } from "lucide-react"
 
@@ -53,29 +53,17 @@ export function RecordPaymentModal({
     e.preventDefault()
     
     if (!formData.payment_method) {
-      toast({
-        title: "Error",
-        description: "Please select a payment method",
-        variant: "destructive",
-      })
+      toast.error("Please select a payment method")
       return
     }
 
     if (formData.amount <= 0) {
-      toast({
-        title: "Error",
-        description: "Payment amount must be greater than zero",
-        variant: "destructive",
-      })
+      toast.error("Payment amount must be greater than zero")
       return
     }
 
     if (formData.amount > balanceAmount) {
-      toast({
-        title: "Error",
-        description: `Payment amount cannot exceed balance of KES ${balanceAmount.toFixed(2)}`,
-        variant: "destructive",
-      })
+      toast.error(`Payment amount cannot exceed balance of KES ${balanceAmount.toFixed(2)}`)
       return
     }
 
@@ -88,10 +76,7 @@ export function RecordPaymentModal({
         notes: formData.notes || undefined
       })
 
-      toast({
-        title: "Success",
-        description: "Payment recorded successfully",
-      })
+      toast.success("Payment recorded successfully")
 
       onPaymentRecorded?.(result)
       onClose()
@@ -105,11 +90,7 @@ export function RecordPaymentModal({
         notes: ""
       })
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to record payment",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to record payment")
     } finally {
       setIsSubmitting(false)
     }

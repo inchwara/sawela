@@ -28,7 +28,7 @@ import {
   Loader2
 } from "lucide-react";
 import { type Breakage, getBreakage } from "@/lib/breakages";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface BreakageModalProps {
   open: boolean;
@@ -55,7 +55,7 @@ export function BreakageModal({
 }: BreakageModalProps) {
   const [currentBreakage, setCurrentBreakage] = useState<Breakage | null>(null);
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
+  ;
 
   // Fetch full breakage details when modal opens
   useEffect(() => {
@@ -69,11 +69,7 @@ export function BreakageModal({
           console.error('Error fetching breakage details:', error);
           // Fall back to initial breakage data if fetch fails
           setCurrentBreakage(initialBreakage);
-          toast({
-            title: "Warning",
-            description: "Could not fetch full breakage details",
-            variant: "destructive",
-          });
+          toast.error("Could not fetch full breakage details");
         } finally {
           setLoading(false);
         }

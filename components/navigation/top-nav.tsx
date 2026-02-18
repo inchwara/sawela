@@ -15,13 +15,13 @@ import {
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/auth-context"
-import { useToast } from "@/hooks/use-toast" // For potential error feedback
+import { toast } from "sonner" // For potential error feedback
 import { useRouter } from "next/navigation" // For redirecting after sign out
 
 export function TopNav() {
   const [searchQuery, setSearchQuery] = useState("")
   const { userProfile, signOut: authSignOut, isLoading: authLoading } = useAuth() // Get signOut and isLoading
-  const { toast } = useToast()
+  
   const router = useRouter()
   const [isSigningOut, setIsSigningOut] = useState(false)
 
@@ -37,11 +37,7 @@ export function TopNav() {
       // The AuthGuard should handle redirection to /sign-in
       // but we can also explicitly push if needed, or just let AuthGuard do its job.
     } catch (error: any) {
-      toast({
-        title: "Sign Out Failed",
-        description: error.message || "An unexpected error occurred during sign out.",
-        variant: "destructive",
-      })
+      toast.error(error.message || "An unexpected error occurred during sign out.")
     } finally {
       setIsSigningOut(false)
     }

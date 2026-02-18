@@ -10,7 +10,7 @@ import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
 import { Loader2, RotateCcw } from "lucide-react"
 import { returnPurchaseOrder, PurchaseOrder, PurchaseOrderItem } from "@/lib/purchaseorders"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { getSuppliers, Supplier } from "@/lib/suppliers"
 import { getStores, Store } from "@/lib/stores"
 import { getProducts, Product as ProductType } from "@/lib/products"
@@ -32,7 +32,6 @@ interface ReturnItem {
 }
 
 export function ReturnPurchaseOrderSheet({ open, onOpenChange, order, onPurchaseOrderReturned }: ReturnPurchaseOrderSheetProps) {
-  const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [returnItems, setReturnItems] = useState<ReturnItem[]>([])
   const [returnReason, setReturnReason] = useState("")
@@ -63,18 +62,11 @@ export function ReturnPurchaseOrderSheet({ open, onOpenChange, order, onPurchase
         reason: returnReason
       })
       
-      toast({
-        title: "Success",
-        description: "Purchase order return processed successfully."
-      })
+      toast.success("Purchase order return processed successfully.")
       onPurchaseOrderReturned()
       onOpenChange(false)
     } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to process return",
-        variant: "destructive"
-      })
+      toast.error(error instanceof Error ? error.message : "Failed to process return")
     } finally {
       setIsLoading(false)
     }

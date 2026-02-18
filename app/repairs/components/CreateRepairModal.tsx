@@ -37,7 +37,7 @@ import {
   type AssignableItem 
 } from "@/lib/repairs";
 import { fetchUsers, type UserData as UserType } from "@/lib/users";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { usePermissions } from "@/hooks/use-permissions";
 
 
@@ -75,7 +75,7 @@ export function CreateRepairModal({
   const [loadingItems, setLoadingItems] = useState(false);
   const [usersLoading, setUsersLoading] = useState(false);
   const [itemSearch, setItemSearch] = useState("");
-  const { toast } = useToast();
+  ;
   const { isSystemAdmin } = usePermissions();
 
   const [formData, setFormData] = useState<FormData>({
@@ -141,11 +141,7 @@ export function CreateRepairModal({
       setAssignableItems(availableItems);
     } catch (error) {
       console.error('Error fetching assignable items:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load assignable items.",
-        variant: "destructive",
-      });
+      toast.error("Failed to load assignable items.");
     } finally {
       setLoadingItems(false);
     }
@@ -158,11 +154,7 @@ export function CreateRepairModal({
       setUsers(response || []);
     } catch (error) {
       console.error("Error loading users:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load users. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to load users. Please try again.");
     } finally {
       setUsersLoading(false);
     }
@@ -228,18 +220,11 @@ export function CreateRepairModal({
 
       await createRepair(payload);
       onSuccess();
-      toast({
-        title: "Success",
-        description: "Repair report created successfully.",
-      });
+      toast.success("Repair report created successfully.");
       onOpenChange(false);
     } catch (error: any) {
       console.error('Error creating repair:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create repair. Please try again.",
-        variant: "destructive",
-      });
+      toast.error(error.message || "Failed to create repair. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -427,11 +412,7 @@ export function CreateRepairModal({
                                   size="sm"
                                   onClick={() => {
                                     if (isAlreadyAdded) {
-                                      toast({
-                                        title: "Item already added",
-                                        description: "This product is already in the repair list.",
-                                        variant: "destructive",
-                                      });
+                                      toast.error("This product is already in the repair list.");
                                       return;
                                     }
                                     setFormData(prev => ({
@@ -449,10 +430,7 @@ export function CreateRepairModal({
                                         }
                                       ]
                                     }));
-                                    toast({
-                                      title: "Item Added",
-                                      description: `${item.product?.name || item.product_name} added to repair report`,
-                                    });
+                                    toast.success(`${item.product?.name || item.product_name} added to repair report`);
                                   }}
                                   disabled={availableQty <= 0 || isAlreadyAdded}
                                   className="bg-[#E30040] hover:bg-[#E30040]/90"

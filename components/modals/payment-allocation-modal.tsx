@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { toast } from "@/components/ui/use-toast"
+import { toast } from "sonner"
 import { Loader2, Plus, Trash2, FileText, DollarSign, AlertCircle } from "lucide-react"
 import { 
   allocatePaymentToInvoices, 
@@ -81,11 +81,7 @@ export function PaymentAllocationModal({
       setAvailableAmount(parseFloat(response.available_amount))
     } catch (error) {
       console.error('Error loading payment availability:', error)
-      toast({
-        title: "Warning",
-        description: "Could not load payment allocation data. Using full payment amount.",
-        variant: "destructive",
-      })
+      toast.error("Could not load payment allocation data. Using full payment amount.")
       // Fall back to the full payment amount if API is not available
       setAvailableAmount(parseFloat(payment.amount_paid || "0"))
     } finally {
@@ -131,20 +127,13 @@ export function PaymentAllocationModal({
       setInvoiceOptions(customerInvoices)
       
       if (customerInvoices.length === 0) {
-        toast({
-          title: "No invoices found",
-          description: payment.customer_id 
-            ? "No outstanding invoices found for this customer."
-            : "No outstanding invoices found.",
-        })
+        toast.info(payment.customer_id 
+          ? "No outstanding invoices found for this customer."
+          : "No outstanding invoices found.")
       }
     } catch (error) {
       console.error('Error loading invoices:', error)
-      toast({
-        title: "Error",
-        description: "Failed to load invoices. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Failed to load invoices. Please try again.")
     } finally {
       setLoadingInvoices(false)
     }
@@ -195,20 +184,12 @@ export function PaymentAllocationModal({
     )
 
     if (validAllocations.length === 0) {
-      toast({
-        title: "Error",
-        description: "Please add at least one valid allocation.",
-        variant: "destructive",
-      })
+      toast.error("Please add at least one valid allocation.")
       return
     }
 
     if (totalAllocated > availableAmount) {
-      toast({
-        title: "Error",
-        description: `Total allocation (${totalAllocated.toFixed(2)}) exceeds available amount (${availableAmount.toFixed(2)}).`,
-        variant: "destructive",
-      })
+      toast.error(`Total allocation (${totalAllocated.toFixed(2)}) exceeds available amount (${availableAmount.toFixed(2)}).`)
       return
     }
 
@@ -224,21 +205,14 @@ export function PaymentAllocationModal({
 
       const result = await allocatePaymentToInvoices(payment.id, paymentAllocations)
       
-      toast({
-        title: "Success",
-        description: `Successfully allocated payment to ${validAllocations.length} invoice(s).`,
-      })
+      toast.success(`Successfully allocated payment to ${validAllocations.length} invoice(s).`)
 
       onAllocationComplete?.(result)
       onClose()
       
     } catch (error) {
       console.error('Error allocating payment:', error)
-      toast({
-        title: "Error",
-        description: "Failed to allocate payment. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Failed to allocate payment. Please try again.")
     } finally {
       setSubmitting(false)
     }

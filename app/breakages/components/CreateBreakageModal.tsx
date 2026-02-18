@@ -21,7 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { 
   AlertTriangle, 
   Plus,
@@ -124,7 +124,7 @@ export function CreateBreakageModal({
   const [stores, setStores] = useState<Store[]>([]);
   const [itemSearch, setItemSearch] = useState("");
   const [storeSearch, setStoreSearch] = useState("");
-  const { toast } = useToast();
+  ;
   const { isSystemAdmin } = usePermissions();
 
   const [formData, setFormData] = useState<FormData>({
@@ -200,11 +200,7 @@ export function CreateBreakageModal({
       setAssignableItems(availableItems);
     } catch (error) {
       console.error("Error loading assignable items:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load assignable items. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to load assignable items. Please try again.");
     } finally {
       setAssignableItemsLoading(false);
     }
@@ -217,11 +213,7 @@ export function CreateBreakageModal({
       setUsers(response || []);
     } catch (error) {
       console.error("Error loading users:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load users. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to load users. Please try again.");
     } finally {
       setUsersLoading(false);
     }
@@ -234,11 +226,7 @@ export function CreateBreakageModal({
       setStores(response || []);
     } catch (error) {
       console.error("Error loading stores:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load stores. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to load stores. Please try again.");
     } finally {
       setStoresLoading(false);
     }
@@ -310,20 +298,13 @@ export function CreateBreakageModal({
 
       await createBreakage(payload);
       
-      toast({
-        title: "Success",
-        description: "Breakage report created successfully.",
-      });
+      toast.success("Breakage report created successfully.");
       
       onSuccess();
       onOpenChange(false);
     } catch (error) {
       console.error("Error creating breakage:", error);
-      toast({
-        title: "Error",
-        description: "Failed to create breakage report. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to create breakage report. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -562,11 +543,7 @@ export function CreateBreakageModal({
                                   size="sm"
                                   onClick={() => {
                                     if (isAlreadyAdded) {
-                                      toast({
-                                        title: "Item already added",
-                                        description: "This product is already in the breakage list.",
-                                        variant: "destructive",
-                                      });
+                                      toast.error("This product is already in the breakage list.");
                                       return;
                                     }
                                     setFormData(prev => ({
@@ -583,10 +560,7 @@ export function CreateBreakageModal({
                                         }
                                       ]
                                     }));
-                                    toast({
-                                      title: "Item Added",
-                                      description: `${item.product?.name || item.product_name} added to breakage report`,
-                                    });
+                                    toast.success(`${item.product?.name || item.product_name} added to breakage report`);
                                   }}
                                   disabled={availableQty <= 0 || isAlreadyAdded}
                                   className="bg-[#1E2764] hover:bg-[#1E2764]/90"

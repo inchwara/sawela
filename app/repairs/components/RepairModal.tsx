@@ -35,7 +35,7 @@ import {
   UserPlus
 } from "lucide-react";
 import { type Repair } from "@/lib/repairs";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface RepairModalProps {
   open: boolean;
@@ -63,7 +63,7 @@ export function RepairModal({
   onAssignRepair,
 }: RepairModalProps) {
   const [currentRepair, setCurrentRepair] = useState<Repair | null>(initialRepair);
-  const { toast } = useToast();
+  ;
 
   useEffect(() => {
     setCurrentRepair(initialRepair);

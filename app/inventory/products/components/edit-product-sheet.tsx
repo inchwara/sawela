@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Loader2, Plus, Image as ImageIcon, Package, Trash2, X, Star, Check, ChevronsUpDown } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { updateProduct } from "@/lib/products"
 import { getProductCategories } from "@/lib/product-categories"
 import { getSuppliers } from "@/lib/suppliers"
@@ -56,7 +56,6 @@ interface EditProductSheetProps {
 }
 
 export function EditProductSheet({ open, onOpenChange, product, onProductUpdated }: EditProductSheetProps) {
-  const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   
@@ -241,26 +240,14 @@ export function EditProductSheet({ open, onOpenChange, product, onProductUpdated
       
       // Show specific error message only if all dropdowns failed
       if (errors.length === 3) {
-        toast({
-          title: "Error",
-          description: "Failed to load dropdown data after multiple attempts. Please check your connection and try again.",
-          variant: "destructive"
-        })
+        toast.error("Failed to load dropdown data after multiple attempts. Please check your connection and try again.")
       } else if (errors.length > 0) {
         // Show warning for partial failures
-        toast({
-          title: "Warning",
-          description: `Failed to load: ${errors.join(", ")}. You can still edit the product.`,
-          variant: "default"
-        })
+        toast.success(`Failed to load: ${errors.join(", ")}. You can still edit the product.`)
       }
     } catch (error) {
       console.error("Unexpected error loading dropdown data:", error)
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred while loading data",
-        variant: "destructive"
-      })
+      toast.error("An unexpected error occurred while loading data")
       // Mark as loaded anyway so product data can load
       setDropdownsLoaded(true)
     } finally {
@@ -277,10 +264,7 @@ export function EditProductSheet({ open, onOpenChange, product, onProductUpdated
       category: newCategory.id
     }))
     // Show success notification
-    toast({
-      title: "Category Created",
-      description: `${newCategory.name} has been added successfully`
-    })
+    toast.success(`${newCategory.name} has been added successfully`)
   }
   
   const loadProductData = () => {
@@ -727,26 +711,15 @@ export function EditProductSheet({ open, onOpenChange, product, onProductUpdated
       const result = await updateProduct(product.id, productData)
       
       if (result.status === "success") {
-        toast({
-          title: "Success",
-          description: "Product updated successfully."
-        })
+        toast.success("Product updated successfully.")
         
         onProductUpdated()
         onOpenChange(false)
       } else {
-        toast({
-          title: "Error",
-          description: result.message || "Failed to update product",
-          variant: "destructive"
-        })
+        toast.error(result.message || "Failed to update product")
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update product",
-        variant: "destructive"
-      })
+      toast.error(error.message || "Failed to update product")
     } finally {
       setIsSubmitting(false)
     }

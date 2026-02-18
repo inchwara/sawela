@@ -19,7 +19,7 @@ import { z } from "zod"
 import { createInvoice, CreateInvoiceRequest } from "@/lib/invoices"
 import { getCustomers, createCustomer } from "@/lib/customers"
 import { getProducts } from "@/lib/products"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { formatCurrency } from "@/lib/utils"
 import { useAuth } from "@/lib/auth-context"
 
@@ -80,7 +80,7 @@ export function CreateInvoiceModal({ open, onClose, onSuccess }: CreateInvoiceMo
   const [newCustomerName, setNewCustomerName] = useState("")
   const [newCustomerEmail, setNewCustomerEmail] = useState("")
   const [newCustomerPhone, setNewCustomerPhone] = useState("")
-  const { toast } = useToast()
+  
   const { companyId } = useAuth()
 
   const form = useForm<InvoiceFormData>({
@@ -254,10 +254,7 @@ export function CreateInvoiceModal({ open, onClose, onSuccess }: CreateInvoiceMo
       
       const newInvoice = await createInvoice(invoiceData as CreateInvoiceRequest)
       
-      toast({
-        title: "Success",
-        description: "Invoice created successfully",
-      })
+      toast.success("Invoice created successfully")
       
       // Dispatch event for automatic cache refresh
       if (typeof window !== 'undefined') {
@@ -273,11 +270,7 @@ export function CreateInvoiceModal({ open, onClose, onSuccess }: CreateInvoiceMo
       form.reset()
       onSuccess()
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create invoice",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to create invoice")
     } finally {
       setIsLoading(false)
     }
@@ -327,11 +320,7 @@ export function CreateInvoiceModal({ open, onClose, onSuccess }: CreateInvoiceMo
   // Create new customer
   const handleCreateCustomer = async () => {
     if (!newCustomerName.trim() || !companyId) {
-      toast({
-        title: "Error",
-        description: "Customer name is required",
-        variant: "destructive",
-      })
+      toast.error("Customer name is required")
       return
     }
 
@@ -375,16 +364,9 @@ export function CreateInvoiceModal({ open, onClose, onSuccess }: CreateInvoiceMo
       setShowCustomerSearch(false)
       setCustomerSearchTerm("")
 
-      toast({
-        title: "Success",
-        description: "Customer created successfully",
-      })
+      toast.success("Customer created successfully")
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create customer",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Failed to create customer")
     } finally {
       setIsLoading(false)
     }

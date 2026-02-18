@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Loader2, Edit, Plus, UserPlus } from "lucide-react"
 import { updatePurchaseOrder, PurchaseOrder, PurchaseOrderItem, UpdatePurchaseOrderPayload } from "@/lib/purchaseorders"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { getSuppliers, Supplier } from "@/lib/suppliers"
 import { getStores, Store } from "@/lib/stores"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -30,7 +30,6 @@ interface ProductWithVariants extends Omit<BaseProduct, 'variants'> {
 }
 
 export function EditPurchaseOrderSheet({ open, onOpenChange, order, onPurchaseOrderUpdated }: EditPurchaseOrderSheetProps) {
-  const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState<{
     id: string
@@ -103,11 +102,7 @@ export function EditPurchaseOrderSheet({ open, onOpenChange, order, onPurchaseOr
       const data = await getSuppliers()
       setSuppliers(data)
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load suppliers.",
-        variant: "destructive",
-      })
+      toast.error("Failed to load suppliers.")
     } finally {
       setLoadingSuppliers(false)
     }
@@ -118,11 +113,7 @@ export function EditPurchaseOrderSheet({ open, onOpenChange, order, onPurchaseOr
       const data = await getStores()
       setStores(data)
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load stores.",
-        variant: "destructive",
-      })
+      toast.error("Failed to load stores.")
     }
   }
 
@@ -132,11 +123,7 @@ export function EditPurchaseOrderSheet({ open, onOpenChange, order, onPurchaseOr
       const { data } = await getProducts(1, 10000, { status: "active" }) // Fetch all active products
       setProducts(data)
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load products.",
-        variant: "destructive",
-      })
+      toast.error("Failed to load products.")
     } finally {
       setLoadingProducts(false)
     }
@@ -165,18 +152,11 @@ export function EditPurchaseOrderSheet({ open, onOpenChange, order, onPurchaseOr
         })),
       }
       await updatePurchaseOrder(formData.id, payload)
-      toast({
-        title: "Success",
-        description: "Purchase order updated successfully."
-      })
+      toast.success("Purchase order updated successfully.")
       onPurchaseOrderUpdated()
       onOpenChange(false)
     } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update purchase order",
-        variant: "destructive"
-      })
+      toast.error(error instanceof Error ? error.message : "Failed to update purchase order")
     } finally {
       setIsLoading(false)
     }
@@ -232,11 +212,7 @@ export function EditPurchaseOrderSheet({ open, onOpenChange, order, onPurchaseOr
   const handleAddItem = () => {
     // Prevent adding if required fields are missing
     if (!newItem.product_id || (variantOptions.length > 0 && !newItem.variant_id) || !newItem.quantity || !newItem.unit_price || newItem.quantity <= 0 || newItem.unit_price <= 0) {
-      toast({
-        title: "Error",
-        description: "Please select a product, variant (if required), and enter a valid quantity and price.",
-        variant: "destructive"
-      })
+      toast.error("Please select a product, variant (if required), and enter a valid quantity and price.")
       return
     }
 

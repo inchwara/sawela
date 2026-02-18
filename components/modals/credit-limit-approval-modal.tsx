@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { X, CheckCircle, XCircle } from "lucide-react"
 import { approveCreditLimitUpdate, type CreditLimitApprovalRequest } from "@/lib/customer-accounts"
 
@@ -46,7 +46,7 @@ export const CreditLimitApprovalModal: React.FC<CreditLimitApprovalModalProps> =
   })
   const [errors, setErrors] = useState<ValidationErrors>({})
   const [isLoading, setIsLoading] = useState(false)
-  const { toast } = useToast()
+  
 
   const validateForm = (): boolean => {
     const newErrors: ValidationErrors = {}
@@ -85,10 +85,7 @@ export const CreditLimitApprovalModal: React.FC<CreditLimitApprovalModalProps> =
 
       await approveCreditLimitUpdate(customerAccountId, approvalData)
 
-      toast({
-        title: "Success",
-        description: `Credit limit update ${action} successfully.`,
-      })
+      toast.success(`Credit limit update ${action} successfully.`)
 
       // Reset form
       setFormData({ notes: '' })
@@ -97,11 +94,7 @@ export const CreditLimitApprovalModal: React.FC<CreditLimitApprovalModalProps> =
       onSuccess?.()
       onClose()
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || `Failed to ${action} credit limit update`,
-        variant: "destructive",
-      })
+      toast.error(error.message || `Failed to ${action)
     } finally {
       setIsLoading(false)
     }
