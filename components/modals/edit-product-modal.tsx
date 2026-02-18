@@ -135,9 +135,9 @@ export function EditProductModal({ isOpen, onClose, product, onSuccess }: EditPr
     try {
       const storesData = await getCachedStores();
       setStores(storesData);
-      if (storesData.length > 0 && !selectedStoreId) {
-        setSelectedStoreId(storesData[0].id);
-      }
+      // Do NOT auto-select the first store here — the product's store_id
+      // is set separately when product data loads, and overwriting it would
+      // cause the store to be saved as null if the user doesn't re-select.
     } catch (error: any) {
       // Optionally handle error
     } finally {
@@ -194,7 +194,7 @@ export function EditProductModal({ isOpen, onClose, product, onSuccess }: EditPr
       });
       setShippingClass(product.shipping_class || "");
       setTrackInventory(product.track_inventory ?? true);
-      setSelectedStoreId(product.store_id || "");
+      setSelectedStoreId(String(product.store_id || (typeof product.store === 'object' ? product.store?.id || "" : product.store || "")));
       setStock(product.stock_quantity?.toString() || "");
       setLowStockThreshold(product.low_stock_threshold?.toString() || "");
       // Support both 'variations' and 'variants' keys

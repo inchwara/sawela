@@ -25,7 +25,8 @@ import {
   Weight,
   Barcode,
   Pencil,
-  X
+  X,
+  MapPin
 } from "lucide-react"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
@@ -228,7 +229,7 @@ export function ProductDetailsSheet({ open, onOpenChange, product, onEdit, isLoa
                 </div>
                 
                 {/* Quick Stats */}
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-3 gap-3">
                   <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-3 border border-blue-100">
                     <div className="flex items-center space-x-2">
                       <div className="p-2 bg-blue-100 rounded-lg">
@@ -237,6 +238,20 @@ export function ProductDetailsSheet({ open, onOpenChange, product, onEdit, isLoa
                       <div>
                         <p className="text-xs text-gray-600">Stock</p>
                         <p className="text-lg font-bold text-gray-900">{stockQuantity}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-3 border border-emerald-100">
+                    <div className="flex items-center space-x-2">
+                      <div className="p-2 bg-emerald-100 rounded-lg">
+                        <MapPin className="h-4 w-4 text-emerald-600" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs text-gray-600">Store</p>
+                        <p className="text-sm font-bold text-gray-900 truncate">
+                          {product.store?.name || "N/A"}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -339,6 +354,18 @@ export function ProductDetailsSheet({ open, onOpenChange, product, onEdit, isLoa
                     <code className="bg-gray-100 px-3 py-1 rounded-lg text-sm font-mono">
                       {product.barcode || "N/A"}
                     </code>
+                  </div>
+                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                    <span className="text-gray-600 flex items-center gap-1">
+                      <Tag className="h-4 w-4" /> Category
+                    </span>
+                    <span className="font-medium text-right text-sm">
+                      {typeof product.category === 'string'
+                        ? product.category || "Uncategorized"
+                        : typeof product.category === 'object' && product.category !== null
+                          ? (product.category as any).name || "Uncategorized"
+                          : "Uncategorized"}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-gray-100">
                     <span className="text-gray-600">Supplier</span>

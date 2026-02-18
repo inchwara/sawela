@@ -383,6 +383,7 @@ export function ProductTable({
                 <TableHead className="font-semibold">Price</TableHead>
                 <TableHead className="font-semibold">Stock</TableHead>
                 <TableHead className="font-semibold">Category</TableHead>
+                <TableHead className="font-semibold">Store</TableHead>
                 <TableHead className="font-semibold">Status</TableHead>
                 <TableHead className="text-right font-semibold">Actions</TableHead>
               </TableRow>
@@ -390,7 +391,7 @@ export function ProductTable({
             <TableBody>
               {paginatedProducts.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="h-24 text-center">
+                  <TableCell colSpan={10} className="h-24 text-center">
                     <div className="text-gray-500">
                       <p className="font-semibold">No products found</p>
                       <p className="text-sm">Create your first product to get started</p>
@@ -442,6 +443,9 @@ export function ProductTable({
                     </TableCell>
                     <TableCell>
                       {product.category?.name || "Uncategorized"}
+                    </TableCell>
+                    <TableCell>
+                      {product.store?.name || "—"}
                     </TableCell>
                     <TableCell>
                       <Badge variant={product.is_active ? "default" : "secondary"} className={product.is_active ? "bg-green-500" : ""}>

@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Loader2, Plus, Image as ImageIcon, Package, Trash2, X, Star, Check, ChevronsUpDown } from "lucide-react"
 import { toast } from "sonner"
-import { updateProduct } from "@/lib/products"
+import { updateProduct, getProductById } from "@/lib/products"
 import { getProductCategories } from "@/lib/product-categories"
 import { getSuppliers } from "@/lib/suppliers"
 import { getStores } from "@/lib/stores"
@@ -141,25 +141,28 @@ export function EditProductSheet({ open, onOpenChange, product, onProductUpdated
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
   const [stores, setStores] = useState<Store[]>([])
   const [dropdownsLoaded, setDropdownsLoaded] = useState(false)
+  // Full product fetched by ID (ensures store_id and all relations are populated)
+  const [fullProduct, setFullProduct] = useState<Product | null>(null)
   
   // Category modal state
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false)
   const [categorySearchOpen, setCategorySearchOpen] = useState(false)
   
-  // Load dropdown data
+  // Load dropdown data + full product when sheet opens
   useEffect(() => {
-    if (open) {
+    if (open && product) {
       setDropdownsLoaded(false)
-      loadData()
+      setFullProduct(null)
+      loadData(product.id)
     }
-  }, [open])
+  }, [open, product?.id])
   
-  // Load product data AFTER dropdowns are loaded
+  // Load product data AFTER both dropdowns and full product are ready
   useEffect(() => {
-    if (product && open && dropdownsLoaded) {
-      loadProductData()
+    if (fullProduct && open && dropdownsLoaded) {
+      loadProductData(fullProduct)
     }
-  }, [product, open, dropdownsLoaded])
+  }, [fullProduct, open, dropdownsLoaded])
   
   // Retry helper function
   const retryFetch = async <T,>(
@@ -187,13 +190,13 @@ export function EditProductSheet({ open, onOpenChange, product, onProductUpdated
     throw new Error(`Failed to fetch ${name} after ${retries} attempts`)
   }
   
-  const loadData = async () => {
+  const loadData = async (productId: string) => {
     setIsLoading(true)
     const errors: string[] = []
     
     try {
-      // Load each dropdown independently with retry logic
-      const [categoriesResult, suppliersResult, storesResult] = await Promise.allSettled([
+      // Load dropdowns and full product data in parallel
+      const [categoriesResult, suppliersResult, storesResult, productResult] = await Promise.allSettled([
         retryFetch(
           () => getProductCategories(),
           3,
@@ -223,6 +226,10 @@ export function EditProductSheet({ open, onOpenChange, product, onProductUpdated
           errors.push("stores")
           console.error("Failed to load stores after retries:", err)
           return []
+        }),
+        getProductById(productId).catch(err => {
+          console.error("Failed to fetch full product:", err)
+          return null
         })
       ])
       
@@ -230,10 +237,19 @@ export function EditProductSheet({ open, onOpenChange, product, onProductUpdated
       const categoriesData = categoriesResult.status === 'fulfilled' ? categoriesResult.value : []
       const suppliersData = suppliersResult.status === 'fulfilled' ? suppliersResult.value : []
       const storesData = storesResult.status === 'fulfilled' ? storesResult.value : []
+      const productData = productResult.status === 'fulfilled' ? productResult.value : null
       
       setCategories(categoriesData)
       setSuppliers(suppliersData)
       setStores(storesData)
+      
+      // Use the freshly-fetched full product (has store_id guaranteed)
+      // Fall back to the prop if fetch failed
+      if (productData?.status === 'success' && productData?.data) {
+        setFullProduct(productData.data)
+      } else {
+        setFullProduct(product)
+      }
       
       // Mark dropdowns as loaded
       setDropdownsLoaded(true)
@@ -248,7 +264,8 @@ export function EditProductSheet({ open, onOpenChange, product, onProductUpdated
     } catch (error) {
       console.error("Unexpected error loading dropdown data:", error)
       toast.error("An unexpected error occurred while loading data")
-      // Mark as loaded anyway so product data can load
+      // Fall back to prop and mark as loaded so the form still shows
+      setFullProduct(product)
       setDropdownsLoaded(true)
     } finally {
       setIsLoading(false)
@@ -267,7 +284,8 @@ export function EditProductSheet({ open, onOpenChange, product, onProductUpdated
     toast.success(`${newCategory.name} has been added successfully`)
   }
   
-  const loadProductData = () => {
+  const loadProductData = (productToLoad: Product) => {
+    const product = productToLoad
     if (!product) return
     
     setFormData({
@@ -298,7 +316,7 @@ export function EditProductSheet({ open, onOpenChange, product, onProductUpdated
       images: Array.isArray(product.images) ? product.images : product.image_url ? [product.image_url] : [],
       primaryImageIndex: product.primary_image_index || 0,
       hasVariations: product.has_variations || false,
-      store_id: product.store_id || (typeof product.store === 'object' ? product.store?.id || "" : product.store || ""),
+      store_id: String(product.store_id || (typeof product.store === 'object' ? product.store?.id || "" : product.store || "")),
       hasPackaging: product.has_packaging || false,
       baseUnit: product.base_unit || ""
     })
