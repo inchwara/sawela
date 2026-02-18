@@ -36,10 +36,6 @@ export function getLoanStatus(loan: Dispatch): LoanStatus {
   const someReturned = items.some(item => item.is_returned);
   if (someReturned) return "Partially Returned";
 
-  // Not yet acknowledged / received
-  const anyReceived = items.some(item => item.received_quantity > 0);
-  if (!anyReceived) return "Pending";
-
   // Items are out — check if overdue
   const returnDate = loan.return_date || items.find(i => i.return_date)?.return_date;
   if (returnDate && isPast(parseISO(returnDate))) return "Overdue";

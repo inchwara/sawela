@@ -11,7 +11,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2, RefreshCw, Search, ChevronLeft, ChevronRight, HandCoins, AlertTriangle, RotateCcw, Clock } from "lucide-react";
+import { addDays, isWithinInterval, parseISO, startOfDay } from "date-fns";
+import { Loader2, RefreshCw, Search, ChevronLeft, ChevronRight, Package, AlertTriangle, RotateCcw, CalendarClock } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PermissionGuard } from "@/components/PermissionGuard";
 
@@ -48,9 +49,24 @@ export default function LoansPage() {
   useEffect(() => { fetchLoans(); }, []);
 
   // Stats
-  const totalLoans    = loans.length;
-  const activeLoans   = loans.filter(l => getLoanStatus(l) === "On Loan").length;
-  const overdueLoans  = loans.filter(l => getLoanStatus(l) === "Overdue").length;
+  const now = startOfDay(new Date());
+  const weekEnd = addDays(now, 7);
+
+  const itemsOut = loans
+    .filter(l => { const s = getLoanStatus(l); return s === "On Loan" || s === "Overdue"; })
+    .reduce((sum, l) => sum + (l.dispatch_items?.reduce((s, i) => s + (i.quantity - (i.returned_quantity || 0)), 0) || 0), 0);
+
+  const overdueLoans = loans.filter(l => getLoanStatus(l) === "Overdue").length;
+
+  const dueThisWeek = loans.filter(l => {
+    const s = getLoanStatus(l);
+    if (s !== "On Loan" && s !== "Partially Returned") return false;
+    const rd = l.return_date || l.dispatch_items?.find(i => i.return_date)?.return_date;
+    if (!rd) return false;
+    const d = parseISO(rd);
+    return isWithinInterval(d, { start: now, end: weekEnd });
+  }).length;
+
   const returnedLoans = loans.filter(l => getLoanStatus(l) === "Returned").length;
 
   // Filtering
@@ -117,27 +133,14 @@ export default function LoansPage() {
         <div className="grid gap-4 md:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Loans</CardTitle>
-              <HandCoins className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Items Out</CardTitle>
+              <Package className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {loading ? <Skeleton className="h-8 w-12" /> : totalLoans}
+                {loading ? <Skeleton className="h-8 w-12" /> : itemsOut}
               </div>
-              <p className="text-xs text-muted-foreground">All time</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Loans</CardTitle>
-              <Clock className="h-4 w-4 text-red-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-red-600">
-                {loading ? <Skeleton className="h-8 w-12" /> : activeLoans}
-              </div>
-              <p className="text-xs text-muted-foreground">Currently out</p>
+              <p className="text-xs text-muted-foreground">Units currently on loan</p>
             </CardContent>
           </Card>
 
@@ -151,6 +154,19 @@ export default function LoansPage() {
                 {loading ? <Skeleton className="h-8 w-12" /> : overdueLoans}
               </div>
               <p className="text-xs text-muted-foreground">Past return date</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Due This Week</CardTitle>
+              <CalendarClock className="h-4 w-4 text-amber-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-amber-600">
+                {loading ? <Skeleton className="h-8 w-12" /> : dueThisWeek}
+              </div>
+              <p className="text-xs text-muted-foreground">Return expected in 7 days</p>
             </CardContent>
           </Card>
 
