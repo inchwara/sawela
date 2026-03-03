@@ -128,6 +128,7 @@ export interface Dispatch {
   is_returned: boolean;
   returned_by?: string | null;
   notes?: string | null;
+  dispatch_date?: string | null;
   acknowledged_by?: User | null;
   created_at: string;
   updated_at: string;
@@ -167,6 +168,7 @@ export async function createDispatch(payload: {
   to_user_id: string;
   type: string;
   notes?: string;
+  dispatch_date?: string;
   return_date?: string;
   requisition_id?: string;
   items?: Array<{
@@ -251,6 +253,7 @@ export async function updateDispatch(
     to_user_id?: string;
     type?: string;
     notes?: string;
+    dispatch_date?: string;
     items?: Array<{
       id?: string;
       product_id: string;

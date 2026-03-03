@@ -68,6 +68,7 @@ interface EditFormData {
   to_user_id: string;
   type: "internal" | "external";
   notes: string;
+  dispatch_date: string;
   items: DispatchItem[];
 }
 
@@ -84,6 +85,7 @@ export function EditDispatchModal({ open, onOpenChange, dispatch, onSuccess }: E
     to_user_id: "",
     type: "internal",
     notes: "",
+    dispatch_date: "",
     items: [],
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -108,6 +110,7 @@ export function EditDispatchModal({ open, onOpenChange, dispatch, onSuccess }: E
         to_user_id: dispatch.to_user_id || "",
         type: dispatch.type as "internal" | "external",
         notes: dispatch.notes || "",
+        dispatch_date: dispatch.dispatch_date || "",
         items: dispatch.dispatch_items?.map(item => ({
           id: item.id,
           product_id: item.product_id,
@@ -206,6 +209,7 @@ export function EditDispatchModal({ open, onOpenChange, dispatch, onSuccess }: E
         to_user_id: formData.to_user_id,
         type: formData.type,
         notes: formData.notes || undefined,
+        dispatch_date: formData.dispatch_date || undefined,
         items: formData.items.map(item => ({
           id: item.id,
           product_id: item.product_id,
@@ -236,6 +240,7 @@ export function EditDispatchModal({ open, onOpenChange, dispatch, onSuccess }: E
       to_user_id: "",
       type: "internal",
       notes: "",
+      dispatch_date: "",
       items: [],
     });
     setErrors({});
@@ -461,16 +466,28 @@ export function EditDispatchModal({ open, onOpenChange, dispatch, onSuccess }: E
                 </div>
               </div>
 
-              {/* Notes */}
-              <div className="space-y-2">
-                <Label htmlFor="notes">Notes</Label>
-                <Textarea
-                  id="notes"
-                  placeholder="Add any additional notes about this dispatch..."
-                  value={formData.notes}
-                  onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                  rows={3}
-                />
+              {/* Dispatch Date & Notes */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="dispatch_date">Dispatch Date</Label>
+                  <Input
+                    id="dispatch_date"
+                    type="date"
+                    value={formData.dispatch_date}
+                    onChange={(e) => setFormData(prev => ({ ...prev, dispatch_date: e.target.value }))}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="notes">Notes</Label>
+                  <Textarea
+                    id="notes"
+                    placeholder="Add any additional notes about this dispatch..."
+                    value={formData.notes}
+                    onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+                    rows={3}
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>
