@@ -1132,7 +1132,7 @@ export function CreateProductSheet({ open, onOpenChange, onProductCreated }: Cre
                   <div className="space-y-2">
                     <Label htmlFor="store_id">Store *</Label>
                     <Select
-                      value={formData.store_id}
+                      value={formData.store_id || undefined}
                       onValueChange={(value) => handleInputChange("store_id", value)}
                       required
                     >

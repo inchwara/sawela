@@ -4,7 +4,6 @@ import { useState, useEffect, useMemo } from "react"
 import { createProductsBulk } from "@/lib/products"
 import Image from "next/image"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { MoreHorizontal, Search, Download, ChevronLeft, ChevronRight, Eye, Edit, Loader2, Plus, AlertTriangle, RefreshCw, Delete } from "lucide-react"
@@ -174,7 +173,7 @@ export function ProductTable({
   onRefresh
 }: ProductTableProps) {
   const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
+  const [storeFilter, setStoreFilter] = useState("all")
   const [sortBy, setSortBy] = useState<"name" | "price" | "stock">("name")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
   
@@ -223,13 +222,9 @@ export function ProductTable({
       )
     }
     
-    // Apply status filter
-    if (statusFilter !== "all") {
-      result = result.filter(product => {
-        // Ensure product.is_active is treated as boolean
-        const isActive = Boolean(product.is_active);
-        return statusFilter === "active" ? isActive : !isActive;
-      });
+    // Apply store filter
+    if (storeFilter !== "all") {
+      result = result.filter(product => product.store?.id === storeFilter);
     }
     
     // Apply sorting
@@ -250,12 +245,12 @@ export function ProductTable({
     })
     
     return result
-  }, [products, searchTerm, statusFilter, sortBy, sortOrder])
+  }, [products, searchTerm, storeFilter, sortBy, sortOrder])
 
   // Reset to first page when filters change
   useEffect(() => {
     setCurrentPage(1)
-  }, [searchTerm, statusFilter])
+  }, [searchTerm, storeFilter])
   
   // Calculate pagination
   const totalItems = filteredAndSortedProducts.length
@@ -303,14 +298,25 @@ export function ProductTable({
             </div>
             
             <div className="flex gap-2">
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full sm:w-32">
-                  <SelectValue placeholder="Status" />
+              <Select value={storeFilter} onValueChange={setStoreFilter}>
+                <SelectTrigger className="w-full sm:w-44">
+                  <SelectValue placeholder="Store" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
+                  <SelectItem value="all">All Stores</SelectItem>
+                  {Array.from(
+                    new Map(
+                      products
+                        .filter(p => p.store?.id && p.store?.name)
+                        .map(p => [p.store!.id, p.store!.name])
+                    )
+                  )
+                    .sort((a, b) => a[1].localeCompare(b[1]))
+                    .map(([id, name]) => (
+                      <SelectItem key={id} value={id}>
+                        {name}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
               
@@ -384,14 +390,13 @@ export function ProductTable({
                 <TableHead className="font-semibold">Stock</TableHead>
                 <TableHead className="font-semibold">Category</TableHead>
                 <TableHead className="font-semibold">Store</TableHead>
-                <TableHead className="font-semibold">Status</TableHead>
                 <TableHead className="text-right font-semibold">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {paginatedProducts.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={10} className="h-24 text-center">
+                  <TableCell colSpan={9} className="h-24 text-center">
                     <div className="text-gray-500">
                       <p className="font-semibold">No products found</p>
                       <p className="text-sm">Create your first product to get started</p>
@@ -446,11 +451,6 @@ export function ProductTable({
                     </TableCell>
                     <TableCell>
                       {product.store?.name || "—"}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={product.is_active ? "default" : "secondary"} className={product.is_active ? "bg-green-500" : ""}>
-                        {product.is_active ? "Active" : "Inactive"}
-                      </Badge>
                     </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
