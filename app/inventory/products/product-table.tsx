@@ -576,11 +576,12 @@ export function ProductTable({
       )}
       
       {selectedProduct && (
-        <ProductDetailsSheet 
+        <ProductDetailsSheet
           open={isDetailsSheetOpen}
           onOpenChange={setIsDetailsSheetOpen}
           product={selectedProduct}
           isLoading={isLoadingProductDetails}
+          onProductUpdated={onProductUpdated}
           onEdit={(product) => {
             setSelectedProduct(product);
             setIsDetailsSheetOpen(false);

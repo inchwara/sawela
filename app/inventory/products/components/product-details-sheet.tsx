@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback, useRef } from "react"
+import { createPortal } from "react-dom"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -26,23 +27,46 @@ import {
   Barcode,
   Pencil,
   X,
-  MapPin
+  MapPin,
+  ZoomIn,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  Upload,
+  Loader2
 } from "lucide-react"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
 import type { Product } from "@/lib/products"
+import { updateProduct, getProductById } from "@/lib/products"
+import { uploadImages as uploadImagesToR2 } from "@/lib/uploads"
+import { toast } from "sonner"
 
 interface ProductDetailsSheetProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   product: Product | null
   onEdit?: (product: Product) => void
+  onProductUpdated?: () => void
   isLoading?: boolean
 }
 
-export function ProductDetailsSheet({ open, onOpenChange, product, onEdit, isLoading = false }: ProductDetailsSheetProps) {
+export function ProductDetailsSheet({ open, onOpenChange, product: productProp, onEdit, onProductUpdated, isLoading = false }: ProductDetailsSheetProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
-  
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [lightboxIndex, setLightboxIndex] = useState(0)
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [localProduct, setLocalProduct] = useState<Product | null>(null)
+
+  // Use local product if available (updated after image upload), otherwise use prop
+  const product = localProduct?.id === productProp?.id ? localProduct : productProp
+
+  // Reset local product when prop changes (different product selected)
+  if (productProp && localProduct && localProduct.id !== productProp.id) {
+    setLocalProduct(null)
+  }
+
   if (!product) {
     return null
   }
@@ -102,9 +126,140 @@ export function ProductDetailsSheet({ open, onOpenChange, product, onEdit, isLoa
     }
   }
 
+  const openLightbox = useCallback((index: number) => {
+    setLightboxIndex(index)
+    setLightboxOpen(true)
+  }, [])
+
+  const lightboxImages = images.length > 0 ? images : [currentImage]
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0 || !product) return
+
+    const validFiles = Array.from(files).filter((file) => {
+      if (!file.type.startsWith("image/")) {
+        toast.error(`${file.name} is not an image file`)
+        return false
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error(`${file.name} exceeds 5MB limit`)
+        return false
+      }
+      return true
+    })
+
+    if (validFiles.length === 0) return
+
+    setIsUploadingImage(true)
+    try {
+      const uploadResult = await uploadImagesToR2(validFiles, "products")
+      if (uploadResult.urls.length === 0) {
+        toast.error("Failed to upload image")
+        return
+      }
+
+      const newUrls = uploadResult.urls.map((u) => u.url)
+      const existingImages = product.image_urls || product.images || []
+      const allImages = [...existingImages, ...newUrls]
+
+      await updateProduct(String(product.id), {
+        images: allImages,
+        image_url: allImages[0],
+      })
+
+      toast.success(`${newUrls.length} image(s) uploaded successfully`)
+
+      // Re-fetch the product to update the sheet with the new images
+      const refreshed = await getProductById(product.id)
+      if (refreshed.status === "success" && refreshed.data) {
+        setLocalProduct(refreshed.data)
+      }
+
+      onProductUpdated?.()
+    } catch (error) {
+      toast.error("Failed to upload image")
+    } finally {
+      setIsUploadingImage(false)
+      if (fileInputRef.current) fileInputRef.current.value = ""
+    }
+  }
+
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-5xl overflow-y-auto bg-gradient-to-br from-gray-50 to-gray-100 p-0">
+    <>
+    {/* Image Lightbox - rendered via portal to escape Sheet's stacking context */}
+    {lightboxOpen && createPortal(
+      <div
+        id="lightbox-overlay"
+        className="fixed inset-0 bg-black/90 flex items-center justify-center"
+        style={{ zIndex: 9999, pointerEvents: "auto" }}
+        onClick={() => setLightboxOpen(false)}
+      >
+        {/* Close button */}
+        <button
+          className="absolute top-4 right-4 text-white/80 hover:text-white p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors z-10"
+          onClick={() => setLightboxOpen(false)}
+        >
+          <X className="h-6 w-6" />
+        </button>
+
+        {/* Navigation - Previous */}
+        {lightboxImages.length > 1 && (
+          <button
+            className="absolute left-4 text-white/80 hover:text-white p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors z-10"
+            onClick={(e) => {
+              e.stopPropagation()
+              setLightboxIndex((prev) => (prev - 1 + lightboxImages.length) % lightboxImages.length)
+            }}
+          >
+            <ChevronLeft className="h-8 w-8" />
+          </button>
+        )}
+
+        {/* Image */}
+        <div
+          className="relative max-w-[90vw] max-h-[90vh] w-full h-full flex items-center justify-center"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Image
+            src={lightboxImages[lightboxIndex] || "/placeholder.svg"}
+            alt={`${product.name} - Image ${lightboxIndex + 1}`}
+            fill
+            className="object-contain"
+            sizes="90vw"
+          />
+        </div>
+
+        {/* Navigation - Next */}
+        {lightboxImages.length > 1 && (
+          <button
+            className="absolute right-4 text-white/80 hover:text-white p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors z-10"
+            onClick={(e) => {
+              e.stopPropagation()
+              setLightboxIndex((prev) => (prev + 1) % lightboxImages.length)
+            }}
+          >
+            <ChevronRight className="h-8 w-8" />
+          </button>
+        )}
+
+        {/* Image counter */}
+        {lightboxImages.length > 1 && (
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/80 text-sm bg-white/10 px-4 py-2 rounded-full backdrop-blur-sm">
+            {lightboxIndex + 1} / {lightboxImages.length}
+          </div>
+        )}
+      </div>,
+      document.body
+    )}
+
+    <Sheet open={open} onOpenChange={(v) => { if (!lightboxOpen) onOpenChange(v) }}>
+      <SheetContent
+        className="w-full sm:max-w-5xl overflow-y-auto bg-gradient-to-br from-gray-50 to-gray-100 p-0"
+        onInteractOutside={(e) => { if (lightboxOpen) e.preventDefault() }}
+        onPointerDownOutside={(e) => { if (lightboxOpen) e.preventDefault() }}
+        onEscapeKeyDown={(e) => { if (lightboxOpen) e.preventDefault() }}
+      >
         {/* Header with gradient background */}
         <div className="bg-gradient-to-r from-white to-white p-6 text-white relative overflow-hidden">
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxkZWZzPjxwYXR0ZXJuIGlkPSJwYXR0ZXJuIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHBhdHRlcm5UcmFuc2Zvcm09InJvdGF0ZSg0NSkiPjxjaXJjbGUgY3g9IjIwIiBjeT0iMjAiIHI9IjAuNSIgZmlsbD0id2hpdGUiIGZpbGwtb3BhY2l0eT0iMC4xNSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNwYXR0ZXJuKSIvPjwvc3ZnPg==')] opacity-20"></div>
@@ -126,13 +281,24 @@ export function ProductDetailsSheet({ open, onOpenChange, product, onEdit, isLoa
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6">
               {/* Product Image Gallery */}
               <div className="space-y-4">
-                <div className="relative aspect-square rounded-2xl overflow-hidden shadow-lg group">
+                <div
+                  className="relative aspect-square rounded-2xl overflow-hidden shadow-lg group cursor-pointer"
+                  onClick={() => openLightbox(selectedImageIndex)}
+                >
                   <Image
                     src={currentImage}
                     alt={product.name}
                     fill
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
                   />
+
+                  {/* View overlay on hover */}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300 flex items-center justify-center">
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 rounded-full px-4 py-2 flex items-center gap-2 shadow-lg">
+                      <ZoomIn className="h-4 w-4 text-gray-800" />
+                      <span className="text-sm font-medium text-gray-800">View Image</span>
+                    </div>
+                  </div>
                   
                   {/* Floating Badges */}
                   <div className="absolute top-4 left-4 flex flex-col gap-2">
@@ -188,8 +354,39 @@ export function ProductDetailsSheet({ open, onOpenChange, product, onEdit, isLoa
                     ))}
                   </div>
                 )}
+
+                {/* Upload Image Button */}
+                <div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/gif,image/webp"
+                    multiple
+                    className="hidden"
+                    onChange={handleImageUpload}
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full border-dashed border-2 text-gray-600 hover:text-gray-900 hover:border-violet-400 hover:bg-violet-50"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploadingImage}
+                  >
+                    {isUploadingImage ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-4 w-4 mr-2" />
+                        Upload Image
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
-              
+
               {/* Product Info */}
               <div className="space-y-6">
                 <div className="flex flex-wrap items-center gap-2">
@@ -631,18 +828,22 @@ export function ProductDetailsSheet({ open, onOpenChange, product, onEdit, isLoa
                                 </h5>
                                 <div className="flex gap-2 overflow-x-auto pb-2 h-[calc(100%-2rem)]">
                                   {variantImages.map((image: string, imgIndex: number) => (
-                                    <div 
-                                      key={imgIndex} 
-                                      className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border border-gray-200"
+                                    <button
+                                      key={imgIndex}
+                                      className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border border-gray-200 hover:border-violet-400 hover:shadow-md transition-all cursor-pointer group/vimg"
+                                      onClick={() => {
+                                        setLightboxIndex(0)
+                                        setLightboxOpen(true)
+                                      }}
                                     >
                                       <Image
                                         src={image || "/placeholder.svg"}
                                         alt={`${variant.name} image ${imgIndex + 1}`}
                                         width={64}
                                         height={64}
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-cover group-hover/vimg:scale-110 transition-transform"
                                       />
-                                    </div>
+                                    </button>
                                   ))}
                                 </div>
                               </div>
@@ -742,5 +943,6 @@ export function ProductDetailsSheet({ open, onOpenChange, product, onEdit, isLoa
         </div>
       </SheetContent>
     </Sheet>
+    </>
   )
 }
