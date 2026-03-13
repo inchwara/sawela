@@ -20,6 +20,7 @@ import { getCachedStores, createStore, type Store } from "@/lib/stores"
 import { getProductCategories, createProductCategory, type ProductCategory } from "@/lib/product-categories"
 import { getSuppliers, type Supplier } from "@/lib/suppliers"
 import { getProducts, type Product } from "@/lib/products"
+import { uploadImages as uploadImagesToR2 } from "@/lib/uploads"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -104,10 +105,12 @@ export function CreateProductModal({ isOpen, onClose, onSuccess }: CreateProduct
     "box", "pack", "pair", "set", "dozen", "roll", "bottle", "can", "bag", "carton"
   ]
 
-  // Images
-  const [images, setImages] = useState<string[]>([])
+  // Images - store File objects for R2 upload
+  const [imageFiles, setImageFiles] = useState<File[]>([])
+  const [imagePreviews, setImagePreviews] = useState<string[]>([])
   const [primaryImageIndex, setPrimaryImageIndex] = useState(0)
   const [isDragOver, setIsDragOver] = useState(false)
+  const [isUploadingImages, setIsUploadingImages] = useState(false)
 
   // Variations
   const [hasVariations, setHasVariations] = useState(false)
@@ -344,118 +347,36 @@ export function CreateProductModal({ isOpen, onClose, onSuccess }: CreateProduct
     setTags(tags.filter((tag) => tag !== tagToRemove))
   }
 
-  const compressImage = (file: File, maxWidth: number = 800, maxHeight: number = 800, targetSizeKB: number = 200): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const canvas = document.createElement('canvas')
-      const ctx = canvas.getContext('2d')
-      const img = document.createElement('img')
-      
-      if (!ctx) {
-        reject(new Error('Failed to get canvas context'))
-        return
+  const addImageFiles = (newFiles: File[]) => {
+    const validFiles = newFiles.filter((file) => {
+      if (!file.type.startsWith("image/")) {
+        toast.error(`${file.name} is not an image file`)
+        return false
       }
-      
-      img.onload = () => {
-        try {
-          // Calculate new dimensions while maintaining aspect ratio
-          let { width, height } = img
-          const aspectRatio = width / height
-          
-          if (width > height) {
-            if (width > maxWidth) {
-              width = maxWidth
-              height = width / aspectRatio
-            }
-          } else {
-            if (height > maxHeight) {
-              height = maxHeight
-              width = height * aspectRatio
-            }
-          }
-          
-          // Ensure both dimensions don't exceed limits
-          if (width > maxWidth) {
-            width = maxWidth
-            height = width / aspectRatio
-          }
-          if (height > maxHeight) {
-            height = maxHeight
-            width = height * aspectRatio
-          }
-          
-          canvas.width = width
-          canvas.height = height
-          ctx.drawImage(img, 0, 0, width, height)
-          
-          // Function to get file size from base64 string (in KB)
-          const getBase64SizeKB = (base64: string) => {
-            const base64Length = base64.split(',')[1]?.length || 0
-            return (base64Length * 0.75) / 1024
-          }
-          
-          // Start with high quality and reduce until target size is reached
-          let quality = 0.9
-          let compressedImage = canvas.toDataURL('image/jpeg', quality)
-          let currentSizeKB = getBase64SizeKB(compressedImage)
-          
-          // Iteratively reduce quality until under target size
-          while (currentSizeKB > targetSizeKB && quality > 0.1) {
-            quality -= 0.1
-            compressedImage = canvas.toDataURL('image/jpeg', quality)
-            currentSizeKB = getBase64SizeKB(compressedImage)
-          }
-          
-          // If still too large, reduce dimensions further
-          if (currentSizeKB > targetSizeKB) {
-            const reductionFactor = Math.sqrt(targetSizeKB / currentSizeKB)
-            canvas.width = Math.floor(width * reductionFactor)
-            canvas.height = Math.floor(height * reductionFactor)
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
-            compressedImage = canvas.toDataURL('image/jpeg', 0.8)
-          }
-          
-          resolve(compressedImage)
-        } catch (error) {
-          reject(error)
-        }
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error(`${file.name} exceeds 5MB limit`)
+        return false
       }
-      
-      img.onerror = () => {
-        reject(new Error('Failed to load image'))
-      }
-      
-      img.src = URL.createObjectURL(file)
+      return true
     })
+
+    if (validFiles.length === 0) return
+
+    const newPreviews = validFiles.map((file) => URL.createObjectURL(file))
+
+    setImageFiles((prev) => {
+      if (prev.length === 0) setPrimaryImageIndex(0)
+      return [...prev, ...validFiles]
+    })
+    setImagePreviews((prev) => [...prev, ...newPreviews])
+
+    toast.success(`${validFiles.length} image(s) added`)
   }
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files
     if (files) {
-      for (const file of Array.from(files)) {
-        if (file.type.startsWith("image/")) {
-          try {
-            const originalSizeKB = Math.round(file.size / 1024)
-            const compressedImage = await compressImage(file)
-            
-            const base64Length = compressedImage.split(',')[1]?.length || 0
-            const compressedSizeKB = Math.round((base64Length * 0.75) / 1024)
-            
-            setImages((prev) => {
-              const newImages = [...prev, compressedImage]
-              if (prev.length === 0) {
-                setPrimaryImageIndex(0)
-              }
-              return newImages
-            })
-            
-            toast.success(`Image compressed from ${originalSizeKB}KB to ${compressedSizeKB}KB`)
-          } catch (error) {
-            toast.error("Failed to process image")
-          }
-        } else {
-          toast.error("Please upload only image files")
-        }
-      }
+      addImageFiles(Array.from(files))
       event.target.value = ""
     }
   }
@@ -472,51 +393,27 @@ export function CreateProductModal({ isOpen, onClose, onSuccess }: CreateProduct
     setIsDragOver(false)
   }
 
-  const handleDrop = async (e: React.DragEvent) => {
+  const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
     e.stopPropagation()
     setIsDragOver(false)
 
     const files = e.dataTransfer.files
     if (files) {
-      for (const file of Array.from(files)) {
-        if (file.type.startsWith("image/")) {
-          try {
-            const originalSizeKB = Math.round(file.size / 1024)
-            const compressedImage = await compressImage(file)
-            
-            const base64Length = compressedImage.split(',')[1]?.length || 0
-            const compressedSizeKB = Math.round((base64Length * 0.75) / 1024)
-            
-            setImages((prev) => {
-              const newImages = [...prev, compressedImage]
-              if (prev.length === 0) {
-                setPrimaryImageIndex(0)
-              }
-              return newImages
-            })
-            
-            toast.success(`Image compressed from ${originalSizeKB}KB to ${compressedSizeKB}KB`)
-          } catch (error) {
-            toast.error("Failed to process image")
-          }
-        } else {
-          toast.error("Please upload only image files")
-        }
-      }
+      addImageFiles(Array.from(files))
     }
   }
 
   const handleRemoveImage = (index: number) => {
-    setImages((prev) => {
-      const newImages = prev.filter((_, i) => i !== index)
-      if (index === primaryImageIndex) {
-        setPrimaryImageIndex(0)
-      } else if (index < primaryImageIndex) {
-        setPrimaryImageIndex(primaryImageIndex - 1)
-      }
-      return newImages
-    })
+    URL.revokeObjectURL(imagePreviews[index])
+    setImageFiles((prev) => prev.filter((_, i) => i !== index))
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index))
+
+    if (index === primaryImageIndex) {
+      setPrimaryImageIndex(0)
+    } else if (index < primaryImageIndex) {
+      setPrimaryImageIndex(primaryImageIndex - 1)
+    }
   }
 
   const handleSetPrimaryImage = (index: number) => {
@@ -703,6 +600,28 @@ export function CreateProductModal({ isOpen, onClose, onSuccess }: CreateProduct
         return
       }
 
+      // Upload images to R2 if any are selected
+      let uploadedImageUrls: string[] = []
+      if (imageFiles.length > 0) {
+        setIsUploadingImages(true)
+        try {
+          const uploadResult = await uploadImagesToR2(imageFiles, "products")
+          uploadedImageUrls = uploadResult.urls.map((u) => u.url)
+          if (uploadResult.errors.length > 0) {
+            uploadResult.errors.forEach((err) => {
+              toast.error(`Failed to upload ${err.file}: ${err.error}`)
+            })
+          }
+        } catch (uploadError: any) {
+          toast.error(uploadError.message || "Failed to upload images")
+          setIsLoading(false)
+          setIsUploadingImages(false)
+          return
+        } finally {
+          setIsUploadingImages(false)
+        }
+      }
+
       const productData = {
         name: name.trim(),
         description,
@@ -724,8 +643,8 @@ export function CreateProductModal({ isOpen, onClose, onSuccess }: CreateProduct
         shippingClass,
         last_price: lastPrice ? Number.parseFloat(lastPrice) : undefined,
         unit_of_measurement: unitOfMeasurement,
-        images,
-        image_url: images.length > 0 ? images[primaryImageIndex] : null,
+        images: uploadedImageUrls,
+        image_url: uploadedImageUrls.length > 0 ? uploadedImageUrls[primaryImageIndex] : null,
         primaryImageIndex: primaryImageIndex,
         hasVariations: hasVariations,
         store_id: selectedStoreId,
@@ -794,7 +713,10 @@ export function CreateProductModal({ isOpen, onClose, onSuccess }: CreateProduct
     setWeight("")
     setDimensions({ length: "", width: "", height: "" })
     setShippingClass("")
-    setImages([])
+    // Revoke all object URLs to free memory
+    imagePreviews.forEach((url) => URL.revokeObjectURL(url))
+    setImageFiles([])
+    setImagePreviews([])
     setPrimaryImageIndex(0)
     setHasVariations(false)
     setVariants([])
@@ -1598,15 +1520,15 @@ export function CreateProductModal({ isOpen, onClose, onSuccess }: CreateProduct
                     </div>
                   </div>
 
-                  {images.length > 0 && (
+                  {imagePreviews.length > 0 && (
                     <div className="mt-6">
                       <div className="flex items-center justify-between mb-4">
-                        <h4 className="font-medium">Uploaded Images ({images.length})</h4>
+                        <h4 className="font-medium">Uploaded Images ({imagePreviews.length})</h4>
                         <p className="text-sm text-muted-foreground">Click the star to set as primary image</p>
                       </div>
 
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        {images.map((image, index) => (
+                        {imagePreviews.map((image, index) => (
                           <div key={index} className="relative group">
                             <div className="aspect-square rounded-lg overflow-hidden border-2 border-gray-200">
                               <Image
@@ -1654,7 +1576,7 @@ export function CreateProductModal({ isOpen, onClose, onSuccess }: CreateProduct
                     </div>
                   )}
 
-                  {images.length === 0 && (
+                  {imagePreviews.length === 0 && (
                     <div className="mt-4 text-center py-8 border border-gray-200 rounded-lg bg-gray-50">
                       <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                       <p className="text-gray-600">No images uploaded yet</p>
@@ -1684,8 +1606,8 @@ export function CreateProductModal({ isOpen, onClose, onSuccess }: CreateProduct
                 Next
               </Button>
             ) : (
-              <Button onClick={handleSubmit} disabled={isLoading}>
-                {isLoading ? "Creating..." : "Create Product"}
+              <Button onClick={handleSubmit} disabled={isLoading || isUploadingImages}>
+                {isUploadingImages ? "Uploading images..." : isLoading ? "Creating..." : "Create Product"}
               </Button>
             )}
           </div>

@@ -25,6 +25,7 @@ import type { Supplier } from "@/lib/suppliers"
 import type { Store } from "@/lib/stores"
 import type { ProductVariant as LibProductVariant } from "@/lib/products"
 import { CreateCategoryModal } from "@/components/modals/create-category-modal"
+import { uploadImages as uploadImagesToR2 } from "@/lib/uploads"
 
 interface ProductVariant {
   id: string
@@ -59,7 +60,9 @@ interface CreateProductSheetProps {
 export function CreateProductSheet({ open, onOpenChange, onProductCreated }: CreateProductSheetProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  
+  const [isUploadingImages, setIsUploadingImages] = useState(false)
+  const [newImageFiles, setNewImageFiles] = useState<File[]>([])
+
   // Form data
   const [formData, setFormData] = useState({
     name: "",
@@ -576,19 +579,29 @@ export function CreateProductSheet({ open, onOpenChange, onProductCreated }: Cre
   const handleProductImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files || files.length === 0) return
-    
-    // In a real implementation, you would upload these files to a server
-    // For now, we'll just create mock URLs
-    const newImages = Array.from(files).map((file, index) => 
-      URL.createObjectURL(file)
-    )
-    
+
+    const validFiles = Array.from(files).filter((file) => {
+      if (!file.type.startsWith("image/")) {
+        toast.error(`${file.name} is not an image file`)
+        return false
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error(`${file.name} exceeds 5MB limit`)
+        return false
+      }
+      return true
+    })
+
+    if (validFiles.length === 0) return
+
+    const previewUrls = validFiles.map((file) => URL.createObjectURL(file))
+
+    setNewImageFiles(prev => [...prev, ...validFiles])
     setFormData(prev => ({
       ...prev,
-      images: [...prev.images, ...newImages]
+      images: [...prev.images, ...previewUrls]
     }))
-    
-    // Reset the file input
+
     e.target.value = ""
   }
   
@@ -708,8 +721,30 @@ export function CreateProductSheet({ open, onOpenChange, onProductCreated }: Cre
     e.preventDefault()
     console.log('Form submission started')
     setIsSubmitting(true)
-    
+
     try {
+      // Upload new image files to R2 if any were added
+      let uploadedImageUrls: string[] = []
+      if (newImageFiles.length > 0) {
+        setIsUploadingImages(true)
+        try {
+          const uploadResult = await uploadImagesToR2(newImageFiles, "products")
+          uploadedImageUrls = uploadResult.urls.map((u) => u.url)
+          if (uploadResult.errors.length > 0) {
+            uploadResult.errors.forEach((err) => {
+              toast.error(`Failed to upload ${err.file}: ${err.error}`)
+            })
+          }
+        } catch (uploadError: any) {
+          toast.error(uploadError.message || "Failed to upload images")
+          setIsSubmitting(false)
+          setIsUploadingImages(false)
+          return
+        } finally {
+          setIsUploadingImages(false)
+        }
+      }
+
       // Prepare product data to match the ProductData interface
       const productData = {
         name: formData.name.trim(),
@@ -717,7 +752,7 @@ export function CreateProductSheet({ open, onOpenChange, onProductCreated }: Cre
         category_id: formData.category || undefined,
         brand: formData.brand.trim() || undefined,
         supplier_id: formData.supplier || undefined,
-        tags: formData.tags 
+        tags: formData.tags
           ? formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
           : [],
         price: parseFloat(formData.price) || 0,
@@ -738,7 +773,7 @@ export function CreateProductSheet({ open, onOpenChange, onProductCreated }: Cre
           height: formData.dimensions.height || ""
         },
         shippingClass: formData.shippingClass,
-        images: formData.images,
+        images: uploadedImageUrls,
         primaryImageIndex: formData.primaryImageIndex,
         hasVariations: formData.hasVariations,
         // Packaging fields
@@ -876,8 +911,9 @@ export function CreateProductSheet({ open, onOpenChange, onProductCreated }: Cre
           store_id: ""
         })
         
-        // Clear similar products
+        // Clear similar products and new image files
         setSimilarProducts([])
+        setNewImageFiles([])
         
         setPackagingUnits([
           {
@@ -1992,8 +2028,13 @@ export function CreateProductSheet({ open, onOpenChange, onProductCreated }: Cre
                 >
                   Cancel
                 </Button>
-                <Button type="submit" form="create-product-form" disabled={isSubmitting}>
-                  {isSubmitting ? (
+                <Button type="submit" form="create-product-form" disabled={isSubmitting || isUploadingImages}>
+                  {isUploadingImages ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Uploading images...
+                    </>
+                  ) : isSubmitting ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                       Creating...

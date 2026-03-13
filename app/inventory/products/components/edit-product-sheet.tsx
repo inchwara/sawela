@@ -25,6 +25,7 @@ import type { Product, PackagingUnit } from "@/lib/products"
 import type { Supplier } from "@/lib/suppliers"
 import type { Store } from "@/lib/stores"
 import { CreateCategoryModal } from "@/components/modals/create-category-modal"
+import { uploadImages as uploadImagesToR2 } from "@/lib/uploads"
 
 interface ProductVariant {
   id: string
@@ -58,6 +59,10 @@ interface EditProductSheetProps {
 export function EditProductSheet({ open, onOpenChange, product, onProductUpdated }: EditProductSheetProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isUploadingImages, setIsUploadingImages] = useState(false)
+
+  // Track new image files for R2 upload (separate from existing image URLs)
+  const [newImageFiles, setNewImageFiles] = useState<File[]>([])
   
   // Form data
   const [formData, setFormData] = useState({
@@ -287,7 +292,10 @@ export function EditProductSheet({ open, onOpenChange, product, onProductUpdated
   const loadProductData = (productToLoad: Product) => {
     const product = productToLoad
     if (!product) return
-    
+
+    // Reset new image files when loading a product
+    setNewImageFiles([])
+
     setFormData({
       name: product.name || "",
       description: product.description || "",
@@ -574,19 +582,29 @@ export function EditProductSheet({ open, onOpenChange, product, onProductUpdated
   const handleProductImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files || files.length === 0) return
-    
-    // In a real implementation, you would upload these files to a server
-    // For now, we'll just create mock URLs
-    const newImages = Array.from(files).map((file, index) => 
-      URL.createObjectURL(file)
-    )
-    
+
+    const validFiles = Array.from(files).filter((file) => {
+      if (!file.type.startsWith("image/")) {
+        toast.error(`${file.name} is not an image file`)
+        return false
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error(`${file.name} exceeds 5MB limit`)
+        return false
+      }
+      return true
+    })
+
+    if (validFiles.length === 0) return
+
+    const previewUrls = validFiles.map((file) => URL.createObjectURL(file))
+
+    setNewImageFiles(prev => [...prev, ...validFiles])
     setFormData(prev => ({
       ...prev,
-      images: [...prev.images, ...newImages]
+      images: [...prev.images, ...previewUrls]
     }))
-    
-    // Reset the file input
+
     e.target.value = ""
   }
   
@@ -647,10 +665,43 @@ export function EditProductSheet({ open, onOpenChange, product, onProductUpdated
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!product) return
-    
+
     setIsSubmitting(true)
-    
+
     try {
+      // Upload new image files to R2 if any were added
+      let finalImages = [...formData.images]
+      if (newImageFiles.length > 0) {
+        setIsUploadingImages(true)
+        try {
+          const uploadResult = await uploadImagesToR2(newImageFiles, "products")
+          const uploadedUrls = uploadResult.urls.map((u) => u.url)
+
+          if (uploadResult.errors.length > 0) {
+            uploadResult.errors.forEach((err) => {
+              toast.error(`Failed to upload ${err.file}: ${err.error}`)
+            })
+          }
+
+          // Replace blob: preview URLs with actual R2 URLs
+          // Existing images (non-blob URLs) stay as-is, blob URLs get replaced with uploaded URLs
+          let uploadIndex = 0
+          finalImages = finalImages.map((img) => {
+            if (img.startsWith("blob:") && uploadIndex < uploadedUrls.length) {
+              return uploadedUrls[uploadIndex++]
+            }
+            return img
+          })
+        } catch (uploadError: any) {
+          toast.error(uploadError.message || "Failed to upload images")
+          setIsSubmitting(false)
+          setIsUploadingImages(false)
+          return
+        } finally {
+          setIsUploadingImages(false)
+        }
+      }
+
       // Prepare product data to match the ProductData interface
       const productData = {
         name: formData.name.trim(),
@@ -658,7 +709,7 @@ export function EditProductSheet({ open, onOpenChange, product, onProductUpdated
         category_id: formData.category || undefined,
         brand: formData.brand.trim() || undefined,
         supplier_id: formData.supplier || undefined,
-        tags: formData.tags 
+        tags: formData.tags
           ? formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
           : [],
         price: parseFloat(formData.price) || 0,
@@ -677,7 +728,7 @@ export function EditProductSheet({ open, onOpenChange, product, onProductUpdated
         width: formData.dimensions.width ? parseFloat(formData.dimensions.width) : undefined,
         height: formData.dimensions.height ? parseFloat(formData.dimensions.height) : undefined,
         shipping_class: formData.shippingClass,
-        images: formData.images,
+        images: finalImages,
         primary_image_index: formData.primaryImageIndex,
         has_variations: formData.hasVariations,
         variants: formData.hasVariations 
@@ -1647,8 +1698,13 @@ export function EditProductSheet({ open, onOpenChange, product, onProductUpdated
             >
               Cancel
             </Button>
-            <Button type="submit" form="edit-product-form" disabled={isSubmitting}>
-              {isSubmitting ? (
+            <Button type="submit" form="edit-product-form" disabled={isSubmitting || isUploadingImages}>
+              {isUploadingImages ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Uploading images...
+                </>
+              ) : isSubmitting ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   Updating...
