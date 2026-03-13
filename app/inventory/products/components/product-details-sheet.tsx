@@ -160,13 +160,19 @@ export function ProductDetailsSheet({ open, onOpenChange, product: productProp, 
       }
 
       const newUrls = uploadResult.urls.map((u) => u.url)
-      const existingImages = product.image_urls || product.images || []
+      // Use the raw images array (relative paths) from the database, not image_urls (which are resolved public URLs)
+      const existingImages = product.images || []
       const allImages = [...existingImages, ...newUrls]
 
-      await updateProduct(String(product.id), {
+      const updateResult = await updateProduct(String(product.id), {
         images: allImages,
         image_url: allImages[0],
       })
+
+      if (updateResult.status === "error" || updateResult.status === "failed") {
+        toast.error(updateResult.message || "Failed to save image to product")
+        return
+      }
 
       toast.success(`${newUrls.length} image(s) uploaded successfully`)
 

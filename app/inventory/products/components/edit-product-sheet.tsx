@@ -162,13 +162,6 @@ export function EditProductSheet({ open, onOpenChange, product, onProductUpdated
     }
   }, [open, product?.id])
   
-  // Load product data AFTER both dropdowns and full product are ready
-  useEffect(() => {
-    if (fullProduct && open && dropdownsLoaded) {
-      loadProductData(fullProduct)
-    }
-  }, [fullProduct, open, dropdownsLoaded])
-  
   // Retry helper function
   const retryFetch = async <T,>(
     fetchFn: () => Promise<T>,
@@ -248,17 +241,17 @@ export function EditProductSheet({ open, onOpenChange, product, onProductUpdated
       setSuppliers(suppliersData)
       setStores(storesData)
       
-      // Use the freshly-fetched full product (has store_id guaranteed)
-      // Fall back to the prop if fetch failed
-      if (productData?.status === 'success' && productData?.data) {
-        setFullProduct(productData.data)
-      } else {
-        setFullProduct(product)
-      }
-      
-      // Mark dropdowns as loaded
+      // Determine the product to load into the form
+      const productToLoad = (productData?.status === 'success' && productData?.data)
+        ? productData.data
+        : product
+
+      setFullProduct(productToLoad)
       setDropdownsLoaded(true)
-      
+
+      // Load product data directly — eliminates race condition between useEffects
+      loadProductData(productToLoad)
+
       // Show specific error message only if all dropdowns failed
       if (errors.length === 3) {
         toast.error("Failed to load dropdown data after multiple attempts. Please check your connection and try again.")
@@ -270,8 +263,11 @@ export function EditProductSheet({ open, onOpenChange, product, onProductUpdated
       console.error("Unexpected error loading dropdown data:", error)
       toast.error("An unexpected error occurred while loading data")
       // Fall back to prop and mark as loaded so the form still shows
-      setFullProduct(product)
-      setDropdownsLoaded(true)
+      if (product) {
+        setFullProduct(product)
+        setDropdownsLoaded(true)
+        loadProductData(product)
+      }
     } finally {
       setIsLoading(false)
     }

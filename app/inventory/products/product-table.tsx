@@ -567,7 +567,8 @@ export function ProductTable({
       />
       
       {selectedProduct && (
-        <EditProductSheet 
+        <EditProductSheet
+          key={selectedProduct?.id}
           open={isEditSheetOpen}
           onOpenChange={setIsEditSheetOpen}
           product={selectedProduct}
@@ -577,6 +578,7 @@ export function ProductTable({
       
       {selectedProduct && (
         <ProductDetailsSheet
+          key={selectedProduct?.id}
           open={isDetailsSheetOpen}
           onOpenChange={setIsDetailsSheetOpen}
           product={selectedProduct}
