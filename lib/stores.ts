@@ -115,6 +115,32 @@ export async function getCachedStores(companyId?: string): Promise<Store[]> {
 }
 
 /**
+ * Creates a new store
+ * @param payload The store data to create
+ * @returns Promise with success status and store data
+ */
+export async function createStore(payload: { name: string; is_active?: boolean }): Promise<{
+  success: boolean
+  store?: Store
+  message?: string
+}> {
+  try {
+    const response = await apiCall<{ status: string; store: Store; message?: string }>(
+      "/stores",
+      "POST",
+      payload,
+      true
+    )
+    if (response.status === "success" && response.store) {
+      return { success: true, store: response.store, message: response.message }
+    }
+    return { success: false, message: typeof response.message === "string" ? response.message : "Failed to create store" }
+  } catch (error: any) {
+    return { success: false, message: error.message || "Failed to create store" }
+  }
+}
+
+/**
  * Clears all store caches from localStorage
  * Useful when a user logs out or switches companies
  */

@@ -16,7 +16,7 @@ import { X, Plus, Upload, Trash2, Star, ImageIcon, PlusCircle, Search, Check, Ch
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 import { createProduct } from "@/app/inventory/actions"
-import { getCachedStores, type Store } from "@/lib/stores"
+import { getCachedStores, createStore, type Store } from "@/lib/stores"
 import { getProductCategories, createProductCategory, type ProductCategory } from "@/lib/product-categories"
 import { getSuppliers, type Supplier } from "@/lib/suppliers"
 import { getProducts, type Product } from "@/lib/products"
@@ -122,6 +122,11 @@ export function CreateProductModal({ isOpen, onClose, onSuccess }: CreateProduct
   const [stores, setStores] = useState<Store[]>([])
   const [selectedStoreId, setSelectedStoreId] = useState<string>("")
   const [isLoadingStores, setIsLoadingStores] = useState(false)
+
+  // Store creation
+  const [isStoreModalOpen, setIsStoreModalOpen] = useState(false)
+  const [newStoreName, setNewStoreName] = useState("")
+  const [isCreatingStore, setIsCreatingStore] = useState(false)
 
   // Categories state
   const [categories, setCategories] = useState<ProductCategory[]>([])
@@ -855,6 +860,28 @@ export function CreateProductModal({ isOpen, onClose, onSuccess }: CreateProduct
     }
   }
 
+  const handleCreateStore = async () => {
+    if (!newStoreName.trim()) return
+    setIsCreatingStore(true)
+    try {
+      const result = await createStore({ name: newStoreName.trim(), is_active: true })
+      if (result.success && result.store) {
+        setStores((prev) => [...prev, result.store!])
+        setSelectedStoreId(result.store.id)
+        toast.success("Store created successfully.")
+        setIsStoreModalOpen(false)
+        setNewStoreName("")
+      } else {
+        toast.error(result.message || "Failed to create store")
+      }
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : "Failed to create store"
+      toast.error(errorMessage)
+    } finally {
+      setIsCreatingStore(false)
+    }
+  }
+
   if (!isVisible) return null
 
   return (
@@ -1008,6 +1035,15 @@ export function CreateProductModal({ isOpen, onClose, onSuccess }: CreateProduct
                         <SelectValue placeholder={isLoadingCategories ? "Loading categories..." : "Select category (optional)"} />
                       </SelectTrigger>
                       <SelectContent>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          className="w-full justify-start text-left text-sm"
+                          onClick={() => setIsCategoryModalOpen(true)}
+                        >
+                          <PlusCircle className="h-4 w-4 mr-2" /> Create Category
+                        </Button>
+                        <div className="border-t my-1" />
                         {categories.length === 0 && !isLoadingCategories && (
                           <div className="px-2 py-1 text-sm text-muted-foreground">No categories found</div>
                         )}
@@ -1022,15 +1058,6 @@ export function CreateProductModal({ isOpen, onClose, onSuccess }: CreateProduct
                             </div>
                           </SelectItem>
                         ))}
-                        <div className="border-t my-1" />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          className="w-full justify-start text-left text-sm"
-                          onClick={() => setIsCategoryModalOpen(true)}
-                        >
-                          <PlusCircle className="h-4 w-4 mr-2" /> Create Category
-                        </Button>
                       </SelectContent>
                     </Select>
                   </div>
@@ -1238,6 +1265,15 @@ export function CreateProductModal({ isOpen, onClose, onSuccess }: CreateProduct
                     <SelectValue placeholder={isLoadingStores ? "Loading stores..." : "Select a store"} />
                   </SelectTrigger>
                   <SelectContent>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="w-full justify-start text-left text-sm"
+                      onClick={() => setIsStoreModalOpen(true)}
+                    >
+                      <PlusCircle className="h-4 w-4 mr-2" /> Create Store
+                    </Button>
+                    <div className="border-t my-1" />
                     {stores.map((store) => (
                       <SelectItem key={store.id} value={store.id}>
                         {store.name}
@@ -1690,6 +1726,30 @@ export function CreateProductModal({ isOpen, onClose, onSuccess }: CreateProduct
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={() => setIsCategoryModalOpen(false)}>Cancel</Button>
               <Button onClick={handleCreateCategory} disabled={isCreatingCategory || !newCategoryName.trim()}>{isCreatingCategory ? 'Saving...' : 'Create'}</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isStoreModalOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setIsStoreModalOpen(false)} />
+          <div className="relative bg-white rounded-lg shadow-lg w-full max-w-md p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Create Store</h3>
+              <Button variant="ghost" size="sm" onClick={() => setIsStoreModalOpen(false)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <Label htmlFor="newStoreName">Store Name *</Label>
+                <Input id="newStoreName" value={newStoreName} onChange={(e) => setNewStoreName(e.target.value)} placeholder="e.g. Main Warehouse" />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setIsStoreModalOpen(false)}>Cancel</Button>
+              <Button onClick={handleCreateStore} disabled={isCreatingStore || !newStoreName.trim()}>{isCreatingStore ? 'Saving...' : 'Create'}</Button>
             </div>
           </div>
         </div>

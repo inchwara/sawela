@@ -34,7 +34,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { CreateProductModal } from "@/components/modals/create-product-modal";
 import { 
   createProductReceipt,
   getProductReceipt,

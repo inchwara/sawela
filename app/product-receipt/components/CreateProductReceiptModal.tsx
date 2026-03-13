@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/dialog";
 import { getProductCategories, type ProductCategory } from "@/lib/product-categories";
 import { createProduct } from "@/app/inventory/actions";
-import { CreateProductModal } from "@/components/modals/create-product-modal";
+import { CreateProductQuickModal } from "@/components/modals/create-product-quick-modal";
 import { createProductReceipt } from "@/lib/productreceipt";
 import { 
   Package, 
@@ -1378,7 +1378,7 @@ type ProductReceiptFormValues = z.infer<typeof formSchema>;
         </Form>
         
         {/* Create Product Modal */}
-        <CreateProductModal
+        <CreateProductQuickModal
           isOpen={showCreateProductModal}
           onClose={() => setShowCreateProductModal(false)}
           onSuccess={handleProductCreated}
