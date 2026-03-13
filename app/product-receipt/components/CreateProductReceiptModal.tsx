@@ -20,7 +20,6 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { getProducts, type Product } from "@/lib/products";
-import { getStores, type Store } from "@/lib/stores";
 import { getSuppliers, type Supplier } from "@/lib/suppliers";
 import { getProductCategories, type ProductCategory } from "@/lib/product-categories";
 import { createProduct } from "@/app/inventory/actions";
@@ -93,7 +92,6 @@ interface CreateProductReceiptModalProps {
 
 const formSchema = z.object({
   reference_number: z.string().nonempty({ message: "Reference number is required" }),
-  store_id: z.string().nonempty({ message: "Store is required" }),
   document_type: z.enum(["receipt", "invoice", "delivery_note"]),
   items: z.array(
     z.object({
@@ -127,7 +125,6 @@ export function CreateProductReceiptModal({
   const [referenceNumber, setReferenceNumber] = useState("");
   const [documentType, setDocumentType] = useState("receipt");
   const [supplierId, setSupplierId] = useState<string>("");
-  const [storeId, setStoreId] = useState<string>("");
   const [document, setDocument] = useState<File | null>(null);
   
   // Logistics fields state
@@ -141,14 +138,12 @@ export function CreateProductReceiptModal({
   const [landedDate, setLandedDate] = useState("");
   
   // Data arrays
-  const [stores, setStores] = useState<Store[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<ProductCategory[]>([]);
   const [items, setItems] = useState<ProductReceiptItem[]>([]);
 
   // Loading states
-  const [loadingStores, setLoadingStores] = useState(false);
   const [loadingSuppliers, setLoadingSuppliers] = useState(false);
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [loadingCategories, setLoadingCategories] = useState(false);
@@ -172,7 +167,6 @@ export function CreateProductReceiptModal({
     mode: "onSubmit", // Only validate on submit
     defaultValues: {
       reference_number: "",
-      store_id: "",
       document_type: "receipt",
       items: [],
     }
@@ -183,7 +177,6 @@ type ProductReceiptFormValues = z.infer<typeof formSchema>;
   // Load data when modal opens
   useEffect(() => {
     if (open) {
-      loadStores();
       loadSuppliers();
       loadProducts();
       loadCategories();
@@ -196,14 +189,12 @@ type ProductReceiptFormValues = z.infer<typeof formSchema>;
   const resetForm = () => {
     form.reset({
       reference_number: "",
-      store_id: "",
       document_type: "receipt",
       items: [],
     });
     setReferenceNumber("");
     setDocumentType("receipt");
     setSupplierId("");
-    setStoreId("");
     setDocument(null);
     setItems([]);
     setProductSearchQuery("");
@@ -220,18 +211,6 @@ type ProductReceiptFormValues = z.infer<typeof formSchema>;
     setVehicleDescription("");
     setReceiptDate("");
     setLandedDate("");
-  };
-
-  const loadStores = async () => {
-    setLoadingStores(true);
-    try {
-      const storesData = await getStores();
-      setStores(storesData);
-    } catch (error: any) {
-      toast.error("Failed to load stores");
-    } finally {
-      setLoadingStores(false);
-    }
   };
 
   const loadSuppliers = async () => {
@@ -425,7 +404,6 @@ type ProductReceiptFormValues = z.infer<typeof formSchema>;
       referenceNumber,
       documentType,
       supplierId,
-      storeId,
       document,
       items,
     };
@@ -454,11 +432,6 @@ type ProductReceiptFormValues = z.infer<typeof formSchema>;
   const validateForm = () => {
     if (!referenceNumber.trim()) {
       toast.error("Reference number is required");
-      return false;
-    }
-
-    if (!storeId) {
-      toast.error("Please select a store");
       return false;
     }
 
@@ -514,7 +487,6 @@ type ProductReceiptFormValues = z.infer<typeof formSchema>;
         contractor_id: null, // Contractor functionality to be implemented later
         document_type: documentType,
         reference_number: referenceNumber.trim(),
-        store_id: storeId,
         items: items.map(item => ({
           product_id: item.product_id,
           variant_id: item.variant_id,
@@ -615,29 +587,6 @@ type ProductReceiptFormValues = z.infer<typeof formSchema>;
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="store">Store *</Label>
-                    <Select 
-                      value={storeId} 
-                      onValueChange={(value) => {
-                        setStoreId(value);
-                        form.setValue("store_id", value);
-                      }} 
-                      disabled={isSubmitting || loadingStores}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder={loadingStores ? "Loading stores..." : "Select store"} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {stores.map((store) => (
-                          <SelectItem key={store.id} value={store.id}>
-                            {store.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
                     <Label htmlFor="document">Document (Optional)</Label>
                     <div className="flex items-center gap-2">
                       <Input
@@ -671,17 +620,15 @@ type ProductReceiptFormValues = z.infer<typeof formSchema>;
                       )}
                     </div>
                   </div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
                   <div className="space-y-2">
                     <Label htmlFor="supplier">Supplier (Optional)</Label>
-                    <Select 
-                      value={supplierId || "none"} 
+                    <Select
+                      value={supplierId || "none"}
                       onValueChange={(value) => {
                         const newSupplierId = value === "none" ? "" : value;
                         setSupplierId(newSupplierId);
-                      }} 
+                      }}
                       disabled={isSubmitting || loadingSuppliers}
                     >
                       <SelectTrigger>

@@ -25,7 +25,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { getProducts, type Product } from "@/lib/products";
-import { getStores, type Store } from "@/lib/stores";
 import { getSuppliers, type Supplier } from "@/lib/suppliers";
 import { CreateProductModal } from "@/components/modals/create-product-modal";
 import { 
@@ -90,7 +89,6 @@ interface EditProductReceiptModalProps {
 
 const formSchema = z.object({
   reference_number: z.string().nonempty({ message: "Reference number is required" }),
-  store_id: z.string().nonempty({ message: "Store is required" }),
   document_type: z.enum(["receipt", "invoice", "delivery_note"]),
   supplier_id: z.string().optional().nullable(),
   items: z.array(
@@ -121,7 +119,6 @@ export function EditProductReceiptModal({
   const [referenceNumber, setReferenceNumber] = useState("");
   const [documentType, setDocumentType] = useState("");
   const [supplierId, setSupplierId] = useState<string>("");
-  const [storeId, setStoreId] = useState<string>("");
   const [document, setDocument] = useState<File | null>(null);
   const [items, setItems] = useState<ProductReceiptItem[]>([]);
   
@@ -136,13 +133,11 @@ export function EditProductReceiptModal({
   const [landedDate, setLandedDate] = useState("");
   
   // Data arrays
-  const [stores, setStores] = useState<Store[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [receipt, setReceipt] = useState<ProductReceiptDetails | null>(null);
 
   // Loading states
-  const [loadingStores, setLoadingStores] = useState(false);
   const [loadingSuppliers, setLoadingSuppliers] = useState(false);
   const [loadingProducts, setLoadingProducts] = useState(false);
 
@@ -163,7 +158,6 @@ export function EditProductReceiptModal({
     resolver: zodResolver(formSchema),
     defaultValues: {
       reference_number: "",
-      store_id: "",
       document_type: "receipt",
       supplier_id: "",
       items: [],
@@ -174,7 +168,6 @@ export function EditProductReceiptModal({
   useEffect(() => {
     if (open && productReceipt) {
       loadReceipt();
-      loadStores();
       loadSuppliers();
       loadProducts();
     } else {
@@ -186,7 +179,6 @@ export function EditProductReceiptModal({
     setReferenceNumber("");
     setDocumentType("");
     setSupplierId("");
-    setStoreId("");
     setDocument(null);
     setItems([]);
     setProductSearchQuery("");
@@ -217,8 +209,6 @@ export function EditProductReceiptModal({
       setReferenceNumber(receiptData.reference_number || "");
       setDocumentType(receiptData.document_type || "");
       setSupplierId(receiptData.supplier_id || "");
-      setStoreId(receiptData.store_id || "");
-      
       // Populate logistics fields
       setContainerNumber(receiptData.container_number || "");
       setDriverName(receiptData.driver_name || "");
@@ -251,17 +241,7 @@ export function EditProductReceiptModal({
     }
   };
 
-  const loadStores = async () => {
-    setLoadingStores(true);
-    try {
-      const storesData = await getStores();
-      setStores(storesData);
-    } catch (error: any) {
-      toast.error("Failed to load stores");
-    } finally {
-      setLoadingStores(false);
-    }
-  };
+
 
   const loadSuppliers = async () => {
     setLoadingSuppliers(true);
@@ -414,11 +394,6 @@ export function EditProductReceiptModal({
       return false;
     }
 
-    if (!storeId) {
-      toast.error("Please select a store");
-      return false;
-    }
-
     if (items.length === 0) {
       toast.error("Please add at least one product item");
       return false;
@@ -466,7 +441,6 @@ export function EditProductReceiptModal({
         contractor_id: null,
         document_type: data.document_type,
         reference_number: data.reference_number.trim(),
-        store_id: data.store_id,
         items: items.map(item => ({
           product_id: item.product_id,
           variant_id: item.variant_id,
@@ -551,22 +525,6 @@ export function EditProductReceiptModal({
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="store">Store *</Label>
-                    <Select value={storeId} onValueChange={setStoreId} disabled={isSubmitting || loadingStores}>
-                      <SelectTrigger>
-                        <SelectValue placeholder={loadingStores ? "Loading stores..." : "Select store"} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {stores.map((store) => (
-                          <SelectItem key={store.id} value={store.id}>
-                            {store.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
                     <Label htmlFor="document">Document (Optional)</Label>
                     <div className="flex items-center gap-2">
                       <Input
@@ -600,35 +558,24 @@ export function EditProductReceiptModal({
                       )}
                     </div>
                   </div>
-                </div>
 
-                {/* Parties Involved */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <User className="h-5 w-5 text-green-600" />
-                      Supplier (Optional)
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="supplier">Supplier</Label>
-                      <Select value={supplierId || "none"} onValueChange={(value) => setSupplierId(value === "none" ? "" : value)} disabled={isSubmitting || loadingSuppliers}>
-                        <SelectTrigger>
-                          <SelectValue placeholder={loadingSuppliers ? "Loading suppliers..." : "Select supplier"} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">No supplier</SelectItem>
-                          {suppliers.map((supplier) => (
-                            <SelectItem key={supplier.id} value={supplier.id}>
-                              {supplier.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </CardContent>
-                </Card>
+                  <div className="space-y-2">
+                    <Label htmlFor="supplier">Supplier (Optional)</Label>
+                    <Select value={supplierId || "none"} onValueChange={(value) => setSupplierId(value === "none" ? "" : value)} disabled={isSubmitting || loadingSuppliers}>
+                      <SelectTrigger>
+                        <SelectValue placeholder={loadingSuppliers ? "Loading suppliers..." : "Select supplier"} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">No supplier</SelectItem>
+                        {suppliers.map((supplier) => (
+                          <SelectItem key={supplier.id} value={supplier.id}>
+                            {supplier.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
 
                 {/* Logistics & Delivery Details Card */}
                 <Card>

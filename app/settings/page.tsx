@@ -2,12 +2,14 @@
 import { useState, useEffect } from "react"
 import { UserProfile } from "@/app/profile/components/user-profile"
 import { StoreSettings } from "@/app/settings/components/store-settings"
+import { DepartmentSettings } from "@/app/settings/components/department-settings"
+import { EntitySettings } from "@/app/settings/components/entity-settings"
 import { useAuth } from "@/lib/auth-context"
 import { Loader2 } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { PermissionGuard } from "@/components/PermissionGuard"
 
-type ActiveSection = "profile" | "stores"
+type ActiveSection = "profile" | "stores" | "departments" | "entities"
 
 export default function SettingsPage() {
   const [activeSection, setActiveSection] = useState<ActiveSection>("profile")
@@ -81,12 +83,18 @@ export default function SettingsPage() {
           onValueChange={(value) => setActiveSection(value as ActiveSection)}
           className="w-full"
         >
-          <TabsList className="grid w-fit grid-cols-2 bg-gray-100 rounded-lg p-1 mb-8">
+          <TabsList className="grid w-fit grid-cols-4 bg-gray-100 rounded-lg p-1 mb-8">
             <TabsTrigger value="profile" className="text-sm px-6">
               My Profile
             </TabsTrigger>
             <TabsTrigger value="stores" className="text-sm px-6">
               Stores
+            </TabsTrigger>
+            <TabsTrigger value="departments" className="text-sm px-6">
+              Departments
+            </TabsTrigger>
+            <TabsTrigger value="entities" className="text-sm px-6">
+              Entities
             </TabsTrigger>
           </TabsList>
           <div className="w-full">
@@ -100,6 +108,12 @@ export default function SettingsPage() {
             </TabsContent>
             <TabsContent value="stores">
               <StoreSettings />
+            </TabsContent>
+            <TabsContent value="departments">
+              <DepartmentSettings />
+            </TabsContent>
+            <TabsContent value="entities">
+              <EntitySettings />
             </TabsContent>
           </div>
         </Tabs>

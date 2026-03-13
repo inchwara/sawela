@@ -143,7 +143,7 @@ export interface ProductReceiptDetails {
   product_receipt_number: string;
   reference_number: string;
   received_by: string;
-  store_id: string;
+  store_id?: string | null;
   document_url?: string | null;
   created_at: string;
   updated_at: string;
@@ -176,7 +176,7 @@ export interface ProductReceipt {
   product_receipt_number: string;
   reference_number: string;
   received_by: string;
-  store_id: string;
+  store_id?: string | null;
   document_url?: string | null;
   document_path?: string | null;
   created_at: string;
@@ -216,7 +216,7 @@ export async function createProductReceipt(payload: {
   contractor_id?: string | null;
   document_type: string;
   reference_number: string;
-  store_id: string;
+  store_id?: string | null;
   items: Array<{
     product_id: string;
     variant_id?: string | null;
@@ -248,13 +248,13 @@ export async function createProductReceipt(payload: {
     let requestData: any;
     if (payload.document) {
       const formData = new FormData();
-      
+
       // Add non-file fields
       if (payload.supplier_id) formData.append('supplier_id', payload.supplier_id);
       if (payload.contractor_id) formData.append('contractor_id', payload.contractor_id);
       formData.append('document_type', payload.document_type);
       formData.append('reference_number', payload.reference_number);
-      formData.append('store_id', payload.store_id);
+      if (payload.store_id) formData.append('store_id', payload.store_id);
       
       // Add logistics fields
       if (payload.container_number) formData.append('container_number', payload.container_number);
@@ -280,7 +280,7 @@ export async function createProductReceipt(payload: {
         contractor_id: payload.contractor_id,
         document_type: payload.document_type,
         reference_number: payload.reference_number,
-        store_id: payload.store_id,
+        ...(payload.store_id && { store_id: payload.store_id }),
         items: payload.items,
         // Logistics fields
         ...(payload.container_number && { container_number: payload.container_number }),
@@ -392,7 +392,7 @@ export async function updateProductReceiptFull(id: string, payload: {
   contractor_id?: string | null;
   document_type: string;
   reference_number: string;
-  store_id: string;
+  store_id?: string | null;
   items: Array<{
     product_id: string;
     variant_id?: string | null;
@@ -424,13 +424,13 @@ export async function updateProductReceiptFull(id: string, payload: {
     let requestData: any;
     if (payload.document) {
       const formData = new FormData();
-      
+
       // Add non-file fields
       if (payload.supplier_id) formData.append('supplier_id', payload.supplier_id);
       if (payload.contractor_id) formData.append('contractor_id', payload.contractor_id);
       formData.append('document_type', payload.document_type);
       formData.append('reference_number', payload.reference_number);
-      formData.append('store_id', payload.store_id);
+      if (payload.store_id) formData.append('store_id', payload.store_id);
       
       // Add logistics fields
       if (payload.container_number) formData.append('container_number', payload.container_number);
@@ -456,7 +456,7 @@ export async function updateProductReceiptFull(id: string, payload: {
         contractor_id: payload.contractor_id,
         document_type: payload.document_type,
         reference_number: payload.reference_number,
-        store_id: payload.store_id,
+        ...(payload.store_id && { store_id: payload.store_id }),
         items: payload.items,
         // Logistics fields
         container_number: payload.container_number || null,
