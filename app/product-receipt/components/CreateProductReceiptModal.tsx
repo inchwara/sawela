@@ -646,134 +646,6 @@ type ProductReceiptFormValues = z.infer<typeof formSchema>;
                   </div>
                 </div>
 
-                {/* Logistics & Delivery Details Card */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Truck className="h-5 w-5 text-indigo-600" />
-                      Logistics & Delivery Details
-                      <Badge variant="secondary" className="ml-2 text-xs">Optional</Badge>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    {/* Shipping Information */}
-                    <div className="space-y-4">
-                      <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2 border-b pb-2">
-                        <Container className="h-4 w-4" />
-                        Shipping Information
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="containerNumber">Container Number</Label>
-                          <Input
-                            id="containerNumber"
-                            value={containerNumber}
-                            onChange={(e) => setContainerNumber(e.target.value)}
-                            placeholder="e.g., CONT123456789"
-                            disabled={isSubmitting}
-                            maxLength={100}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="landedDate">Landed Date</Label>
-                          <Input
-                            id="landedDate"
-                            type="date"
-                            value={landedDate}
-                            onChange={(e) => setLandedDate(e.target.value)}
-                            disabled={isSubmitting}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="receiptDate">Receipt Date</Label>
-                          <Input
-                            id="receiptDate"
-                            type="date"
-                            value={receiptDate}
-                            onChange={(e) => setReceiptDate(e.target.value)}
-                            disabled={isSubmitting}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Driver Information */}
-                    <div className="space-y-4">
-                      <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2 border-b pb-2">
-                        <User className="h-4 w-4" />
-                        Driver Information
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="driverName">Driver Name</Label>
-                          <Input
-                            id="driverName"
-                            value={driverName}
-                            onChange={(e) => setDriverName(e.target.value)}
-                            placeholder="e.g., John Doe"
-                            disabled={isSubmitting}
-                            maxLength={100}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="driverIdNumber">ID Number</Label>
-                          <Input
-                            id="driverIdNumber"
-                            value={driverIdNumber}
-                            onChange={(e) => setDriverIdNumber(e.target.value)}
-                            placeholder="e.g., ID12345678"
-                            disabled={isSubmitting}
-                            maxLength={50}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="driverPhone">Phone Number</Label>
-                          <Input
-                            id="driverPhone"
-                            value={driverPhone}
-                            onChange={(e) => setDriverPhone(e.target.value)}
-                            placeholder="e.g., +254712345678"
-                            disabled={isSubmitting}
-                            maxLength={20}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Vehicle Information */}
-                    <div className="space-y-4">
-                      <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2 border-b pb-2">
-                        <Car className="h-4 w-4" />
-                        Vehicle Information
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="vehicleNumberPlate">Number Plate</Label>
-                          <Input
-                            id="vehicleNumberPlate"
-                            value={vehicleNumberPlate}
-                            onChange={(e) => setVehicleNumberPlate(e.target.value)}
-                            placeholder="e.g., KAA 123A"
-                            disabled={isSubmitting}
-                            maxLength={20}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="vehicleDescription">Vehicle Description</Label>
-                          <Input
-                            id="vehicleDescription"
-                            value={vehicleDescription}
-                            onChange={(e) => setVehicleDescription(e.target.value)}
-                            placeholder="e.g., White Toyota Hilux"
-                            disabled={isSubmitting}
-                            maxLength={255}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
                 {/* Product Items */}
                 <Card>
                   <CardHeader>
@@ -1285,6 +1157,134 @@ type ProductReceiptFormValues = z.infer<typeof formSchema>;
                         </div>
                       </div>
                     )}
+                  </CardContent>
+                </Card>
+
+                {/* Logistics & Delivery Details Card */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Truck className="h-5 w-5 text-indigo-600" />
+                      Logistics & Delivery Details
+                      <Badge variant="secondary" className="ml-2 text-xs">Optional</Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* Shipping Information */}
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2 border-b pb-2">
+                        <Container className="h-4 w-4" />
+                        Shipping Information
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="containerNumber">Container Number</Label>
+                          <Input
+                            id="containerNumber"
+                            value={containerNumber}
+                            onChange={(e) => setContainerNumber(e.target.value)}
+                            placeholder="e.g., CONT123456789"
+                            disabled={isSubmitting}
+                            maxLength={100}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="landedDate">Landed Date</Label>
+                          <Input
+                            id="landedDate"
+                            type="date"
+                            value={landedDate}
+                            onChange={(e) => setLandedDate(e.target.value)}
+                            disabled={isSubmitting}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="receiptDate">Receipt Date</Label>
+                          <Input
+                            id="receiptDate"
+                            type="date"
+                            value={receiptDate}
+                            onChange={(e) => setReceiptDate(e.target.value)}
+                            disabled={isSubmitting}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Driver Information */}
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2 border-b pb-2">
+                        <User className="h-4 w-4" />
+                        Driver Information
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="driverName">Driver Name</Label>
+                          <Input
+                            id="driverName"
+                            value={driverName}
+                            onChange={(e) => setDriverName(e.target.value)}
+                            placeholder="e.g., John Doe"
+                            disabled={isSubmitting}
+                            maxLength={100}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="driverIdNumber">ID Number</Label>
+                          <Input
+                            id="driverIdNumber"
+                            value={driverIdNumber}
+                            onChange={(e) => setDriverIdNumber(e.target.value)}
+                            placeholder="e.g., ID12345678"
+                            disabled={isSubmitting}
+                            maxLength={50}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="driverPhone">Phone Number</Label>
+                          <Input
+                            id="driverPhone"
+                            value={driverPhone}
+                            onChange={(e) => setDriverPhone(e.target.value)}
+                            placeholder="e.g., +254712345678"
+                            disabled={isSubmitting}
+                            maxLength={20}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Vehicle Information */}
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2 border-b pb-2">
+                        <Car className="h-4 w-4" />
+                        Vehicle Information
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="vehicleNumberPlate">Number Plate</Label>
+                          <Input
+                            id="vehicleNumberPlate"
+                            value={vehicleNumberPlate}
+                            onChange={(e) => setVehicleNumberPlate(e.target.value)}
+                            placeholder="e.g., KAA 123A"
+                            disabled={isSubmitting}
+                            maxLength={20}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="vehicleDescription">Vehicle Description</Label>
+                          <Input
+                            id="vehicleDescription"
+                            value={vehicleDescription}
+                            onChange={(e) => setVehicleDescription(e.target.value)}
+                            placeholder="e.g., White Toyota Hilux"
+                            disabled={isSubmitting}
+                            maxLength={255}
+                          />
+                        </div>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
                 </div>

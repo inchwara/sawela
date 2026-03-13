@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { createDispatch } from "@/lib/dispatch";
 import { getStores } from "@/lib/stores";
+import { getDepartments, type Department } from "@/lib/departments";
+import { getEntities, type Entity } from "@/lib/entities";
 import { getProducts } from "@/lib/products";
 import { fetchUsers, type UserData } from "@/lib/users";
 import { Button } from "@/components/ui/button";
@@ -91,6 +93,8 @@ export function CreateDispatchModal({ open, onOpenChange, onSuccess }: CreateDis
   const [stores, setStores] = useState<Store[]>([]);
   const [users, setUsers] = useState<UserData[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [entities, setEntities] = useState<Entity[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   ;
 
@@ -139,6 +143,14 @@ export function CreateDispatchModal({ open, onOpenChange, onSuccess }: CreateDis
       // Load users from company
       const usersData = await fetchUsers();
       setUsers(usersData);
+
+      // Load departments and entities
+      const [departmentsData, entitiesData] = await Promise.all([
+        getDepartments().catch(() => []),
+        getEntities().catch(() => []),
+      ]);
+      setDepartments(departmentsData);
+      setEntities(entitiesData);
 
       // Load products with inventory - type cast to handle interface mismatch
       const productsResponse = await getProducts(1, 10000); // Fetch all products
@@ -380,32 +392,27 @@ export function CreateDispatchModal({ open, onOpenChange, onSuccess }: CreateDis
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* To Entity */}
+                {/* To Entity / Department */}
                 <div className="space-y-2">
-                  <Label htmlFor="to_entity">To Entity *</Label>
-                  <Select 
-                    value={formData.to_entity} 
+                  <Label htmlFor="to_entity">
+                    {formData.type === "internal" ? "Department" : "Entity"} *
+                  </Label>
+                  <Select
+                    value={formData.to_entity}
                     onValueChange={(value) => setFormData(prev => ({ ...prev, to_entity: value }))}
                   >
                     <SelectTrigger className={errors.to_entity ? "border-red-500" : ""}>
-                      <SelectValue placeholder="Select entity/department">
-                        {formData.to_entity ? toSentenceCase(formData.to_entity) : "Select entity/department"}
-                      </SelectValue>
+                      <SelectValue placeholder={formData.type === "internal" ? "Select department" : "Select entity"} />
                     </SelectTrigger>
                     <SelectContent>
                       {formData.type === "internal" ? (
-                        <>
-                          <SelectItem value="warehouse">Warehouse</SelectItem>
-                          <SelectItem value="sales">Sales Department</SelectItem>
-                          <SelectItem value="operations">Operations</SelectItem>
-                          <SelectItem value="maintenance">Maintenance</SelectItem>
-                        </>
+                        departments.map((dept) => (
+                          <SelectItem key={dept.id} value={dept.name}>{dept.name}</SelectItem>
+                        ))
                       ) : (
-                        <>
-                          <SelectItem value="external_company">External Company</SelectItem>
-                          <SelectItem value="customer">Customer</SelectItem>
-                          <SelectItem value="supplier">Supplier</SelectItem>
-                        </>
+                        entities.map((entity) => (
+                          <SelectItem key={entity.id} value={entity.name}>{entity.name}</SelectItem>
+                        ))
                       )}
                     </SelectContent>
                   </Select>
