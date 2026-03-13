@@ -25,6 +25,7 @@ export function CreateSupplierModal({ open, onOpenChange, onSupplierCreated }: C
   const [activeTab, setActiveTab] = useState("basic")
   const [formData, setFormData] = useState<CreateSupplierPayload>({
     name: "",
+    supplier_type: "local",
     email: "",
     phone: "",
     address: "",
@@ -51,6 +52,7 @@ export function CreateSupplierModal({ open, onOpenChange, onSupplierCreated }: C
   const resetForm = () => {
     setFormData({
       name: "",
+      supplier_type: "local",
       email: "",
       phone: "",
       address: "",
@@ -145,6 +147,22 @@ export function CreateSupplierModal({ open, onOpenChange, onSupplierCreated }: C
                     required
                     disabled={isSubmitting}
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="supplier_type">Supplier Type</Label>
+                  <Select
+                    value={formData.supplier_type || "local"}
+                    onValueChange={(value) => handleInputChange("supplier_type", value)}
+                    disabled={isSubmitting}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select supplier type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="local">Local</SelectItem>
+                      <SelectItem value="international">International</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="contact_person">Contact Person</Label>

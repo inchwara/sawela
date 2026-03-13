@@ -20,7 +20,15 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { getProducts, type Product } from "@/lib/products";
-import { getSuppliers, type Supplier } from "@/lib/suppliers";
+import { getSuppliers, createSupplier, type Supplier } from "@/lib/suppliers";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { getProductCategories, type ProductCategory } from "@/lib/product-categories";
 import { createProduct } from "@/app/inventory/actions";
 import { CreateProductModal } from "@/components/modals/create-product-modal";
@@ -148,6 +156,12 @@ export function CreateProductReceiptModal({
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [loadingCategories, setLoadingCategories] = useState(false);
 
+  // Create supplier dialog
+  const [isCreateSupplierOpen, setIsCreateSupplierOpen] = useState(false);
+  const [newSupplierName, setNewSupplierName] = useState("");
+  const [newSupplierType, setNewSupplierType] = useState<"local" | "international">("local");
+  const [isCreatingSupplier, setIsCreatingSupplier] = useState(false);
+
   // Product search and selection
   const [productSearchQuery, setProductSearchQuery] = useState("");
   const [showProductDropdown, setShowProductDropdown] = useState(false);
@@ -222,6 +236,30 @@ type ProductReceiptFormValues = z.infer<typeof formSchema>;
       toast.error(`Failed to load suppliers: ${error.message}`);
     } finally {
       setLoadingSuppliers(false);
+    }
+  };
+
+  const handleCreateSupplier = async () => {
+    if (!newSupplierName.trim()) {
+      toast.error("Supplier name is required");
+      return;
+    }
+    setIsCreatingSupplier(true);
+    try {
+      const supplier = await createSupplier({
+        name: newSupplierName.trim(),
+        supplier_type: newSupplierType,
+      });
+      setSuppliers(prev => [...prev, supplier]);
+      setSupplierId(supplier.id);
+      setIsCreateSupplierOpen(false);
+      setNewSupplierName("");
+      setNewSupplierType("local");
+      toast.success("Supplier created successfully");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to create supplier");
+    } finally {
+      setIsCreatingSupplier(false);
     }
   };
 
@@ -536,6 +574,7 @@ type ProductReceiptFormValues = z.infer<typeof formSchema>;
   const totalValue = items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
 
   return (
+    <>
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full sm:max-w-4xl flex flex-col h-full p-0">
         <SheetHeader className="px-6 py-4 border-b bg-white sticky top-0 z-10">
@@ -623,26 +662,38 @@ type ProductReceiptFormValues = z.infer<typeof formSchema>;
 
                   <div className="space-y-2">
                     <Label htmlFor="supplier">Supplier (Optional)</Label>
-                    <Select
-                      value={supplierId || "none"}
-                      onValueChange={(value) => {
-                        const newSupplierId = value === "none" ? "" : value;
-                        setSupplierId(newSupplierId);
-                      }}
-                      disabled={isSubmitting || loadingSuppliers}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder={loadingSuppliers ? "Loading suppliers..." : "Select supplier"} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">No supplier</SelectItem>
-                        {suppliers.map((supplier) => (
-                          <SelectItem key={supplier.id} value={supplier.id}>
-                            {supplier.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div className="flex gap-2">
+                      <Select
+                        value={supplierId || "none"}
+                        onValueChange={(value) => {
+                          const newSupplierId = value === "none" ? "" : value;
+                          setSupplierId(newSupplierId);
+                        }}
+                        disabled={isSubmitting || loadingSuppliers}
+                      >
+                        <SelectTrigger className="flex-1">
+                          <SelectValue placeholder={loadingSuppliers ? "Loading suppliers..." : "Select supplier"} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">No supplier</SelectItem>
+                          {suppliers.map((supplier) => (
+                            <SelectItem key={supplier.id} value={supplier.id}>
+                              {supplier.name} {supplier.supplier_type === "international" ? "(International)" : "(Local)"}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setIsCreateSupplierOpen(true)}
+                        disabled={isSubmitting}
+                        title="Create new supplier"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
 
@@ -1334,5 +1385,53 @@ type ProductReceiptFormValues = z.infer<typeof formSchema>;
         />
       </SheetContent>
     </Sheet>
+
+    {/* Create Supplier Dialog */}
+    <Dialog open={isCreateSupplierOpen} onOpenChange={setIsCreateSupplierOpen}>
+      <DialogContent className="sm:max-w-[400px]">
+        <DialogHeader>
+          <DialogTitle>Create New Supplier</DialogTitle>
+          <DialogDescription>
+            Add a new supplier to use in this product receipt.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="newSupplierName">Supplier Name *</Label>
+            <Input
+              id="newSupplierName"
+              value={newSupplierName}
+              onChange={(e) => setNewSupplierName(e.target.value)}
+              placeholder="Enter supplier name"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="newSupplierType">Supplier Type</Label>
+            <Select
+              value={newSupplierType}
+              onValueChange={(value) => setNewSupplierType(value as "local" | "international")}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="local">Local</SelectItem>
+                <SelectItem value="international">International</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={() => setIsCreateSupplierOpen(false)}>
+            Cancel
+          </Button>
+          <Button onClick={handleCreateSupplier} disabled={isCreatingSupplier}>
+            {isCreatingSupplier && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Create Supplier
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }

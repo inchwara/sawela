@@ -29,6 +29,7 @@ export function EditSupplierSheet({ open, onOpenChange, supplier, onSupplierUpda
     if (supplier) {
       setFormData({
         name: supplier.name,
+        supplier_type: supplier.supplier_type || "local",
         email: supplier.email,
         phone: supplier.phone,
         address: supplier.address,
@@ -101,6 +102,21 @@ export function EditSupplierSheet({ open, onOpenChange, supplier, onSupplierUpda
                     placeholder="Enter company name"
                     required
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="supplier_type">Supplier Type</Label>
+                  <Select
+                    value={formData.supplier_type || "local"}
+                    onValueChange={(value) => handleInputChange("supplier_type", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select supplier type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="local">Local</SelectItem>
+                      <SelectItem value="international">International</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="contact_person">Contact Person</Label>

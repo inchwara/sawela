@@ -24,6 +24,7 @@ export function CreateSupplierSheet({ open, onOpenChange, onSupplierCreated }: C
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState<CreateSupplierPayload>({
     name: "",
+    supplier_type: "local",
     email: "",
     phone: "",
     address: "",
@@ -52,6 +53,7 @@ export function CreateSupplierSheet({ open, onOpenChange, onSupplierCreated }: C
       // Reset form
       setFormData({
         name: "",
+        supplier_type: "local",
         email: "",
         phone: "",
         address: "",
@@ -111,6 +113,21 @@ export function CreateSupplierSheet({ open, onOpenChange, onSupplierCreated }: C
                     placeholder="Enter company name"
                     required
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="supplier_type">Supplier Type</Label>
+                  <Select
+                    value={formData.supplier_type || "local"}
+                    onValueChange={(value) => handleInputChange("supplier_type", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select supplier type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="local">Local</SelectItem>
+                      <SelectItem value="international">International</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="contact_person">Contact Person</Label>

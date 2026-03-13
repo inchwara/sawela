@@ -306,6 +306,7 @@ export function SuppliersTable({ onDataChanged }: SuppliersTableProps) {
                   />
                 </TableHead>
                 <TableHead>Name</TableHead>
+                <TableHead>Type</TableHead>
                 <TableHead>Contact Person</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Phone</TableHead>
@@ -325,6 +326,11 @@ export function SuppliersTable({ onDataChanged }: SuppliersTableProps) {
                     <Checkbox checked={selectedSuppliers.includes(supplier.id)} />
                   </TableCell>
                   <TableCell className="font-medium">{supplier.name}</TableCell>
+                  <TableCell>
+                    <Badge variant={supplier.supplier_type === "international" ? "outline" : "secondary"}>
+                      {supplier.supplier_type === "international" ? "International" : "Local"}
+                    </Badge>
+                  </TableCell>
                   <TableCell>{supplier.contact_person}</TableCell>
                   <TableCell>{supplier.email}</TableCell>
                   <TableCell>{supplier.phone}</TableCell>

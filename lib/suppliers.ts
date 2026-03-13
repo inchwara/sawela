@@ -16,6 +16,7 @@ export interface Supplier {
   id: string
   company_id: string
   name: string
+  supplier_type: string
   email: string
   phone: string
   address: string
@@ -36,6 +37,7 @@ export interface Supplier {
 
 export interface CreateSupplierPayload {
   name: string
+  supplier_type?: string
   email?: string
   phone?: string
   address?: string
@@ -54,6 +56,7 @@ export interface CreateSupplierPayload {
 
 export interface UpdateSupplierPayload {
   name?: string
+  supplier_type?: string
   email?: string
   phone?: string
   address?: string
